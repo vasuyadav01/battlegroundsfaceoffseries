@@ -131,6 +131,13 @@
 - **Added:** `BuildSummary.md` and `tracker.md`.
 - **Verified:** `npm run build` completed with **0 errors**.
 
+### Session 4 — Live Supabase Database Connection & Verification
+- **Connected:** Live Supabase Project (`cmrqdjytxavjpukbpcer`) linked in `.env.local`.
+- **Configured:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+- **Migrated:** Applied `001_initial_schema.sql` database tables, triggers, Best-16 leaderboard view, RLS policies, and default config values.
+- **Verified:** Database connection query returned `STATUS: 200 OK` with seed config data.
+
+
 ---
 
 ## 💡 How to Update This Document

@@ -81,24 +81,28 @@ export default async function LandingPage() {
             <div className={styles.stepsGrid}>
               {[
                 {
+                  num: '01',
                   step: 'STEP 01',
                   title: 'SIGN UP & SQUAD UP',
                   desc: 'Log in via secure email OTP, create your roster, and invite your teammates.',
                   icon: '👥',
                 },
                 {
+                  num: '02',
                   step: 'STEP 02',
                   title: 'BOOK LEAGUE SLOTS',
                   desc: 'Select preferred daily match slots. Instant slot confirmation after ₹50 checkout.',
                   icon: '🎯',
                 },
                 {
+                  num: '03',
                   step: 'STEP 03',
                   title: 'GRIND & DOMINATE',
                   desc: '3 matches per slot. Play as many slots as you want — only your top 16 match scores count.',
                   icon: '🔫',
                 },
                 {
+                  num: '04',
                   step: 'STEP 04',
                   title: 'WIN CASH & QUALIFY',
                   desc: 'Instant UPI payouts after every slot. Top 16 overall teams advance to FREE Grand Finals.',
@@ -106,6 +110,7 @@ export default async function LandingPage() {
                 },
               ].map((s) => (
                 <div key={s.step} className={styles.stepCard}>
+                  <div className={styles.stepBgNum}>{s.num}</div>
                   <div className={styles.stepNum}>{s.step}</div>
                   <div className={styles.stepIcon}>{s.icon}</div>
                   <h3 className={styles.stepTitle}>{s.title}</h3>

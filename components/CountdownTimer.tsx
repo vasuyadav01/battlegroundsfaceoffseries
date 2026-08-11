@@ -15,52 +15,55 @@ interface CountdownTimerProps {
   label?: string
 }
 
+function getValidTargetTime(targetDateProp?: string): number {
+  const now = Date.now()
+  let target = targetDateProp ? new Date(targetDateProp).getTime() : NaN
+
+  // If target date is invalid or in the past, fallback to upcoming August 29 at 11:00 PM IST
+  if (isNaN(target) || target <= now) {
+    const currentYear = new Date().getFullYear()
+    let aug29 = new Date(`${currentYear}-08-29T23:00:00+05:30`).getTime()
+    if (aug29 <= now) {
+      aug29 = new Date(`${currentYear + 1}-08-29T23:00:00+05:30`).getTime()
+    }
+    return aug29
+  }
+
+  return target
+}
+
 export default function CountdownTimer({
-  targetDate = '2026-08-29T23:00:00+05:30',
+  targetDate,
 }: CountdownTimerProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  })
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    function calculate() {
-      const target = new Date(targetDate).getTime()
+    setMounted(true)
+    const targetTime = getValidTargetTime(targetDate)
+
+    function updateTimer() {
       const now = Date.now()
-      const diff = target - now
+      const diff = Math.max(0, targetTime - now)
 
-      if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-        return
-      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
 
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((diff % (1000 * 60)) / 1000),
-      })
+      setTimeLeft({ days, hours, minutes, seconds })
     }
 
-    calculate()
-    const interval = setInterval(calculate, 1000)
-    return () => clearInterval(interval)
-  }, [targetDate])
+    updateTimer()
+    const timerId = setInterval(updateTimer, 1000)
 
-  if (!timeLeft) {
-    return (
-      <div className={styles.container}>
-        {[
-          { label: 'DAYS', val: '00' },
-          { label: 'HOURS', val: '00' },
-          { label: 'MINUTES', val: '00' },
-          { label: 'SECONDS', val: '00' },
-        ].map((u) => (
-          <div key={u.label} className={styles.box}>
-            <span className={styles.num}>{u.val}</span>
-            <span className={styles.unitLabel}>{u.label}</span>
-          </div>
-        ))}
-      </div>
-    )
-  }
+    return () => clearInterval(timerId)
+  }, [targetDate])
 
   const units = [
     { label: 'DAYS', value: timeLeft.days },
@@ -74,7 +77,7 @@ export default function CountdownTimer({
       {units.map((u) => (
         <div key={u.label} className={styles.box}>
           <span className={styles.num}>
-            {String(u.value).padStart(2, '0')}
+            {mounted ? String(u.value).padStart(2, '0') : '00'}
           </span>
           <span className={styles.unitLabel}>{u.label}</span>
         </div>

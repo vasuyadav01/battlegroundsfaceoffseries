@@ -19,7 +19,7 @@ export default async function LandingPage() {
   const config: Record<string, string> = {}
   configRows?.forEach(row => { config[row.key] = row.value })
 
-  const grandFinalsDate = config.grand_finals_date || '2026-08-29T23:00:00+05:30'
+  const grandFinalsDate = '2026-08-29T23:00:00+05:30'
 
   return (
     <>

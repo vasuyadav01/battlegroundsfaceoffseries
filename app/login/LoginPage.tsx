@@ -3,22 +3,60 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
-type Step = 'email' | 'otp'
+type LoginMode = 'password' | 'otp'
+type OtpStep = 'email' | 'otp'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [step, setStep] = useState<Step>('email')
+  const [loginMode, setLoginMode] = useState<LoginMode>('password')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [otpStep, setOtpStep] = useState<OtpStep>('email')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [resendCooldown, setResendCooldown] = useState(0)
 
+  // Standard Password Sign In
+  async function handlePasswordSignIn(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      setLoading(false)
+      setError(error.message)
+      return
+    }
+
+    const userId = data.user?.id
+    if (userId) {
+      const { data: userRow } = await supabase
+        .from('users')
+        .select('team_id')
+        .eq('user_id', userId)
+        .single()
+
+      if (!userRow?.team_id) {
+        router.push('/onboard')
+      } else {
+        router.push('/dashboard')
+      }
+    }
+  }
+
+  // OTP Request
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -36,7 +74,7 @@ export default function LoginPage() {
       return
     }
 
-    setStep('otp')
+    setOtpStep('otp')
     setResendCooldown(60)
     const interval = setInterval(() => {
       setResendCooldown(prev => {
@@ -46,6 +84,7 @@ export default function LoginPage() {
     }, 1000)
   }
 
+  // OTP Verification
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -83,26 +122,48 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.bgGlow} />
       <div className={styles.card}>
-        <div className={styles.logo}>
-          <span className={styles.logoBadge}>BGFS</span>
-          <span className={styles.logoText}>FACEOFF</span>
+        {/* Logo Placement */}
+        <div className={styles.logoWrapper}>
+          <Image
+            src="/images/faceofflogo.png"
+            alt="BGFS Faceoff Series"
+            width={240}
+            height={80}
+            className={styles.logoImg}
+            priority
+          />
         </div>
 
-        <h1 className={styles.title}>
-          {step === 'email' ? 'SIGN IN' : 'ENTER OTP'}
-        </h1>
+        <h1 className={styles.title}>SIGN IN</h1>
         <p className={styles.subtitle}>
-          {step === 'email'
-            ? 'Enter your registered email address to receive your 6-digit access code.'
-            : `Verification code sent to ${email}. Check your inbox.`}
+          Access your BGFS player portal, slot bookings, and tournament standings.
         </p>
 
-        {step === 'email' && (
-          <form onSubmit={handleSendOtp} className={styles.form}>
+        {/* Mode Switcher Tabs */}
+        <div className={styles.modeTabs}>
+          <button
+            type="button"
+            className={`${styles.modeBtn} ${loginMode === 'password' ? styles.modeBtnActive : ''}`}
+            onClick={() => { setLoginMode('password'); setError('') }}
+          >
+            Password Sign In
+          </button>
+          <button
+            type="button"
+            className={`${styles.modeBtn} ${loginMode === 'otp' ? styles.modeBtnActive : ''}`}
+            onClick={() => { setLoginMode('otp'); setError('') }}
+          >
+            OTP Code
+          </button>
+        </div>
+
+        {/* ── FORM 1: STANDARD ID & PASSWORD ── */}
+        {loginMode === 'password' && (
+          <form onSubmit={handlePasswordSignIn} className={styles.form}>
             <div className="form-group">
-              <label className="form-label" htmlFor="email">EMAIL ADDRESS</label>
+              <label className="form-label" htmlFor="login-email">EMAIL ADDRESS</label>
               <input
-                id="email"
+                id="login-email"
                 type="email"
                 className="form-input"
                 placeholder="player@bgfsesports.com"
@@ -112,68 +173,124 @@ export default function LoginPage() {
                 autoFocus
               />
             </div>
-            {error && <p className={styles.errorMsg}>{error}</p>}
-            <button
-              id="send-otp-btn"
-              type="submit"
-              className="btn btn-primary"
-              style={{ width: '100%', background: '#fbbf24', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px' }}
-              disabled={loading}
-            >
-              {loading ? <><span className="spinner" /> SENDING CODE...</> : 'SEND OTP CODE →'}
-            </button>
-          </form>
-        )}
 
-        {step === 'otp' && (
-          <form onSubmit={handleVerifyOtp} className={styles.form}>
             <div className="form-group">
-              <label className="form-label" htmlFor="otp">6-DIGIT VERIFICATION CODE</label>
+              <label className="form-label" htmlFor="login-password">PASSWORD</label>
               <input
-                id="otp"
-                type="text"
-                className={`form-input ${styles.otpInput}`}
-                placeholder="000000"
-                value={otp}
-                onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                inputMode="numeric"
-                maxLength={6}
+                id="login-password"
+                type="password"
+                className="form-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 required
-                autoFocus
               />
             </div>
+
             {error && <p className={styles.errorMsg}>{error}</p>}
+
             <button
-              id="verify-otp-btn"
+              id="password-signin-btn"
               type="submit"
               className="btn btn-primary"
-              style={{ width: '100%', background: '#fbbf24', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px' }}
-              disabled={loading || otp.length < 6}
+              style={{ width: '100%', background: '#facc15', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px', marginTop: '0.5rem' }}
+              disabled={loading}
             >
-              {loading ? <><span className="spinner" /> VERIFYING...</> : 'VERIFY & SIGN IN'}
+              {loading ? <><span className="spinner" /> SIGNING IN...</> : 'SIGN IN →'}
             </button>
-
-            <div className={styles.resendRow}>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => { setStep('email'); setOtp(''); setError('') }}
-                style={{ color: '#b8b8b8', fontSize: '0.8rem', textTransform: 'uppercase' }}
-              >
-                ← CHANGE EMAIL
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                disabled={resendCooldown > 0}
-                onClick={handleSendOtp as any}
-                style={{ color: '#fbbf24', fontSize: '0.8rem', textTransform: 'uppercase' }}
-              >
-                {resendCooldown > 0 ? `RESEND IN ${resendCooldown}S` : 'RESEND OTP'}
-              </button>
-            </div>
           </form>
         )}
+
+        {/* ── FORM 2: OTP SIGN IN ── */}
+        {loginMode === 'otp' && (
+          <>
+            {otpStep === 'email' && (
+              <form onSubmit={handleSendOtp} className={styles.form}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="otp-email">EMAIL ADDRESS</label>
+                  <input
+                    id="otp-email"
+                    type="email"
+                    className="form-input"
+                    placeholder="player@bgfsesports.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+                {error && <p className={styles.errorMsg}>{error}</p>}
+                <button
+                  id="send-otp-btn"
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%', background: '#facc15', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px', marginTop: '0.5rem' }}
+                  disabled={loading}
+                >
+                  {loading ? <><span className="spinner" /> SENDING CODE...</> : 'SEND OTP CODE →'}
+                </button>
+              </form>
+            )}
+
+            {otpStep === 'otp' && (
+              <form onSubmit={handleVerifyOtp} className={styles.form}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="otp-input">6-DIGIT VERIFICATION CODE</label>
+                  <input
+                    id="otp-input"
+                    type="text"
+                    className={`form-input ${styles.otpInput}`}
+                    placeholder="000000"
+                    value={otp}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    autoFocus
+                  />
+                </div>
+                {error && <p className={styles.errorMsg}>{error}</p>}
+                <button
+                  id="verify-otp-btn"
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%', background: '#facc15', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px', marginTop: '0.5rem' }}
+                  disabled={loading || otp.length < 6}
+                >
+                  {loading ? <><span className="spinner" /> VERIFYING...</> : 'VERIFY & SIGN IN'}
+                </button>
+
+                <div className={styles.resendRow}>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => { setOtpStep('email'); setOtp(''); setError('') }}
+                    style={{ color: '#b8b8b8', fontSize: '0.8rem', textTransform: 'uppercase' }}
+                  >
+                    ← CHANGE EMAIL
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    disabled={resendCooldown > 0}
+                    onClick={handleSendOtp as any}
+                    style={{ color: '#facc15', fontSize: '0.8rem', textTransform: 'uppercase' }}
+                  >
+                    {resendCooldown > 0 ? `RESEND IN ${resendCooldown}S` : 'RESEND OTP'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </>
+        )}
+
+        {/* New User Option Section */}
+        <div className={styles.signupFooter}>
+          <p className={styles.signupText}>Don't have an account yet?</p>
+          <Link href="/register" className={styles.signupLink}>
+            CREATE ACCOUNT / REGISTER NOW →
+          </Link>
+        </div>
 
         <p className={styles.terms}>
           By signing in, you agree to the tournament rules and guidelines.<br />

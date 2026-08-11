@@ -66,36 +66,40 @@
   line-height: 1.6;
 }
 
+/* Segmented Control Tab Switcher */
 .modeTabs {
   display: flex;
   background: #141414;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
   padding: 4px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   gap: 4px;
+  width: 100%;
 }
 
 .modeBtn {
   flex: 1;
   background: transparent;
   border: none;
-  color: #888888;
-  padding: 8px 12px;
+  color: #999999;
+  padding: 10px 14px;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  text-align: center;
 }
 
 .modeBtnActive {
-  background: #252525;
-  color: #facc15;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  background: #facc15;
+  color: #111111;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(250, 204, 21, 0.25);
 }
 
 .form {
@@ -132,7 +136,7 @@
   margin-top: 0.25rem;
 }
 
-/* Signup Footer Section matching Create Account page */
+/* Signup Footer Section */
 .signupFooter {
   margin-top: 2rem;
   padding-top: 1.5rem;
@@ -144,7 +148,7 @@
 .signupText {
   color: #a0a0a0;
   font-size: 0.88rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.85rem;
 }
 
 .signupLink {
@@ -157,6 +161,7 @@
   align-items: center;
   gap: 6px;
   text-decoration: none;
+  margin-bottom: 1.25rem;
   transition: color 0.15s ease;
 }
 
@@ -166,18 +171,16 @@
 
 /* Disclaimer text */
 .disclaimerText {
-  margin-top: 1.25rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.78rem;
   color: #777777;
   text-align: center;
   line-height: 1.5;
-  margin-bottom: 0;
+  margin-bottom: 1.25rem;
 }
 
-/* Back to home wrapper & link */
+/* Back to home divider & link */
 .homeLinkWrapper {
-  margin-top: 1.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid #2a2a2a;
   text-align: center;

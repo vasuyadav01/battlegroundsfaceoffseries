@@ -140,21 +140,21 @@ export default function LoginPage() {
           Access your BGFS player portal, slot bookings, and tournament standings.
         </p>
 
-        {/* Mode Switcher Tabs */}
+        {/* Segmented Tab Switcher */}
         <div className={styles.modeTabs}>
           <button
             type="button"
             className={`${styles.modeBtn} ${loginMode === 'password' ? styles.modeBtnActive : ''}`}
             onClick={() => { setLoginMode('password'); setError('') }}
           >
-            Password Sign In
+            PASSWORD
           </button>
           <button
             type="button"
             className={`${styles.modeBtn} ${loginMode === 'otp' ? styles.modeBtnActive : ''}`}
             onClick={() => { setLoginMode('otp'); setError('') }}
           >
-            OTP Code
+            OTP CODE
           </button>
         </div>
 
@@ -288,21 +288,19 @@ export default function LoginPage() {
         {/* New User Option Section */}
         <div className={styles.signupFooter}>
           <p className={styles.signupText}>Don't have an account yet?</p>
-          <Link href="/register" className={styles.signupLink}>
-            CREATE ACCOUNT / REGISTER NOW →
-          </Link>
-        </div>
-
-        {/* Disclaimer Text */}
-        <p className={styles.disclaimerText}>
-          By signing in, you agree to the tournament rules and guidelines.
-        </p>
-
-        {/* Back to Home Link */}
-        <div className={styles.homeLinkWrapper}>
-          <Link href="/" className={styles.homeLink}>
-            ← BACK TO HOME
-          </Link>
+          <div>
+            <Link href="/register" className={styles.signupLink}>
+              CREATE ACCOUNT / REGISTER NOW →
+            </Link>
+          </div>
+          <p className={styles.disclaimerText}>
+            By signing in, you agree to the tournament rules and guidelines.
+          </p>
+          <div className={styles.homeLinkWrapper}>
+            <Link href="/" className={styles.homeLink}>
+              ← BACK TO HOME
+            </Link>
+          </div>
         </div>
       </div>
     </div>

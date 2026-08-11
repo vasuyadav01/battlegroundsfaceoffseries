@@ -30,15 +30,15 @@ export default async function LandingPage() {
         <section className={styles.hero}>
           <div className={styles.heroOverlay} />
           <div className={styles.heroGrid} />
-          <div className="container">
+          <div className={styles.heroContainer}>
             <div className={styles.heroContent}>
               {/* Logo above heading */}
               <div className={styles.heroLogoWrapper}>
                 <Image
                   src="/images/faceofflogo.png"
                   alt="BGFS Faceoff Series"
-                  width={460}
-                  height={110}
+                  width={720}
+                  height={240}
                   className={styles.heroLogoImg}
                   priority
                 />

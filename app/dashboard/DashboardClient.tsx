@@ -19,7 +19,7 @@ interface Booking {
   amount_paid: number
   coupon_used: boolean
   created_at: string
-  slots: SlotInfo | null
+  slots: any
 }
 
 interface LeaderboardEntry {
@@ -48,6 +48,12 @@ interface Props {
   isCaptain: boolean
 }
 
+function getSlotInfo(slots: any): SlotInfo | null {
+  if (!slots) return null
+  if (Array.isArray(slots)) return slots[0] || null
+  return slots as SlotInfo
+}
+
 export default function DashboardClient({
   team,
   userEmail,
@@ -57,17 +63,23 @@ export default function DashboardClient({
   payouts,
   isCaptain,
 }: Props) {
+  // Normalize slot info for each booking
+  const normalizedBookings = bookings.map(b => ({
+    ...b,
+    slotData: getSlotInfo(b.slots),
+  }))
+
   // Filter upcoming paid/pending slots
-  const upcomingBookings = bookings.filter(
-    b => b.slots && b.slots.status !== 'completed'
+  const upcomingBookings = normalizedBookings.filter(
+    b => b.slotData && b.slotData.status !== 'completed'
   )
 
   // Calculate total entry fees paid
-  const totalEntryFees = bookings
+  const totalEntryFees = normalizedBookings
     .filter(b => b.payment_status === 'paid')
     .reduce((sum, b) => {
       if (b.coupon_used) return sum
-      return sum + (b.amount_paid || b.slots?.entry_fee || 50)
+      return sum + (b.amount_paid || b.slotData?.entry_fee || 50)
     }, 0)
 
   // Calculate prize money earned
@@ -133,10 +145,10 @@ export default function DashboardClient({
                       <div key={b.booking_id} className={styles.slotItem}>
                         <div className={styles.slotDetails}>
                           <span className={styles.slotDate}>
-                            {formatDate(b.slots?.date || '')}
+                            {formatDate(b.slotData?.date || '')}
                           </span>
                           <span className={styles.slotTime}>
-                            {b.slots?.time_label}
+                            {b.slotData?.time_label}
                           </span>
                         </div>
                         <span

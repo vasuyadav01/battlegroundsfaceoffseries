@@ -27,7 +27,7 @@ export default async function LandingPage() {
       <main>
         {/* ── HERO ── */}
         <section className={styles.hero}>
-          <div className={styles.heroBg} />
+          <div className={styles.heroOverlay} />
           <div className={styles.heroGrid} />
           <div className="container">
             <div className={styles.heroContent}>
@@ -40,7 +40,7 @@ export default async function LandingPage() {
                 <span className={styles.goldText}>FACEOFF SERIES</span>
               </h1>
               <p className={styles.heroDesc}>
-                India's premier competitive BGMI mobile league. Grind daily slots, climb the Best-16 standings, and punch your ticket to the Grand Finals.
+                India's premier competitive BGMI mobile league. Compete in daily league slots, grind the standings with Best-16 scoring, and battle your way to the Grand Finals.
               </p>
 
               <div className={styles.heroCountdown}>
@@ -49,7 +49,7 @@ export default async function LandingPage() {
 
               <div className={styles.heroCta}>
                 <Link href="/register" className={styles.primaryCta}>
-                  BOOK SLOT — ₹50 ENTRY
+                  REGISTER NOW — ₹50/SLOT
                 </Link>
                 <Link href="/leaderboard" className={styles.secondaryCta}>
                   VIEW LEADERBOARD
@@ -78,6 +78,13 @@ export default async function LandingPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Carousel Slide Indicator Dots */}
+          <div className={styles.carouselDots}>
+            <span className={`${styles.carouselDot} ${styles.carouselDotActive}`} />
+            <span className={styles.carouselDot} />
+            <span className={styles.carouselDot} />
           </div>
         </section>
 

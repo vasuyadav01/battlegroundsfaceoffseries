@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
-import Marquee from '@/components/Marquee'
 import CountdownTimer from '@/components/CountdownTimer'
 import { createClient } from '@/lib/supabase/server'
 import styles from './page.module.css'
@@ -24,7 +23,6 @@ export default async function LandingPage() {
   return (
     <>
       <Navbar />
-      <Marquee />
       <main>
         {/* ── HERO ── */}
         <section className={styles.hero}>

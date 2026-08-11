@@ -18,13 +18,22 @@
 .logo {
   display: flex;
   align-items: center;
+  gap: 14px;
   text-decoration: none;
 }
 
 .logoImg {
-  height: 74px;
+  height: 68px;
   width: auto;
-  max-width: 320px;
+  max-width: 280px;
+  object-fit: contain;
+  display: block;
+}
+
+.bgmiLogoImg {
+  height: 68px;
+  width: auto;
+  max-width: 140px;
   object-fit: contain;
   display: block;
 }
@@ -188,9 +197,18 @@
     height: 72px;
   }
 
+  .logo {
+    gap: 8px;
+  }
+
   .logoImg {
-    height: 56px;
-    max-width: 220px;
+    height: 48px;
+    max-width: 180px;
+  }
+
+  .bgmiLogoImg {
+    height: 48px;
+    max-width: 90px;
   }
 
   .links, .actions {

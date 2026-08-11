@@ -46,6 +46,14 @@ export default function Navbar() {
             className={styles.logoImg}
             priority
           />
+          <Image
+            src="/images/bgmilogo.png"
+            alt="BGMI Official Logo"
+            width={160}
+            height={74}
+            className={styles.bgmiLogoImg}
+            priority
+          />
         </Link>
 
         {/* Desktop Nav */}

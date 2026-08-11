@@ -127,9 +127,9 @@ export default function LoginPage() {
           <Image
             src="/images/faceofflogo.png"
             alt="BGFS Faceoff Series"
-            width={480}
-            height={140}
-            style={{ width: 'auto', height: '140px', objectFit: 'contain' }}
+            width={600}
+            height={200}
+            style={{ width: 'auto', height: '200px', maxWidth: '100%', objectFit: 'contain' }}
             className={styles.logoImg}
             priority
           />

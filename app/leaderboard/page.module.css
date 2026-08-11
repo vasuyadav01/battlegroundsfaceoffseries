@@ -84,28 +84,65 @@
 
 /* Desktop table */
 .tableWrapper {
-  background: #1d1d1d;
-  border: 1px solid #272727;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.tableWrapper table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableWrapper thead th {
+  background: #161616;
+  color: #facc15;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .teamRow {
   cursor: pointer;
   transition: background 0.15s ease;
-  border-bottom: 1px solid #212121;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.teamRow:nth-child(4n+1) {
+  background: #0d0d0d;
+}
+
+.teamRow:nth-child(4n+3) {
+  background: #141414;
 }
 
 .teamRow:hover {
-  background: #212121;
+  background: #1f1f1f !important;
+}
+
+.teamRow.rank1 {
+  border-left: 4px solid #facc15;
+}
+
+.teamRow.rank2 {
+  border-left: 4px solid #c0c0c0;
+}
+
+.teamRow.rank3 {
+  border-left: 4px solid #cd7f32;
 }
 
 .teamRow.qualifies {
-  border-left: 3px solid #fbbf24;
+  border-left: 4px solid rgba(250, 204, 21, 0.4);
 }
 
 .teamRow.expanded {
-  background: #272727;
+  background: #1c1c1c !important;
 }
 
 .teamNameCell {
@@ -128,9 +165,9 @@
 }
 
 .expandedCell {
-  background: #212121;
+  background: #161616;
   padding: 0 !important;
-  border-bottom: 2px solid #fbbf24 !important;
+  border-bottom: 2px solid #facc15 !important;
 }
 
 /* Mobile list */

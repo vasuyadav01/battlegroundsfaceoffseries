@@ -53,6 +53,14 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
     return 'badge-neutral'
   }
 
+  function getRowRankClass(rank: number) {
+    if (rank === 1) return styles.rank1
+    if (rank === 2) return styles.rank2
+    if (rank === 3) return styles.rank3
+    if (rank <= 16) return styles.qualifies
+    return ''
+  }
+
   return (
     <main className={styles.page}>
       <div className="container">
@@ -75,17 +83,6 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
           </div>
         </div>
 
-        <div className={styles.tableInfo}>
-          <span className={styles.badgeLive}>
-            🟢 LIVE LEAGUE • {rows.length} TEAMS REGISTERED
-          </span>
-          {rows.length >= 16 && (
-            <span className={styles.badgeFinals}>
-              TOP 16 QUALIFY FOR FREE GRAND FINALS
-            </span>
-          )}
-        </div>
-
         {/* Desktop Table */}
         <div className={`${styles.tableWrapper} hide-mobile`}>
           <div className="table-wrapper">
@@ -105,7 +102,7 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
                   <>
                     <tr
                       key={row.team_id}
-                      className={`${styles.teamRow} ${row.rank <= 16 ? styles.qualifies : ''} ${expandedTeam === row.team_id ? styles.expanded : ''}`}
+                      className={`${styles.teamRow} ${getRowRankClass(row.rank)} ${expandedTeam === row.team_id ? styles.expanded : ''}`}
                       onClick={() => setExpandedTeam(expandedTeam === row.team_id ? null : row.team_id)}
                     >
                       <td>
@@ -125,7 +122,7 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
                         {row.matches_played}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        <strong style={{ color: '#fbbf24', fontSize: '1.1rem', fontWeight: '800' }}>
+                        <strong style={{ color: '#facc15', fontSize: '1.1rem', fontWeight: '800' }}>
                           {row.best_16_total}
                         </strong>
                       </td>
@@ -151,7 +148,7 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', color: '#777777', padding: '2.5rem' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', color: '#888888', padding: '3rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
                       No registered teams found matching search query
                     </td>
                   </tr>
@@ -164,7 +161,7 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
         {/* Mobile Card List */}
         <div className={styles.mobileList}>
           {filtered.map(row => (
-            <div key={row.team_id} className={styles.mobileCard}>
+            <div key={row.team_id} className={`${styles.mobileCard} ${getRowRankClass(row.rank)}`}>
               <button
                 className={styles.mobileCardHeader}
                 onClick={() => setExpandedTeam(expandedTeam === row.team_id ? null : row.team_id)}
@@ -205,8 +202,8 @@ export default function LeaderboardClient({ rows, allMatches }: Props) {
           ))}
 
           {filtered.length === 0 && (
-            <p style={{ textAlign: 'center', color: '#777777', padding: '2.5rem' }}>
-              No teams found matching search query
+            <p style={{ textAlign: 'center', color: '#888888', padding: '3rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
+              No registered teams found matching search query
             </p>
           )}
         </div>

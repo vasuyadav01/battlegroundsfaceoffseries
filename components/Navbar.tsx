@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
@@ -37,9 +38,14 @@ export default function Navbar() {
       <div className={`container ${styles.inner}`}>
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoBadge}>BGFS</span>
-          <span className={styles.logoText}>FACEOFF</span>
-          <span className={styles.logoSub}>SEASON 1</span>
+          <Image
+            src="/images/faceofflogo.png"
+            alt="BGFS Faceoff Series"
+            width={180}
+            height={44}
+            className={styles.logoImg}
+            priority
+          />
         </Link>
 
         {/* Desktop Nav */}

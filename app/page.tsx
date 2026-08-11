@@ -49,7 +49,7 @@ export default async function LandingPage() {
                 <span className={styles.goldText}>FACEOFF SERIES</span>
               </h1>
               <p className={styles.heroDesc}>
-                India's first competitive league for players who live for BGMI. Compete from home, chase the Season 1 trophy, and fight your way into the top 16 for a free ticket to the Grand Finals.
+                India's first unofficial competitive league for players who live for BGMI. Compete from home, chase the Season 1 trophy and fight your way into the top 16 for a free ticket to the Grand Finals.
               </p>
 
               {/* Countdown timer block */}

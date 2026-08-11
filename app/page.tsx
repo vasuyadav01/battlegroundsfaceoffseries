@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { Users, Calendar, Crosshair, Trophy, Medal, Award, Zap, Check, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import CountdownTimer from '@/components/CountdownTimer'
 import { createClient } from '@/lib/supabase/server'
@@ -85,34 +86,36 @@ export default async function LandingPage() {
                   step: 'STEP 01',
                   title: 'SIGN UP & SQUAD UP',
                   desc: 'Log in via secure email OTP, create your roster, and invite your teammates.',
-                  icon: '👥',
+                  Icon: Users,
                 },
                 {
                   num: '02',
                   step: 'STEP 02',
                   title: 'BOOK LEAGUE SLOTS',
                   desc: 'Select preferred daily match slots. Instant slot confirmation after ₹50 checkout.',
-                  icon: '🎯',
+                  Icon: Calendar,
                 },
                 {
                   num: '03',
                   step: 'STEP 03',
                   title: 'GRIND & DOMINATE',
                   desc: '3 matches per slot. Play as many slots as you want — only your top 16 match scores count.',
-                  icon: '🔫',
+                  Icon: Crosshair,
                 },
                 {
                   num: '04',
                   step: 'STEP 04',
                   title: 'WIN CASH & QUALIFY',
                   desc: 'Instant UPI payouts after every slot. Top 16 overall teams advance to FREE Grand Finals.',
-                  icon: '🏆',
+                  Icon: Trophy,
                 },
               ].map((s) => (
                 <div key={s.step} className={styles.stepCard}>
                   <div className={styles.stepBgNum}>{s.num}</div>
-                  <div className={styles.stepNum}>{s.step}</div>
-                  <div className={styles.stepIcon}>{s.icon}</div>
+                  <div className={styles.stepHeader}>
+                    <s.Icon className={styles.stepIconLucide} size={20} color="#facc15" strokeWidth={2} />
+                    <span className={styles.stepNum}>{s.step}</span>
+                  </div>
                   <h3 className={styles.stepTitle}>{s.title}</h3>
                   <p className={styles.stepDesc}>{s.desc}</p>
                 </div>
@@ -135,19 +138,25 @@ export default async function LandingPage() {
 
             <div className={styles.prizesGrid}>
               <div className={`${styles.prizeCard} ${styles.prizeGold}`}>
-                <div className={styles.prizeMedal}>🥇</div>
+                <div className={styles.prizeMedal}>
+                  <Trophy size={36} color="#facc15" strokeWidth={1.75} />
+                </div>
                 <div className={styles.prizePlace}>1ST PLACE</div>
                 <div className={styles.prizeAmount}>₹170</div>
                 <div className={styles.prizeType}>INSTANT UPI CASH</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeSilver}`}>
-                <div className={styles.prizeMedal}>🥈</div>
+                <div className={styles.prizeMedal}>
+                  <Medal size={36} color="#c0c0c0" strokeWidth={1.75} />
+                </div>
                 <div className={styles.prizePlace}>2ND PLACE</div>
                 <div className={styles.prizeAmount}>₹100</div>
                 <div className={styles.prizeType}>INSTANT UPI CASH</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeBronze}`}>
-                <div className={styles.prizeMedal}>🥉</div>
+                <div className={styles.prizeMedal}>
+                  <Award size={36} color="#cd7f32" strokeWidth={1.75} />
+                </div>
                 <div className={styles.prizePlace}>3RD PLACE</div>
                 <div className={styles.prizeAmount}>FREE SLOT</div>
                 <div className={styles.prizeType}>NEXT SLOT PASS (₹50 VALUE)</div>
@@ -155,7 +164,7 @@ export default async function LandingPage() {
             </div>
 
             <div className={styles.prizeNote}>
-              <span>⚡</span>
+              <Zap size={20} color="#facc15" style={{ flexShrink: 0 }} />
               <p>Top 16 teams overall qualify for the Grand Finals — <strong>zero entry fee, 100% free qualification.</strong></p>
             </div>
           </div>
@@ -172,15 +181,21 @@ export default async function LandingPage() {
                 </p>
                 <div className={styles.scoringFeatures}>
                   {[
-                    '✓ 1st Place = 10 Placement Points',
-                    '✓ 1 Finish = 1 Point',
-                    '✓ Unlimited Slot Re-entry allowed',
-                    '✓ Best 16 match score auto-calculation',
-                    '✓ Off-days do not hurt your overall rank',
-                  ].map(f => <p key={f} className={styles.scoringFeature}>{f}</p>)}
+                    '1st Place = 10 Placement Points',
+                    '1 Finish = 1 Point',
+                    'Unlimited Slot Re-entry allowed',
+                    'Best 16 match score auto-calculation',
+                    'Off-days do not hurt your overall rank',
+                  ].map(f => (
+                    <div key={f} className={styles.scoringFeature}>
+                      <Check size={16} color="#facc15" style={{ flexShrink: 0 }} />
+                      <span>{f}</span>
+                    </div>
+                  ))}
                 </div>
-                <Link href="/leaderboard" className={styles.secondaryCta} style={{ display: 'inline-block', marginTop: '1.5rem' }}>
-                  VIEW STANDINGS →
+                <Link href="/leaderboard" className={styles.secondaryCta} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <span>VIEW STANDINGS</span>
+                  <ArrowRight size={16} />
                 </Link>
               </div>
               <div className={styles.scoringTable}>

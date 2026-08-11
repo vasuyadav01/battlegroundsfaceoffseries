@@ -262,23 +262,27 @@
   z-index: 1;
 }
 
-.stepNum {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 900;
-  color: #fbbf24;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
   position: relative;
   z-index: 2;
 }
 
-.stepIcon {
-  font-size: 2.2rem;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 2;
+.stepNum {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.stepIconLucide {
+  color: #facc15;
+  flex-shrink: 0;
 }
 
 .stepTitle {
@@ -345,7 +349,9 @@
 }
 
 .prizeMedal {
-  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 0.75rem;
 }
 
@@ -422,6 +428,9 @@
   font-size: 0.95rem;
   color: #b8b8b8;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .scoringTable {

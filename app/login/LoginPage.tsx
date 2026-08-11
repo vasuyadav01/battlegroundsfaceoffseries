@@ -127,8 +127,8 @@ export default function LoginPage() {
           <Image
             src="/images/faceofflogo.png"
             alt="BGFS Faceoff Series"
-            width={240}
-            height={80}
+            width={180}
+            height={52}
             className={styles.logoImg}
             priority
           />
@@ -292,10 +292,17 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <p className={styles.terms}>
-          By signing in, you agree to the tournament rules and guidelines.<br />
-          <Link href="/">← BACK TO HOME</Link>
+        {/* Disclaimer Text */}
+        <p className={styles.disclaimerText}>
+          By signing in, you agree to the tournament rules and guidelines.
         </p>
+
+        {/* Back to Home Link */}
+        <div className={styles.homeLinkWrapper}>
+          <Link href="/" className={styles.homeLink}>
+            ← BACK TO HOME
+          </Link>
+        </div>
       </div>
     </div>
   )

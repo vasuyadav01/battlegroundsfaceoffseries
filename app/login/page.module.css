@@ -23,7 +23,7 @@
   background: #1d1d1d;
   border: 1px solid #272727;
   border-radius: 16px;
-  padding: 2.75rem 2.25rem;
+  padding: 2.5rem 2rem;
   width: 100%;
   max-width: 440px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
@@ -31,14 +31,38 @@
 
 .logoWrapper {
   display: flex;
+  align-items: center;
   justify-content: center;
+  width: 100%;
   margin-bottom: 1.5rem;
 }
 
 .logoImg {
-  height: 60px;
+  height: 52px;
   width: auto;
+  max-width: 100%;
   object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-family: 'Inter', sans-serif;
+  color: #b8b8b8;
+  font-size: 0.88rem;
+  text-align: center;
+  margin-bottom: 1.75rem;
+  line-height: 1.6;
 }
 
 .modeTabs {
@@ -71,25 +95,6 @@
   background: #252525;
   color: #facc15;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-}
-
-.title {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.8rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #ffffff;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  font-family: 'Inter', sans-serif;
-  color: #b8b8b8;
-  font-size: 0.88rem;
-  text-align: center;
-  margin-bottom: 2rem;
-  line-height: 1.6;
 }
 
 .form {
@@ -126,28 +131,15 @@
   margin-top: 0.25rem;
 }
 
-.terms {
-  margin-top: 1.5rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  color: #777777;
-  text-align: center;
-  line-height: 1.6;
-}
-
-.terms a {
-  color: #facc15;
-  font-weight: 700;
-}
-
-.terms a:hover {
-  text-decoration: underline;
-}
-
+/* Signup Footer Section */
 .signupFooter {
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   text-align: center;
   font-family: 'Inter', sans-serif;
 }
@@ -155,7 +147,7 @@
 .signupText {
   color: #a0a0a0;
   font-size: 0.88rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .signupLink {
@@ -173,4 +165,39 @@
 
 .signupLink:hover {
   color: #ffffff;
+}
+
+/* Disclaimer text */
+.disclaimerText {
+  margin-top: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: #777777;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* Back to home wrapper & link */
+.homeLinkWrapper {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #2a2a2a;
+  text-align: center;
+}
+
+.homeLink {
+  color: #facc15;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.15s ease;
+}
+
+.homeLink:hover {
+  color: #ffffff;
+  text-decoration: underline;
 }

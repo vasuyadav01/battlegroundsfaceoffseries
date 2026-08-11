@@ -195,33 +195,7 @@
 }
 
 /* Carousel Slide Indicators */
-.carouselDots {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  z-index: 2;
-}
 
-.carouselDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.carouselDotActive {
-  width: 28px;
-  border-radius: 6px;
-  background: #fbbf24;
-  border-color: #fbbf24;
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
 
 /* ── HOW IT WORKS ── */
 .howItWorks {

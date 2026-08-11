@@ -64,13 +64,6 @@ export default async function LandingPage() {
               </div>
             </div>
           </div>
-
-          {/* Carousel Slide Indicator Dots */}
-          <div className={styles.carouselDots}>
-            <span className={`${styles.carouselDot} ${styles.carouselDotActive}`} />
-            <span className={styles.carouselDot} />
-            <span className={styles.carouselDot} />
-          </div>
         </section>
 
         {/* ── HOW IT WORKS ── */}

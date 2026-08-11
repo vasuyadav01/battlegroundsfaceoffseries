@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Marquee from '@/components/Marquee'
 import CountdownTimer from '@/components/CountdownTimer'
@@ -8,7 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import styles from './page.module.css'
 
 export default async function LandingPage() {
-  // Fetch grand finals date from config
+  // Fetch grand finals date from config (fallback to August 29, 11:00 PM IST)
   const supabase = await createClient()
   const { data: configRows } = await supabase
     .from('config')
@@ -18,7 +19,7 @@ export default async function LandingPage() {
   const config: Record<string, string> = {}
   configRows?.forEach(row => { config[row.key] = row.value })
 
-  const grandFinalsDate = config.grand_finals_date || '2025-09-14T18:00:00+05:30'
+  const grandFinalsDate = config.grand_finals_date || '2026-08-29T23:00:00+05:30'
 
   return (
     <>
@@ -31,10 +32,18 @@ export default async function LandingPage() {
           <div className={styles.heroGrid} />
           <div className="container">
             <div className={styles.heroContent}>
-              <div className={styles.badgeHeader}>
-                <span className={styles.badgeDot} />
-                <span className={styles.badgeText}>SEASON 1 REGISTRATION OPEN</span>
+              {/* Logo above heading */}
+              <div className={styles.heroLogoWrapper}>
+                <Image
+                  src="/images/faceofflogo.png"
+                  alt="BGFS Faceoff Series"
+                  width={240}
+                  height={52}
+                  className={styles.heroLogoImg}
+                  priority
+                />
               </div>
+
               <h1 className={styles.heroTitle}>
                 BATTLEGROUNDS<br />
                 <span className={styles.goldText}>FACEOFF SERIES</span>
@@ -43,39 +52,17 @@ export default async function LandingPage() {
                 India's premier competitive BGMI mobile league. Compete in daily league slots, grind the standings with Best-16 scoring, and battle your way to the Grand Finals.
               </p>
 
-              <div className={styles.heroCountdown}>
-                <CountdownTimer targetDate={grandFinalsDate} />
-              </div>
+              {/* Countdown timer block */}
+              <CountdownTimer targetDate={grandFinalsDate} />
 
+              {/* Action buttons */}
               <div className={styles.heroCta}>
                 <Link href="/register" className={styles.primaryCta}>
-                  REGISTER NOW — ₹50/SLOT
+                  REGISTER NOW
                 </Link>
                 <Link href="/leaderboard" className={styles.secondaryCta}>
                   VIEW LEADERBOARD
                 </Link>
-              </div>
-
-              <div className={styles.heroStats}>
-                <div className={styles.heroStat}>
-                  <span className={styles.heroStatVal}>₹270+</span>
-                  <span className={styles.heroStatLabel}>PRIZE PER SLOT</span>
-                </div>
-                <div className={styles.heroStatDivider} />
-                <div className={styles.heroStat}>
-                  <span className={styles.heroStatVal}>3</span>
-                  <span className={styles.heroStatLabel}>MATCHES PER SLOT</span>
-                </div>
-                <div className={styles.heroStatDivider} />
-                <div className={styles.heroStat}>
-                  <span className={styles.heroStatVal}>16</span>
-                  <span className={styles.heroStatLabel}>TEAMS QUALIFY</span>
-                </div>
-                <div className={styles.heroStatDivider} />
-                <div className={styles.heroStat}>
-                  <span className={styles.heroStatVal}>FREE</span>
-                  <span className={styles.heroStatLabel}>GRAND FINALS ENTRY</span>
-                </div>
               </div>
             </div>
           </div>

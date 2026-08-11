@@ -11,22 +11,23 @@ interface TimeLeft {
 }
 
 interface CountdownTimerProps {
-  targetDate: string
+  targetDate?: string
   label?: string
 }
 
-export default function CountdownTimer({ targetDate, label = 'Grand Finals' }: CountdownTimerProps) {
+export default function CountdownTimer({
+  targetDate = '2026-08-29T23:00:00+05:30',
+}: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
-  const [isExpired, setIsExpired] = useState(false)
 
   useEffect(() => {
     function calculate() {
-      const now = Date.now()
       const target = new Date(targetDate).getTime()
+      const now = Date.now()
       const diff = target - now
 
       if (diff <= 0) {
-        setIsExpired(true)
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
         return
       }
 
@@ -43,38 +44,41 @@ export default function CountdownTimer({ targetDate, label = 'Grand Finals' }: C
     return () => clearInterval(interval)
   }, [targetDate])
 
-  if (isExpired) {
+  if (!timeLeft) {
     return (
-      <div className={styles.wrapper}>
-        <p className={styles.liveLabel}>🔴 LIVE NOW</p>
-        <p className={styles.expiredText}>{label} is happening!</p>
+      <div className={styles.container}>
+        {[
+          { label: 'DAYS', val: '00' },
+          { label: 'HOURS', val: '00' },
+          { label: 'MINUTES', val: '00' },
+          { label: 'SECONDS', val: '00' },
+        ].map((u) => (
+          <div key={u.label} className={styles.box}>
+            <span className={styles.num}>{u.val}</span>
+            <span className={styles.unitLabel}>{u.label}</span>
+          </div>
+        ))}
       </div>
     )
   }
 
-  if (!timeLeft) return null
-
   const units = [
-    { value: timeLeft.days, label: 'Days' },
-    { value: timeLeft.hours, label: 'Hours' },
-    { value: timeLeft.minutes, label: 'Mins' },
-    { value: timeLeft.seconds, label: 'Secs' },
+    { label: 'DAYS', value: timeLeft.days },
+    { label: 'HOURS', value: timeLeft.hours },
+    { label: 'MINUTES', value: timeLeft.minutes },
+    { label: 'SECONDS', value: timeLeft.seconds },
   ]
 
   return (
-    <div className={styles.wrapper}>
-      <p className={styles.heading}>{label} starts in</p>
-      <div className={styles.units}>
-        {units.map((unit, i) => (
-          <div key={unit.label} className={styles.unit}>
-            <div className={styles.value}>
-              {String(unit.value).padStart(2, '0')}
-            </div>
-            <div className={styles.label}>{unit.label}</div>
-            {i < units.length - 1 && <span className={styles.colon}>:</span>}
-          </div>
-        ))}
-      </div>
+    <div className={styles.container}>
+      {units.map((u) => (
+        <div key={u.label} className={styles.box}>
+          <span className={styles.num}>
+            {String(u.value).padStart(2, '0')}
+          </span>
+          <span className={styles.unitLabel}>{u.label}</span>
+        </div>
+      ))}
     </div>
   )
 }

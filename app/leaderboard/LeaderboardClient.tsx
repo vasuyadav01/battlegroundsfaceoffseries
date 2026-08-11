@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { Trophy, Medal, Award, Layers, ChevronDown, Check } from 'lucide-react'
 import styles from './page.module.css'
 
@@ -152,27 +152,30 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
         </div>
 
         {/* View Mode Switcher Tabs */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={() => setViewMode('overall')}
             style={{
+              flex: '1 1 240px',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
-              padding: '12px 20px',
+              padding: '12px 16px',
               borderRadius: '8px',
               background: viewMode === 'overall' ? '#facc15' : '#1c1c1c',
               color: viewMode === 'overall' ? '#000000' : '#cccccc',
               border: viewMode === 'overall' ? '1px solid #facc15' : '1px solid #2a2a2a',
               fontWeight: 700,
-              fontSize: '14px',
+              fontSize: '13px',
               fontFamily: 'Inter, sans-serif',
               cursor: 'pointer',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
               boxShadow: viewMode === 'overall' ? '0 2px 10px rgba(250, 204, 21, 0.25)' : 'none',
               transition: 'all 0.2s ease',
+              minHeight: '44px',
             }}
           >
             <Trophy size={16} color={viewMode === 'overall' ? '#000000' : '#facc15'} />
@@ -183,22 +186,25 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
             type="button"
             onClick={() => setViewMode('slot')}
             style={{
+              flex: '1 1 240px',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
-              padding: '12px 20px',
+              padding: '12px 16px',
               borderRadius: '8px',
               background: viewMode === 'slot' ? '#facc15' : '#1c1c1c',
               color: viewMode === 'slot' ? '#000000' : '#cccccc',
               border: viewMode === 'slot' ? '1px solid #facc15' : '1px solid #2a2a2a',
               fontWeight: 700,
-              fontSize: '14px',
+              fontSize: '13px',
               fontFamily: 'Inter, sans-serif',
               cursor: 'pointer',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
               boxShadow: viewMode === 'slot' ? '0 2px 10px rgba(250, 204, 21, 0.25)' : 'none',
               transition: 'all 0.2s ease',
+              minHeight: '44px',
             }}
           >
             <Layers size={16} color={viewMode === 'slot' ? '#000000' : '#facc15'} />
@@ -225,9 +231,8 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                   </thead>
                   <tbody>
                     {filteredOverall.map(row => (
-                      <>
+                      <Fragment key={row.team_id}>
                         <tr
-                          key={row.team_id}
                           className={`${styles.teamRow} ${getRowRankClass(row.rank)} ${expandedTeam === row.team_id ? styles.expanded : ''}`}
                           onClick={() => setExpandedTeam(expandedTeam === row.team_id ? null : row.team_id)}
                         >
@@ -270,7 +275,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     ))}
                     {filteredOverall.length === 0 && (
                       <tr>

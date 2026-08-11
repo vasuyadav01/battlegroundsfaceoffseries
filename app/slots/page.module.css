@@ -269,5 +269,61 @@
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .sidebar {
+    position: static;
+    top: auto;
   }
 }
+
+@media (max-width: 600px) {
+  .page {
+    padding: 1.5rem 0 3rem;
+  }
+
+  .pageHeader {
+    padding: 0.5rem 0 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .infoBox {
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .slotBtn {
+    padding: 0.85rem 1rem;
+  }
+
+  .slotBtnInner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .slotMeta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .slotTime {
+    font-size: 0.95rem;
+  }
+
+  .summaryCard {
+    padding: 1.25rem 1rem;
+  }
+}
+

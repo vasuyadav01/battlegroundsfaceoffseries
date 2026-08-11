@@ -184,12 +184,16 @@ CREATE TRIGGER trigger_slot_booking_count
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO users (user_id, email)
+  INSERT INTO public.users (user_id, email)
   VALUES (NEW.id, NEW.email)
   ON CONFLICT (user_id) DO NOTHING;
   RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Never block signup if profile creation fails — app will handle it
+  RAISE WARNING 'handle_new_user failed for user %: %', NEW.id, SQLERRM;
+  RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_new_user
   AFTER INSERT ON auth.users
@@ -207,9 +211,10 @@ ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payouts ENABLE ROW LEVEL SECURITY;
 
--- Users: can read own row, update own row
+-- Users: can read own row, update own row, insert own row (safety net alongside handle_new_user trigger)
 CREATE POLICY "users_select_own" ON users FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "users_update_own" ON users FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "users_insert_own" ON users FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Teams: anyone can read (for leaderboard/registration), only captain can update
 CREATE POLICY "teams_select_all" ON teams FOR SELECT USING (TRUE);

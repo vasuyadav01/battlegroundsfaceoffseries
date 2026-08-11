@@ -1,236 +1,262 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
+import { Calendar, TrendingUp, Wallet } from 'lucide-react'
 import styles from './page.module.css'
 
+interface SlotInfo {
+  slot_id: string
+  date: string
+  time_label: string
+  status: string
+  entry_fee: number
+  is_grand_finals: boolean
+}
+
+interface Booking {
+  booking_id: string
+  payment_status: string
+  amount_paid: number
+  coupon_used: boolean
+  created_at: string
+  slots: SlotInfo | null
+}
+
+interface LeaderboardEntry {
+  team_id: string
+  best_16_total: number
+  matches_played: number
+  total_kills: number
+}
+
+interface Payout {
+  amount: number
+  status: 'paid' | 'pending' | string
+}
+
 interface Props {
-  userProfile: any
-  team: any
-  roster: any[]
-  bookings: any[]
-  coupons: any[]
-  leaderboardEntry: any
+  team: {
+    team_id: string
+    team_name: string
+    captain_user_id: string
+  }
+  userEmail: string
+  bookings: Booking[]
+  leaderboardEntry: LeaderboardEntry | null
+  rank: number
+  payouts: Payout[]
   isCaptain: boolean
 }
 
-export default function DashboardClient({ userProfile, team, roster, bookings, coupons, leaderboardEntry, isCaptain }: Props) {
-  const [copied, setCopied] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'slots' | 'roster'>('overview')
+export default function DashboardClient({
+  team,
+  userEmail,
+  bookings,
+  leaderboardEntry,
+  rank,
+  payouts,
+  isCaptain,
+}: Props) {
+  // Filter upcoming paid/pending slots
+  const upcomingBookings = bookings.filter(
+    b => b.slots && b.slots.status !== 'completed'
+  )
 
-  function copyInviteCode() {
-    navigator.clipboard.writeText(team.invite_code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  // Calculate total entry fees paid
+  const totalEntryFees = bookings
+    .filter(b => b.payment_status === 'paid')
+    .reduce((sum, b) => {
+      if (b.coupon_used) return sum
+      return sum + (b.amount_paid || b.slots?.entry_fee || 50)
+    }, 0)
+
+  // Calculate prize money earned
+  const paidPrize = payouts
+    .filter(p => p.status === 'paid')
+    .reduce((sum, p) => sum + (p.amount || 0), 0)
+
+  const pendingPrize = payouts
+    .filter(p => p.status === 'pending')
+    .reduce((sum, p) => sum + (p.amount || 0), 0)
+
+  const totalPrizeEarned = paidPrize + pendingPrize
+  const isQualified = rank > 0 && rank <= 16
+
+  function formatDate(dateStr: string) {
+    if (!dateStr) return ''
+    const d = new Date(dateStr + 'T00:00:00')
+    return d.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    })
   }
-
-  const upcomingBookings = bookings.filter(b => {
-    const slot = b.slots
-    return slot && slot.status !== 'completed' && new Date(slot.date) >= new Date()
-  })
-
-  const pastBookings = bookings.filter(b => {
-    const slot = b.slots
-    return !slot || slot.status === 'completed' || new Date(slot.date) < new Date()
-  })
 
   return (
     <main className={styles.page}>
       <div className="container">
-
         {/* Header */}
         <div className={styles.header}>
           <div>
-            <p className="text-label" style={{ marginBottom: '0.25rem' }}>Team Dashboard</p>
-            <h1 className={`text-heading ${styles.teamName}`}>{team.team_name}</h1>
-            {isCaptain && <span className="badge badge-gold" style={{ marginTop: '0.25rem' }}>Captain</span>}
-          </div>
-          <Link href="/slots" className="btn btn-primary">
-            + Book New Slot
-          </Link>
-        </div>
-
-        {/* Stats row */}
-        <div className={styles.statsRow}>
-          <div className="stat-box">
-            <div className="stat-value">{leaderboardEntry?.matches_played ?? 0}</div>
-            <div className="stat-label">Matches Played</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-value" style={{ color: 'var(--brand-primary)' }}>{leaderboardEntry?.best_16_total ?? 0}</div>
-            <div className="stat-label">Best-16 Total</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-value">{leaderboardEntry?.total_kills ?? 0}</div>
-            <div className="stat-label">Total Kills</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-value">{coupons.length}</div>
-            <div className="stat-label">Free Slot Coupons</div>
-          </div>
-        </div>
-
-        {/* Invite code card */}
-        <div className={styles.inviteCard}>
-          <div>
-            <p className="text-label" style={{ marginBottom: '0.25rem' }}>Team Invite Code</p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Share this with teammates so they can join your team
+            <h1 className={styles.title}>PLAYER DASHBOARD</h1>
+            <p className={styles.subtitle}>
+              {team.team_name}
+              {userEmail && <span className={styles.emailText}>({userEmail})</span>}
+              {isCaptain && <span className={styles.captainBadge}>CAPTAIN</span>}
             </p>
           </div>
-          <div className={styles.inviteCodeBlock}>
-            <code className={styles.inviteCode}>{team.invite_code}</code>
-            <button
-              id="copy-invite-btn"
-              className="btn btn-secondary btn-sm"
-              onClick={copyInviteCode}
-            >
-              {copied ? '✓ Copied!' : 'Copy'}
-            </button>
-          </div>
         </div>
 
-        {/* Tabs */}
-        <div className="tabs">
-          {[
-            { id: 'overview', label: 'Upcoming Slots' },
-            { id: 'slots', label: `Past Slots (${pastBookings.length})` },
-            { id: 'roster', label: `Roster (${roster.length})` },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id as any)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Overview Tab — Upcoming slots */}
-        {activeTab === 'overview' && (
-          <div>
-            {upcomingBookings.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>No upcoming slots booked.</p>
-                <Link href="/slots" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                  Book a Slot →
-                </Link>
+        {/* 3-Card Grid */}
+        <div className={styles.cardGrid}>
+          {/* ── CARD 1: MY SLOTS ── */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.iconWrapper}>
+                <Calendar size={18} color="#facc15" />
               </div>
-            ) : (
-              <div className={styles.slotList}>
-                {upcomingBookings.map(booking => (
-                  <SlotCard key={booking.booking_id} booking={booking} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Past Slots Tab */}
-        {activeTab === 'slots' && (
-          <div>
-            {pastBookings.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>No past slots yet. Start playing!</p>
-              </div>
-            ) : (
-              <div className={styles.slotList}>
-                {pastBookings.map(booking => (
-                  <SlotCard key={booking.booking_id} booking={booking} past />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Roster Tab */}
-        {activeTab === 'roster' && (
-          <div>
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Player</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roster.map(member => (
-                    <tr key={member.user_id}>
-                      <td>
-                        <div className={styles.playerName}>
-                          {member.display_name || '(no name set)'}
-                        </div>
-                      </td>
-                      <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                        {member.email}
-                      </td>
-                      <td>
-                        <span className={`badge ${member.role === 'captain' ? 'badge-gold' : 'badge-neutral'}`}>
-                          {member.role}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <h2 className={styles.cardTitle}>MY SLOTS</h2>
             </div>
 
-            {coupons.length > 0 && (
-              <div className={styles.couponsSection}>
-                <h3 className={styles.couponsTitle}>🎟️ Available Coupons</h3>
-                <div className={styles.couponsList}>
-                  {coupons.map(c => (
-                    <div key={c.coupon_id} className={styles.coupon}>
-                      <span className="badge badge-success">Free Slot</span>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                        Issued {new Date(c.issued_at).toLocaleDateString('en-IN')}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        Applied automatically at checkout
-                      </span>
-                    </div>
-                  ))}
+            <div className={styles.cardBody}>
+              {upcomingBookings.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <p className={styles.emptyText}>No slots booked yet</p>
+                  <Link href="/slots" className={styles.primaryBtn}>
+                    BOOK A SLOT →
+                  </Link>
+                </div>
+              ) : (
+                <div className={styles.slotsWrapper}>
+                  <div className={styles.slotList}>
+                    {upcomingBookings.map(b => (
+                      <div key={b.booking_id} className={styles.slotItem}>
+                        <div className={styles.slotDetails}>
+                          <span className={styles.slotDate}>
+                            {formatDate(b.slots?.date || '')}
+                          </span>
+                          <span className={styles.slotTime}>
+                            {b.slots?.time_label}
+                          </span>
+                        </div>
+                        <span
+                          className={
+                            b.payment_status === 'paid'
+                              ? styles.badgePaid
+                              : styles.badgePending
+                          }
+                        >
+                          {b.payment_status === 'paid' ? 'PAID' : 'PENDING'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link href="/slots" className={styles.secondaryBtn}>
+                    BOOK ANOTHER SLOT →
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── CARD 2: MY STANDING ── */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.iconWrapper}>
+                <TrendingUp size={18} color="#facc15" />
+              </div>
+              <h2 className={styles.cardTitle}>MY STANDING</h2>
+            </div>
+
+            <div className={styles.cardBody}>
+              <div className={styles.standingSummary}>
+                <div className={styles.rankContainer}>
+                  <span className={styles.rankValue}>
+                    {rank > 0 ? `#${rank}` : '—'}
+                  </span>
+                  <span className={styles.rankLabel}>OVERALL RANK</span>
+                </div>
+
+                <div className={styles.metricsGrid}>
+                  <div className={styles.metricBox}>
+                    <span className={styles.metricValue}>
+                      {leaderboardEntry?.best_16_total ?? 0}
+                    </span>
+                    <span className={styles.metricLabel}>BEST-16 SCORE</span>
+                  </div>
+
+                  <div className={styles.metricDivider} />
+
+                  <div className={styles.metricBox}>
+                    <span className={styles.metricValue}>
+                      {leaderboardEntry?.matches_played ?? 0}
+                    </span>
+                    <span className={styles.metricLabel}>MATCHES PLAYED</span>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    isQualified ? styles.badgeQualified : styles.badgeNotQualified
+                  }
+                >
+                  {isQualified ? 'QUALIFIED ✓' : 'NOT YET QUALIFIED'}
                 </div>
               </div>
-            )}
+            </div>
+
+            <div className={styles.cardFooter}>
+              <Link href="/leaderboard" className={styles.footerLink}>
+                VIEW FULL LEADERBOARD →
+              </Link>
+            </div>
           </div>
-        )}
+
+          {/* ── CARD 3: WALLET ── */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.iconWrapper}>
+                <Wallet size={18} color="#facc15" />
+              </div>
+              <h2 className={styles.cardTitle}>WALLET</h2>
+            </div>
+
+            <div className={styles.cardBody}>
+              <div className={styles.walletMetrics}>
+                <div className={styles.walletRow}>
+                  <span className={styles.walletLabel}>ENTRY FEES PAID</span>
+                  <span className={styles.walletValue}>₹{totalEntryFees}</span>
+                </div>
+
+                <div className={styles.walletRowDivider} />
+
+                <div className={styles.walletRow}>
+                  <span className={styles.walletLabel}>PRIZE MONEY EARNED</span>
+                  <span className={styles.walletValueHighlight}>
+                    ₹{totalPrizeEarned}
+                  </span>
+
+                  {(paidPrize > 0 || pendingPrize > 0) && (
+                    <div className={styles.payoutStatusTags}>
+                      {paidPrize > 0 && (
+                        <span className={styles.payoutPaidTag}>
+                          ₹{paidPrize} Paid
+                        </span>
+                      )}
+                      {pendingPrize > 0 && (
+                        <span className={styles.payoutPendingTag}>
+                          ₹{pendingPrize} Pending
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
-  )
-}
-
-function SlotCard({ booking, past = false }: { booking: any; past?: boolean }) {
-  const slot = booking.slots
-  if (!slot) return null
-
-  return (
-    <div className={`${styles.slotCard} ${past ? styles.slotCardPast : ''}`}>
-      <div className={styles.slotInfo}>
-        <div className={styles.slotDate}>
-          {new Date(slot.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
-        </div>
-        <div className={styles.slotTime}>{slot.time_label}</div>
-        <span className={`badge ${slot.status === 'completed' ? 'badge-neutral' : slot.status === 'open' ? 'badge-success' : 'badge-warning'}`}>
-          {slot.status}
-        </span>
-      </div>
-
-      {!past && slot.room_id && (
-        <div className={styles.roomInfo}>
-          <div className={styles.roomRow}>
-            <span className="text-label">Room ID</span>
-            <code className={styles.roomCode}>{slot.room_id}</code>
-          </div>
-          <div className={styles.roomRow}>
-            <span className="text-label">Password</span>
-            <code className={styles.roomCode}>{slot.room_password || '—'}</code>
-          </div>
-        </div>
-      )}
-    </div>
   )
 }

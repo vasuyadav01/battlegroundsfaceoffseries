@@ -16,21 +16,32 @@ export default function RegisterClient() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [confirmEmail, setConfirmEmail] = useState(false)
 
   async function handleCreateAccount(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    // 1. Register Auth User in Supabase
+    // Step 1: Register the auth user
+    // signUp returns a session immediately when email confirmation is DISABLED in Supabase
+    // When confirmation is ENABLED, session is null and user must verify email first
     const { data: authData, error: authErr } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: {
+        // Store team name so onboard page can use it after email confirmation
+        data: { display_name: teamName.trim() },
+      },
     })
 
     if (authErr) {
       setLoading(false)
-      setError(authErr.message)
+      setError(
+        authErr.message.toLowerCase().includes('already registered') || authErr.message.toLowerCase().includes('already exists')
+          ? 'This email is already registered. Please sign in instead.'
+          : authErr.message
+      )
       return
     }
 
@@ -41,50 +52,89 @@ export default function RegisterClient() {
       return
     }
 
-    // 2. Create Team in 'teams' table
-    const { data: team, error: teamErr } = await supabase
-      .from('teams')
-      .insert({
-        team_name: teamName.trim(),
-        captain_user_id: user.id,
-      })
-      .select()
-      .single()
-
-    if (teamErr) {
+    // Step 2: Check if we have a live session (email confirmation is OFF)
+    // If authData.session is null, email confirmation is ON — redirect to confirm page
+    if (!authData.session) {
       setLoading(false)
-      setError(
-        teamErr.message.includes('unique')
-          ? 'Team name already taken. Please choose another team name.'
-          : teamErr.message
-      )
+      setConfirmEmail(true) // Show "check your email" screen
       return
     }
 
-    // 3. Insert/Upsert profile in 'users' table
-    const { error: userErr } = await supabase
-      .from('users')
-      .upsert({
-        user_id: user.id,
-        team_id: team.team_id,
-        role: 'captain',
-        display_name: teamName.trim(),
-      })
 
-    if (userErr) {
-      setLoading(false)
-      setError(userErr.message)
-      return
-    }
-
-    // 4. Automatically sign user in
-    await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
+    // Step 3: Call server API to create team + user profile using service role
+    // This bypasses RLS entirely — no more silent permission failures
+    const res = await fetch('/api/register-team', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamName: teamName.trim(), displayName: teamName.trim() }),
     })
 
-    // Redirect to slot booking page
+    const result = await res.json()
+
+    if (!res.ok) {
+      setLoading(false)
+      setError(result.error || 'Registration failed. Please try again.')
+      return
+    }
+
+    // All done — redirect to slot booking
     router.push('/slots?welcome=registered')
+  }
+
+  // ── Email confirmation required screen ──
+  if (confirmEmail) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.bgGlow} />
+        <div className={styles.card}>
+          <div className={styles.logoWrapper}>
+            <Image
+              src="/images/faceofflogo.png"
+              alt="BGFS Faceoff Series"
+              width={600}
+              height={200}
+              style={{ width: 'auto', height: '160px', maxWidth: '100%', objectFit: 'contain' }}
+              priority
+            />
+          </div>
+          <h1 className={styles.title} style={{ fontSize: '1.4rem' }}>CHECK YOUR EMAIL</h1>
+          <p className={styles.subtitle} style={{ marginBottom: '1.5rem' }}>
+            We sent a confirmation link to <strong style={{ color: '#facc15' }}>{email}</strong>.
+            Click the link in your email to verify your account, then sign in.
+          </p>
+          <div style={{
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: '10px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.82rem',
+            color: '#888',
+            lineHeight: '1.6',
+          }}>
+            💡 <strong style={{ color: '#facc15' }}>Tip for organizers:</strong> To skip email confirmation
+            entirely, go to <strong style={{ color: '#ccc' }}>Supabase Dashboard → Authentication → Providers → Email</strong>
+            {' '}and disable <em>"Confirm email"</em>.
+          </div>
+          <Link href="/login" className={styles.loginLink} style={{
+            display: 'block',
+            textAlign: 'center',
+            background: '#facc15',
+            color: '#111',
+            padding: '12px',
+            borderRadius: '8px',
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            marginBottom: '1rem',
+          }}>
+            GO TO SIGN IN →
+          </Link>
+          <div className={styles.homeLinkWrapper}>
+            <Link href="/" className={styles.homeLink}>← BACK TO HOME</Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

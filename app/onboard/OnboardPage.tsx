@@ -2,15 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
-
 
 type Mode = 'choose' | 'create' | 'join'
 
 export default function OnboardPage() {
   const router = useRouter()
-  const supabase = createClient()
 
   const [mode, setMode] = useState<Mode>('choose')
   const [teamName, setTeamName] = useState('')
@@ -19,45 +16,30 @@ export default function OnboardPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function getUser() {
-    const { data: { user } } = await supabase.auth.getUser()
-    return user
-  }
-
   async function handleCreateTeam(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const user = await getUser()
-    if (!user) { router.push('/login'); return }
+    const res = await fetch('/api/setup-team', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'create',
+        teamName: teamName.trim(),
+        displayName: displayName.trim(),
+      }),
+    })
 
-    // Create team
-    const { data: team, error: teamErr } = await supabase
-      .from('teams')
-      .insert({ team_name: teamName.trim(), captain_user_id: user.id })
-      .select()
-      .single()
+    const result = await res.json()
 
-    if (teamErr) {
+    if (!res.ok) {
       setLoading(false)
-      setError(teamErr.message.includes('unique') ? 'Team name already taken. Try another.' : teamErr.message)
+      setError(result.error || 'Failed to create team. Please try again.')
       return
     }
 
-    // Update user profile
-    const { error: userErr } = await supabase
-      .from('users')
-      .update({ team_id: team.team_id, role: 'captain', display_name: displayName.trim() || null })
-      .eq('user_id', user.id)
-
-    if (userErr) {
-      setLoading(false)
-      setError(userErr.message)
-      return
-    }
-
-    router.push('/dashboard?welcome=created')
+    router.push('/dashboard')
   }
 
   async function handleJoinTeam(e: React.FormEvent) {
@@ -65,35 +47,25 @@ export default function OnboardPage() {
     setError('')
     setLoading(true)
 
-    const user = await getUser()
-    if (!user) { router.push('/login'); return }
+    const res = await fetch('/api/setup-team', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'join',
+        inviteCode: inviteCode.trim(),
+        displayName: displayName.trim(),
+      }),
+    })
 
-    // Find team by invite code
-    const { data: team, error: findErr } = await supabase
-      .from('teams')
-      .select('team_id, team_name')
-      .eq('invite_code', inviteCode.trim().toLowerCase())
-      .single()
+    const result = await res.json()
 
-    if (findErr || !team) {
+    if (!res.ok) {
       setLoading(false)
-      setError('Invalid invite code. Please check and try again.')
+      setError(result.error || 'Failed to join team. Please try again.')
       return
     }
 
-    // Link user to team
-    const { error: userErr } = await supabase
-      .from('users')
-      .update({ team_id: team.team_id, role: 'player', display_name: displayName.trim() || null })
-      .eq('user_id', user.id)
-
-    if (userErr) {
-      setLoading(false)
-      setError(userErr.message)
-      return
-    }
-
-    router.push('/dashboard?welcome=joined')
+    router.push('/dashboard')
   }
 
   return (

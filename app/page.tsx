@@ -92,7 +92,7 @@ export default async function LandingPage() {
                   num: '02',
                   step: 'STEP 02',
                   title: 'BOOK LEAGUE SLOTS',
-                  desc: 'Select preferred daily match slots. Instant slot confirmation after ₹50 checkout.',
+                  desc: 'Select preferred daily match slots with instant slot confirmation.',
                   Icon: Calendar,
                 },
                 {
@@ -159,7 +159,7 @@ export default async function LandingPage() {
                 </div>
                 <div className={styles.prizePlace}>3RD PLACE</div>
                 <div className={styles.prizeAmount}>FREE SLOT</div>
-                <div className={styles.prizeType}>NEXT SLOT PASS (₹50 VALUE)</div>
+                <div className={styles.prizeType}>NEXT SLOT PASS</div>
               </div>
             </div>
 
@@ -235,7 +235,7 @@ export default async function LandingPage() {
                 Limited 18 teams per slot. Secure your spot now and start grinding toward the Grand Finals.
               </p>
               <Link href="/slots" className={styles.primaryCta}>
-                BOOK SLOT NOW — ₹50
+                BOOK YOUR SLOT
               </Link>
             </div>
           </div>

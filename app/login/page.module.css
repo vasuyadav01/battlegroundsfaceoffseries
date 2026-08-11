@@ -201,3 +201,37 @@
   color: #ffffff;
   text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+  .page {
+    padding: 1.5rem 0.85rem;
+  }
+
+  .card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 12px;
+  }
+
+  .logoImg {
+    height: 130px;
+  }
+
+  .title {
+    font-size: 1.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .modeBtn {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+

@@ -1,67 +1,129 @@
 export const dynamic = 'force-dynamic'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import DashboardClient from './DashboardClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Dashboard — BGFS',
+  description: 'Player dashboard — slots, standings, and wallet overview.',
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) {
+    redirect('/login')
+  }
 
-  // Fetch user profile + team
-  const { data: userProfile } = await supabase
+  const admin = await createAdminClient()
+
+  // Fetch user profile
+  let { data: userProfile } = await admin
     .from('users')
-    .select('*, teams(team_id, team_name, invite_code, captain_user_id)')
+    .select('*')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!userProfile?.team_id) redirect('/onboard')
+  let teamId = userProfile?.team_id
 
-  const team = userProfile.teams as any
+  // If user has no team or no profile yet, automatically set up a default team so they never get trapped in an onboard redirect
+  if (!teamId) {
+    // Check if team already exists for this captain
+    let { data: existingTeam } = await admin
+      .from('teams')
+      .select('*')
+      .eq('captain_user_id', user.id)
+      .maybeSingle()
 
-  // Fetch team roster
-  const { data: roster } = await supabase
-    .from('users')
-    .select('user_id, display_name, email, role')
-    .eq('team_id', team.team_id)
-    .order('role')
+    if (!existingTeam) {
+      const defaultTeamName = user.email
+        ? `${user.email.split('@')[0]} Squad`
+        : `Team ${user.id.slice(0, 5)}`
 
-  // Fetch bookings for this team (with slot info)
-  const { data: bookings } = await supabase
+      const { data: newTeam } = await admin
+        .from('teams')
+        .insert({
+          team_name: defaultTeamName,
+          captain_user_id: user.id,
+        })
+        .select()
+        .single()
+
+      existingTeam = newTeam
+    }
+
+    if (existingTeam) {
+      teamId = existingTeam.team_id
+      await admin
+        .from('users')
+        .upsert(
+          {
+            user_id: user.id,
+            email: user.email,
+            team_id: teamId,
+            role: 'captain',
+            display_name: existingTeam.team_name,
+          },
+          { onConflict: 'user_id' }
+        )
+    }
+  }
+
+  // Fetch team info
+  const { data: team } = await admin
+    .from('teams')
+    .select('team_id, team_name, captain_user_id')
+    .eq('team_id', teamId)
+    .maybeSingle()
+
+  const safeTeam = team || {
+    team_id: teamId || 'default',
+    team_name: 'My Team',
+    captain_user_id: user.id,
+  }
+
+  // Fetch booked slots for this team
+  const { data: bookings } = await admin
     .from('bookings')
-    .select('*, slots(slot_id, date, time_label, room_id, room_password, status)')
-    .eq('team_id', team.team_id)
-    .eq('payment_status', 'paid')
+    .select(
+      'booking_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals)'
+    )
+    .eq('team_id', safeTeam.team_id)
     .order('created_at', { ascending: false })
 
-  // Fetch coupons
-  const { data: coupons } = await supabase
-    .from('coupons')
-    .select('*')
-    .eq('team_id', team.team_id)
-    .eq('status', 'unused')
-
-  // Fetch leaderboard entry for this team
-  const { data: leaderboardEntry } = await supabase
+  // Fetch full leaderboard standings to calculate team rank and stats
+  const { data: allLeaderboard } = await admin
     .from('leaderboard')
-    .select('matches_played, best_16_total, total_kills')
-    .eq('team_id', team.team_id)
-    .single()
+    .select('team_id, best_16_total, matches_played, total_kills')
+    .order('best_16_total', { ascending: false })
+    .order('total_kills', { ascending: false })
+
+  const rankedList = allLeaderboard || []
+  const teamIndex = rankedList.findIndex(r => r.team_id === safeTeam.team_id)
+  const rank = teamIndex >= 0 ? teamIndex + 1 : 0
+  const leaderboardEntry = teamIndex >= 0 ? rankedList[teamIndex] : null
+
+  // Fetch payouts for this team
+  const { data: payouts } = await admin
+    .from('payouts')
+    .select('amount, status')
+    .eq('team_id', safeTeam.team_id)
 
   return (
     <>
       <Navbar />
       <DashboardClient
-        userProfile={userProfile}
-        team={team}
-        roster={roster || []}
+        team={safeTeam}
+        userEmail={user.email || ''}
         bookings={bookings || []}
-        coupons={coupons || []}
         leaderboardEntry={leaderboardEntry}
-        isCaptain={team.captain_user_id === user.id}
+        rank={rank}
+        payouts={payouts || []}
+        isCaptain={safeTeam.captain_user_id === user.id}
       />
     </>
   )

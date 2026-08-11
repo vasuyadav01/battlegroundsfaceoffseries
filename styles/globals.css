@@ -602,10 +602,28 @@ tbody td {
   .hide-mobile {
     display: none !important;
   }
+
+  .btn {
+    min-height: 44px; /* Apple & Android touch target standard */
+  }
+
+  .form-input {
+    min-height: 44px;
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  }
+
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (max-width: 480px) {
   .hide-sm {
     display: none !important;
   }
+
+  .container, .container-wide {
+    padding: 0 0.85rem;
+  }
 }
+

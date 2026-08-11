@@ -217,8 +217,8 @@ export default function SlotsClient({ slots, userTeam, coupons, whatsappLink, en
               </a>
             )}
             <div style={{ marginTop: '1.5rem' }}>
-              <Link href="/dashboard" className="btn btn-ghost">
-                GO TO DASHBOARD →
+              <Link href="/leaderboard" className="btn btn-ghost">
+                VIEW LEADERBOARD →
               </Link>
             </div>
           </div>

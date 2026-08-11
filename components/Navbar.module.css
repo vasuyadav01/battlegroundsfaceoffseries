@@ -202,13 +202,13 @@
   }
 
   .logoImg {
-    height: 48px;
-    max-width: 180px;
+    height: 44px;
+    max-width: 170px;
   }
 
   .bgmiLogoImg {
-    height: 48px;
-    max-width: 90px;
+    height: 44px;
+    max-width: 85px;
   }
 
   .links, .actions {
@@ -217,5 +217,39 @@
 
   .hamburger {
     display: flex;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
   }
 }
+
+@media (max-width: 480px) {
+  .inner {
+    height: 64px;
+  }
+
+  .logoImg {
+    height: 36px;
+    max-width: 140px;
+  }
+
+  .bgmiLogoImg {
+    height: 36px;
+    max-width: 70px;
+  }
+
+  .logo {
+    gap: 6px;
+  }
+
+  .mobileLink {
+    padding: 0.85rem 1rem;
+    font-size: 15px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+}
+

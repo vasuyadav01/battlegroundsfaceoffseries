@@ -48,11 +48,14 @@ export default function LoginPage() {
         .eq('user_id', userId)
         .single()
 
+      setLoading(false)
       if (!userRow?.team_id) {
         router.push('/onboard')
       } else {
         router.push('/dashboard')
       }
+    } else {
+      setLoading(false)
     }
   }
 
@@ -110,11 +113,14 @@ export default function LoginPage() {
         .eq('user_id', userId)
         .single()
 
+      setLoading(false)
       if (!userRow?.team_id) {
         router.push('/onboard')
       } else {
         router.push('/dashboard')
       }
+    } else {
+      setLoading(false)
     }
   }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Trophy, Medal, Award, Layers, Sparkles } from 'lucide-react'
+import { Trophy, Medal, Award, Layers, ChevronDown, Check } from 'lucide-react'
 import styles from './page.module.css'
 
 interface LeaderboardRow {
@@ -305,29 +305,14 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
             {/* Slot Dropdown Selector Bar */}
             <div className={styles.slotSelectorBar}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#facc15', marginBottom: '6px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#facc15', marginBottom: '8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   SELECT SLOT TO VIEW RESULTS
                 </label>
-                <select
-                  className={styles.slotDropdown}
-                  value={selectedSlotId}
-                  onChange={e => setSelectedSlotId(e.target.value)}
-                >
-                  {slots.length === 0 && <option value="">No slots created yet</option>}
-                  {slots.map(s => {
-                    const formattedDate = new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })
-                    return (
-                      <option key={s.slot_id} value={s.slot_id}>
-                        {formattedDate} — {s.time_label} {s.status === 'completed' ? '✓ (Completed)' : ''}
-                      </option>
-                    )
-                  })}
-                </select>
+                <CustomSlotDropdown
+                  slots={slots}
+                  selectedSlotId={selectedSlotId}
+                  onSelectSlot={id => setSelectedSlotId(id)}
+                />
               </div>
 
               {selectedSlot && (
@@ -475,6 +460,74 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
         )}
       </div>
     </main>
+  )
+}
+
+function CustomSlotDropdown({
+  slots,
+  selectedSlotId,
+  onSelectSlot,
+}: {
+  slots: SlotItem[]
+  selectedSlotId: string
+  onSelectSlot: (id: string) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const selectedSlot = slots.find(s => s.slot_id === selectedSlotId)
+
+  const getLabel = (s?: SlotItem) => {
+    if (!s) return 'No slots created yet'
+    const formattedDate = new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    })
+    return `${formattedDate} — ${s.time_label} ${s.status === 'completed' ? '✓ (Completed)' : ''}`
+  }
+
+  return (
+    <div className={styles.customDropdownWrapper}>
+      <button
+        type="button"
+        className={`${styles.customDropdownTrigger} ${isOpen ? styles.dropdownOpen : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        disabled={slots.length === 0}
+      >
+        <span className={slots.length === 0 ? styles.dropdownPlaceholder : styles.dropdownText}>
+          {slots.length === 0 ? 'No slots created yet' : getLabel(selectedSlot)}
+        </span>
+        <ChevronDown
+          size={18}
+          className={`${styles.chevronIcon} ${isOpen ? styles.chevronRotated : ''}`}
+        />
+      </button>
+
+      {isOpen && slots.length > 0 && (
+        <>
+          <div className={styles.dropdownBackdrop} onClick={() => setIsOpen(false)} />
+          <ul className={styles.customDropdownMenu}>
+            {slots.map(s => {
+              const isSelected = s.slot_id === selectedSlotId
+              return (
+                <li
+                  key={s.slot_id}
+                  className={`${styles.customDropdownItem} ${isSelected ? styles.itemSelected : ''}`}
+                  onClick={() => {
+                    onSelectSlot(s.slot_id)
+                    setIsOpen(false)
+                  }}
+                >
+                  <span>{getLabel(s)}</span>
+                  {isSelected && <Check size={14} color="#facc15" />}
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      )}
+    </div>
   )
 }
 

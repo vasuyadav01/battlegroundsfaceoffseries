@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 2.5rem 1rem;
   position: relative;
   overflow: hidden;
   background: #111111;
@@ -23,9 +23,9 @@
   background: #1d1d1d;
   border: 1px solid #272727;
   border-radius: 16px;
-  padding: 2.5rem 2rem;
+  padding: 2.75rem 2.25rem;
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
@@ -38,7 +38,7 @@
 }
 
 .logoImg {
-  height: 100px;
+  height: 80px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -54,6 +54,7 @@
   color: #ffffff;
   text-align: center;
   margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
 }
 
 .subtitle {
@@ -131,15 +132,11 @@
   margin-top: 0.25rem;
 }
 
-/* Signup Footer Section */
+/* Signup Footer Section matching Create Account page */
 .signupFooter {
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid #2a2a2a;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
   text-align: center;
   font-family: 'Inter', sans-serif;
 }
@@ -147,7 +144,7 @@
 .signupText {
   color: #a0a0a0;
   font-size: 0.88rem;
-  margin: 0;
+  margin-bottom: 0.5rem;
 }
 
 .signupLink {
@@ -169,7 +166,7 @@
 
 /* Disclaimer text */
 .disclaimerText {
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.78rem;
   color: #777777;

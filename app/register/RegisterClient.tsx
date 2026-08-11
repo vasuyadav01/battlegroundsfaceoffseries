@@ -97,8 +97,9 @@ export default function RegisterClient() {
           <Image
             src="/images/faceofflogo.png"
             alt="BGFS Faceoff Series"
-            width={360}
-            height={100}
+            width={280}
+            height={80}
+            style={{ width: 'auto', height: '80px', objectFit: 'contain' }}
             className={styles.logoImg}
             priority
           />

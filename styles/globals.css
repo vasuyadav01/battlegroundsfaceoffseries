@@ -441,15 +441,16 @@ table {
 }
 
 thead th {
-  background: var(--bg-elevated);
+  background: #161616;
+  color: #facc15;
   padding: 0.875rem 1rem;
   text-align: left;
-  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid #2a2a2a;
   white-space: nowrap;
 }
 

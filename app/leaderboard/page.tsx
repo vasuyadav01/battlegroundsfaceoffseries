@@ -8,34 +8,44 @@ export const metadata: Metadata = {
   description: 'Live BGFS Battlegrounds Faceoff Series standings. Best-16 match system — updated after every slot.',
 }
 
-// Revalidate every 60 seconds
 export const revalidate = 60
 
 export default async function LeaderboardPage() {
   const supabase = await createClient()
 
-  // Fetch leaderboard
+  // Fetch overall leaderboard
   const { data: rows } = await supabase
     .from('leaderboard')
     .select('team_id, team_name, matches_played, best_16_total, total_kills')
     .order('best_16_total', { ascending: false })
     .order('total_kills', { ascending: false })
 
-  // Fetch all match scores per team (for full match-by-match breakdown)
+  // Fetch all matches with team details
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: allMatchesRaw } = await (supabase
     .from('matches')
-    .select('team_id, slot_id, match_number, total_points, placement, kills, slots(date, time_label)')
+    .select('match_id, team_id, slot_id, match_number, total_points, placement, kills, placement_points, kill_points, teams(team_name), slots(date, time_label)')
     .order('created_at', { ascending: true }) as any)
   const allMatches = (allMatchesRaw || []) as any[]
 
-  // Rank the rows
+  // Fetch slots for per-slot leaderboard filter
+  const { data: slots } = await supabase
+    .from('slots')
+    .select('slot_id, date, time_label, status, teams_booked_count')
+    .order('date', { ascending: false })
+    .order('time_label', { ascending: false })
+
+  // Rank the overall rows
   const ranked = (rows || []).map((row, idx) => ({ ...row, rank: idx + 1 }))
 
   return (
     <>
       <Navbar />
-      <LeaderboardClient rows={ranked} allMatches={allMatches || []} />
+      <LeaderboardClient
+        rows={ranked}
+        allMatches={allMatches || []}
+        slots={slots || []}
+      />
     </>
   )
 }

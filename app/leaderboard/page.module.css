@@ -59,27 +59,127 @@
   margin-bottom: 1.5rem;
 }
 
-.badgeLive {
-  background: #272727;
-  color: #22c55e;
-  border: 1px solid #22c55e;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 4px;
+/* Mode Switcher Tabs */
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
 }
 
-.badgeFinals {
-  background: #fbbf24;
-  color: #111111;
+.tabBtn {
+  background: #1c1c1c;
+  color: #b8b8b8;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  padding: 10px 18px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
-  padding: 4px 10px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabBtn:hover {
+  background: #252525;
+  color: #ffffff;
+  border-color: #555555;
+}
+
+.tabActive {
+  background: #facc15 !important;
+  color: #111111 !important;
+  border-color: #facc15 !important;
+  box-shadow: 0 2px 10px rgba(250, 204, 21, 0.25);
+}
+
+/* Slot Selector Section */
+.slotSelectorBar {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.slotDropdown {
+  background: #1c1c1c;
+  border: 1px solid #3a3a3a;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  outline: none;
+  min-width: 280px;
+  cursor: pointer;
+}
+
+.slotDropdown:focus {
+  border-color: #facc15;
+}
+
+.slotInfoBadge {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #facc15;
+  text-transform: uppercase;
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+/* Prize Tag Badges in Per-Slot Table */
+.prizeTagGold {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  padding: 2px 8px;
   border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prizeTagSilver {
+  background: rgba(192, 192, 192, 0.15);
+  color: #c0c0c0;
+  border: 1px solid rgba(192, 192, 192, 0.4);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prizeTagBronze {
+  background: rgba(205, 127, 50, 0.15);
+  color: #cd7f32;
+  border: 1px solid rgba(205, 127, 50, 0.4);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Desktop table */

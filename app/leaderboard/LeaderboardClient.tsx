@@ -152,19 +152,56 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
         </div>
 
         {/* View Mode Switcher Tabs */}
-        <div className={styles.tabGroup}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <button
-            className={`${styles.tabBtn} ${viewMode === 'overall' ? styles.tabActive : ''}`}
+            type="button"
             onClick={() => setViewMode('overall')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              background: viewMode === 'overall' ? '#facc15' : '#1c1c1c',
+              color: viewMode === 'overall' ? '#000000' : '#cccccc',
+              border: viewMode === 'overall' ? '1px solid #facc15' : '1px solid #2a2a2a',
+              fontWeight: 700,
+              fontSize: '14px',
+              fontFamily: 'Inter, sans-serif',
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              boxShadow: viewMode === 'overall' ? '0 2px 10px rgba(250, 204, 21, 0.25)' : 'none',
+              transition: 'all 0.2s ease',
+            }}
           >
-            <Trophy size={16} />
+            <Trophy size={16} color={viewMode === 'overall' ? '#000000' : '#facc15'} />
             <span>OVERALL STANDINGS (BEST-16)</span>
           </button>
+
           <button
-            className={`${styles.tabBtn} ${viewMode === 'slot' ? styles.tabActive : ''}`}
+            type="button"
             onClick={() => setViewMode('slot')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              background: viewMode === 'slot' ? '#facc15' : '#1c1c1c',
+              color: viewMode === 'slot' ? '#000000' : '#cccccc',
+              border: viewMode === 'slot' ? '1px solid #facc15' : '1px solid #2a2a2a',
+              fontWeight: 700,
+              fontSize: '14px',
+              fontFamily: 'Inter, sans-serif',
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              boxShadow: viewMode === 'slot' ? '0 2px 10px rgba(250, 204, 21, 0.25)' : 'none',
+              transition: 'all 0.2s ease',
+            }}
           >
-            <Layers size={16} />
+            <Layers size={16} color={viewMode === 'slot' ? '#000000' : '#facc15'} />
             <span>SLOT RESULTS (3 MATCHES)</span>
           </button>
         </div>
@@ -176,14 +213,14 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
             <div className={`${styles.tableWrapper} hide-mobile`}>
               <div className="table-wrapper">
                 <table>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '64px' }}>RANK</th>
-                      <th>TEAM NAME</th>
-                      <th style={{ textAlign: 'center' }}>MATCHES PLAYED</th>
-                      <th style={{ textAlign: 'center' }}>BEST-16 TOTAL</th>
-                      <th style={{ textAlign: 'center' }}>TOTAL FINISHES</th>
-                      <th style={{ width: '60px' }}></th>
+                  <thead style={{ background: '#161616' }}>
+                    <tr style={{ background: '#161616', borderBottom: '1px solid #2a2a2a' }}>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', width: '64px' }}>RANK</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a' }}>TEAM NAME</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCHES PLAYED</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>BEST-16 TOTAL</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>TOTAL FINISHES</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', width: '60px' }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -326,16 +363,16 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
             <div className={`${styles.tableWrapper} hide-mobile`}>
               <div className="table-wrapper">
                 <table>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '64px' }}>RANK</th>
-                      <th>TEAM NAME</th>
-                      <th style={{ textAlign: 'center' }}>MATCH 1</th>
-                      <th style={{ textAlign: 'center' }}>MATCH 2</th>
-                      <th style={{ textAlign: 'center' }}>MATCH 3</th>
-                      <th style={{ textAlign: 'center' }}>TOTAL KILLS</th>
-                      <th style={{ textAlign: 'center' }}>SLOT POINTS</th>
-                      <th style={{ textAlign: 'center' }}>SLOT PRIZE</th>
+                  <thead style={{ background: '#161616' }}>
+                    <tr style={{ background: '#161616', borderBottom: '1px solid #2a2a2a' }}>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', width: '64px' }}>RANK</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a' }}>TEAM NAME</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 1</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 2</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 3</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>TOTAL KILLS</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>SLOT POINTS</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>SLOT PRIZE</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -488,19 +525,43 @@ function CustomSlotDropdown({
   }
 
   return (
-    <div className={styles.customDropdownWrapper}>
+    <div style={{ position: 'relative', minWidth: '320px', width: '100%' }}>
       <button
         type="button"
-        className={`${styles.customDropdownTrigger} ${isOpen ? styles.dropdownOpen : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         disabled={slots.length === 0}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          background: '#161616',
+          border: isOpen ? '1px solid #facc15' : '1px solid #2a2a2a',
+          color: '#ffffff',
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '14px',
+          fontWeight: 600,
+          cursor: slots.length === 0 ? 'not-allowed' : 'pointer',
+          opacity: slots.length === 0 ? 0.7 : 1,
+          transition: 'all 0.2s ease',
+          outline: 'none',
+          boxShadow: isOpen ? '0 0 12px rgba(250, 204, 21, 0.15)' : 'none',
+        }}
       >
-        <span className={slots.length === 0 ? styles.dropdownPlaceholder : styles.dropdownText}>
+        <span style={{ color: slots.length === 0 ? '#888888' : '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {slots.length === 0 ? 'No slots created yet' : getLabel(selectedSlot)}
         </span>
         <ChevronDown
           size={18}
-          className={`${styles.chevronIcon} ${isOpen ? styles.chevronRotated : ''}`}
+          color="#facc15"
+          style={{
+            flexShrink: 0,
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+          }}
         />
       </button>
 

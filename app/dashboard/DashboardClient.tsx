@@ -45,7 +45,7 @@ export default function DashboardClient({ userProfile, team, roster, bookings, c
             <h1 className={`text-heading ${styles.teamName}`}>{team.team_name}</h1>
             {isCaptain && <span className="badge badge-gold" style={{ marginTop: '0.25rem' }}>Captain</span>}
           </div>
-          <Link href="/register" className="btn btn-primary">
+          <Link href="/slots" className="btn btn-primary">
             + Book New Slot
           </Link>
         </div>
@@ -113,7 +113,7 @@ export default function DashboardClient({ userProfile, team, roster, bookings, c
             {upcomingBookings.length === 0 ? (
               <div className={styles.emptyState}>
                 <p>No upcoming slots booked.</p>
-                <Link href="/register" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                <Link href="/slots" className="btn btn-primary" style={{ marginTop: '1rem' }}>
                   Book a Slot →
                 </Link>
               </div>

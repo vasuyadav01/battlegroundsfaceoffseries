@@ -234,7 +234,7 @@ export default async function LandingPage() {
               <p className={styles.ctaDesc}>
                 Limited 18 teams per slot. Secure your spot now and start grinding toward the Grand Finals.
               </p>
-              <Link href="/register" className={styles.primaryCta}>
+              <Link href="/slots" className={styles.primaryCta}>
                 BOOK SLOT NOW — ₹50
               </Link>
             </div>
@@ -256,7 +256,7 @@ export default async function LandingPage() {
             </div>
             <div className={styles.footerLinks}>
               <Link href="/leaderboard" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Leaderboard</Link>
-              <Link href="/register" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Book Slot</Link>
+              <Link href="/slots" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Book Slot</Link>
               <Link href="/login" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Login</Link>
             </div>
           </div>

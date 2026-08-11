@@ -29,7 +29,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/register', label: 'Slot Booking' },
+    { href: '/slots', label: 'Slot Booking' },
     { href: '/leaderboard', label: 'Leaderboard' },
   ]
 

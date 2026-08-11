@@ -1,350 +1,137 @@
 .page {
-  padding: 2.5rem 0 4rem;
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  position: relative;
+  overflow: hidden;
   background: #111111;
 }
 
-.pageHeader {
+.bgGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 30%, rgba(251, 191, 36, 0.12) 0%, transparent 70%),
+    #111111;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  background: #1d1d1d;
+  border: 1px solid #272727;
+  border-radius: 16px;
+  padding: 2.75rem 2.25rem;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.logoWrapper {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 1rem 0 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-  border-bottom: 1px solid #212121;
-  margin-bottom: 2rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.logoImg {
+  height: 100px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .title {
   font-family: 'Inter', sans-serif;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 900;
   text-transform: uppercase;
   color: #ffffff;
-  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 0.5rem;
 }
 
 .subtitle {
   font-family: 'Inter', sans-serif;
   color: #b8b8b8;
-  font-size: 0.95rem;
-  margin-top: 0.25rem;
-}
-
-.infoBox {
-  background: #1d1d1d;
-  border: 1px solid #fbbf24;
-  border-radius: 8px;
-  padding: 0.875rem 1.25rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  color: #b8b8b8;
-  margin-bottom: 1.5rem;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 2rem;
-  align-items: start;
-}
-
-/* Slot Calendar */
-.slotCalendar {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.dayBlock {}
-
-.dayHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-.dayName {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #fbbf24;
-  letter-spacing: 0.05em;
-}
-
-.daySlots {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.slotBtn {
-  width: 100%;
-  background: #1d1d1d;
-  border: 1px solid #272727;
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #ffffff;
-  font-family: 'Inter', sans-serif;
-}
-
-.slotBtn:hover:not(:disabled) {
-  border-color: #fbbf24;
-  background: #212121;
-}
-
-.slotSelected {
-  border-color: #fbbf24 !important;
-  background: #272727 !important;
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
-}
-
-.slotDisabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.slotBtnTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.6rem;
-}
-
-.slotTime {
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  text-transform: uppercase;
-}
-
-.slotBtnBottom {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.fillBar {
-  flex: 1;
-  height: 6px;
-  background: #272727;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.fillBarInner {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.slotCount {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #777777;
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-
-.grandFinalsNote {
-  margin-top: 0.5rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #fbbf24;
-  text-transform: uppercase;
-}
-
-.noSlots {
-  text-align: center;
-  padding: 3rem;
-  color: #b8b8b8;
-  font-family: 'Inter', sans-serif;
-}
-
-/* Summary Panel */
-.summaryPanel {
-  position: sticky;
-  top: 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.summaryCard {
-  background: #1d1d1d;
-  border: 1px solid #272727;
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-.summaryTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  margin-bottom: 1.25rem;
-}
-
-.summaryEmpty {
-  color: #777777;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
-  text-align: center;
-  padding: 1rem 0;
-}
-
-.summaryRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 0;
-  font-family: 'Inter', sans-serif;
   font-size: 0.88rem;
-  color: #b8b8b8;
-  border-bottom: 1px solid #212121;
+  text-align: center;
+  margin-bottom: 2rem;
+  line-height: 1.6;
 }
 
-.summaryRow:last-of-type {
-  border-bottom: none;
-}
-
-.couponToggle {
+.form {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: #272727;
-  border: 1px solid #22c55e;
-  border-radius: 6px;
-  padding: 0.75rem;
-  cursor: pointer;
-  margin: 0.75rem 0;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.couponToggle input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #22c55e;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.summaryFee {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0 0;
-}
-
-.feeAmount {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: #fbbf24;
-}
-
-.error {
+.errorMsg {
   color: #ef4444;
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
+  text-align: center;
   padding: 0.6rem 0.85rem;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 6px;
   border: 1px solid rgba(239, 68, 68, 0.3);
-  margin-top: 0.5rem;
 }
 
-/* Info Panel */
-.infoPanel {
-  background: #1d1d1d;
-  border: 1px solid #272727;
-  border-radius: 12px;
-  padding: 1.25rem;
-}
-
-.infoPanelTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #fbbf24;
-  margin-bottom: 0.85rem;
-}
-
-.infoSteps {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  padding-left: 1.25rem;
-}
-
-.infoSteps li {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
-  color: #b8b8b8;
-  line-height: 1.5;
-}
-
-/* Success */
-.successCard {
-  max-width: 540px;
-  margin: 4rem auto;
+.loginFooter {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #2a2a2a;
   text-align: center;
-  background: #1d1d1d;
-  border: 1px solid #fbbf24;
-  border-radius: 16px;
-  padding: 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 0 25px rgba(251, 191, 36, 0.15);
-}
-
-.successIcon {
-  font-size: 3.5rem;
-}
-
-.successTitle {
   font-family: 'Inter', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 900;
+}
+
+.loginText {
+  color: #a0a0a0;
+  font-size: 0.88rem;
+  margin-bottom: 0.5rem;
+}
+
+.loginLink {
+  color: #facc15;
+  font-weight: 800;
+  font-size: 0.9rem;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.loginLink:hover {
   color: #ffffff;
 }
 
-.successDesc {
+.homeLinkWrapper {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #2a2a2a;
+  text-align: center;
+}
+
+.homeLink {
+  color: #facc15;
   font-family: 'Inter', sans-serif;
-  color: #b8b8b8;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  max-width: 420px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.15s ease;
 }
 
-.successLinks {
-  display: flex;
-  gap: 0.85rem;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-@media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .summaryPanel {
-    position: static;
-    order: -1;
-  }
+.homeLink:hover {
+  color: #ffffff;
+  text-decoration: underline;
 }

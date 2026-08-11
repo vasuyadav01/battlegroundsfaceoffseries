@@ -6,91 +6,103 @@
   padding: 2rem 1rem;
   position: relative;
   overflow: hidden;
+  background: #111111;
 }
 
 .bgGlow {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 50% 30%, rgba(245, 158, 11, 0.1) 0%, transparent 70%),
-    var(--bg-base);
+    radial-gradient(ellipse 60% 50% at 50% 30%, rgba(251, 191, 36, 0.12) 0%, transparent 70%),
+    #111111;
 }
 
 .card {
   position: relative;
   z-index: 1;
-  background: var(--bg-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-2xl);
-  padding: 2.5rem 2rem;
+  background: #1d1d1d;
+  border: 1px solid #272727;
+  border-radius: 16px;
+  padding: 2.75rem 2.25rem;
   width: 100%;
-  max-width: 420px;
-  box-shadow: var(--shadow-lg);
+  max-width: 440px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 .logo {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-bottom: 1.75rem;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2rem;
+}
+
+.logoBadge {
+  background: #fbbf24;
+  color: #111111;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .logoText {
-  font-family: var(--font-display);
-  font-size: 2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.35rem;
   font-weight: 900;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.1em;
-}
-
-.logoSub {
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
+  color: #ffffff;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  margin-top: 2px;
 }
 
 .title {
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
   text-align: center;
   margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: #b8b8b8;
+  font-size: 0.88rem;
   text-align: center;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
   line-height: 1.6;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .otpInput {
-  font-size: 1.5rem !important;
-  letter-spacing: 0.3em;
+  font-size: 1.6rem !important;
+  letter-spacing: 0.35em;
   text-align: center;
-  font-family: var(--font-display) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 800;
+  background: #272727;
+  border: 1px solid #3e3e3e;
+  color: #fbbf24;
 }
 
 .errorMsg {
-  color: var(--status-danger);
+  color: #ef4444;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   text-align: center;
-  padding: 0.5rem 0.75rem;
-  background: rgba(239, 68, 68, 0.08);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.6rem 0.85rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .resendRow {
@@ -100,15 +112,17 @@
 }
 
 .terms {
-  margin-top: 1.5rem;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  margin-top: 2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: #777777;
   text-align: center;
   line-height: 1.6;
 }
 
 .terms a {
-  color: var(--brand-primary);
+  color: #fbbf24;
+  font-weight: 700;
 }
 
 .terms a:hover {

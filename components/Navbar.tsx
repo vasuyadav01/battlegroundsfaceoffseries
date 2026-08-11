@@ -28,7 +28,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/register', label: 'Register' },
+    { href: '/register', label: 'Slot Booking' },
     { href: '/leaderboard', label: 'Leaderboard' },
   ]
 
@@ -37,8 +37,9 @@ export default function Navbar() {
       <div className={`container ${styles.inner}`}>
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoText}>BGFS</span>
-          <span className={styles.logoSub}>Battlegrounds Faceoff Series</span>
+          <span className={styles.logoBadge}>BGFS</span>
+          <span className={styles.logoText}>FACEOFF</span>
+          <span className={styles.logoSub}>SEASON 1</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -58,16 +59,16 @@ export default function Navbar() {
         <div className={styles.actions}>
           {user ? (
             <>
-              <Link href="/dashboard" className="btn btn-secondary btn-sm">
+              <Link href="/dashboard" className={styles.secondaryBtn}>
                 Dashboard
               </Link>
-              <button onClick={handleSignOut} className="btn btn-ghost btn-sm">
+              <button onClick={handleSignOut} className={styles.secondaryBtn}>
                 Sign Out
               </button>
             </>
           ) : (
-            <Link href="/login" className="btn btn-primary btn-sm">
-              Login / Register
+            <Link href="/login" className={styles.ctaBtn}>
+              Join Tournament
             </Link>
           )}
         </div>
@@ -97,7 +98,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <hr className="divider" />
           {user ? (
             <>
               <Link href="/dashboard" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
@@ -109,7 +109,7 @@ export default function Navbar() {
             </>
           ) : (
             <Link href="/login" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
-              Login / Register
+              Join Tournament
             </Link>
           )}
         </div>

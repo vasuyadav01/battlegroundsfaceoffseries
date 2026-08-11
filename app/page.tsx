@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import Marquee from '@/components/Marquee'
 import CountdownTimer from '@/components/CountdownTimer'
 import { createClient } from '@/lib/supabase/server'
 import styles from './page.module.css'
@@ -22,6 +23,7 @@ export default async function LandingPage() {
   return (
     <>
       <Navbar />
+      <Marquee />
       <main>
         {/* ── HERO ── */}
         <section className={styles.hero}>
@@ -29,16 +31,16 @@ export default async function LandingPage() {
           <div className={styles.heroGrid} />
           <div className="container">
             <div className={styles.heroContent}>
-              <span className="text-label" style={{ color: 'var(--brand-primary)', marginBottom: '1rem', display: 'block' }}>
-                ⚡ Season 1 — Now Open
-              </span>
-              <h1 className={`text-display ${styles.heroTitle}`}>
-                Battlegrounds<br />
-                <span className="gradient-text">Faceoff Series</span>
+              <div className={styles.badgeHeader}>
+                <span className={styles.badgeDot} />
+                <span className={styles.badgeText}>SEASON 1 REGISTRATION OPEN</span>
+              </div>
+              <h1 className={styles.heroTitle}>
+                BATTLEGROUNDS<br />
+                <span className={styles.goldText}>FACEOFF SERIES</span>
               </h1>
               <p className={styles.heroDesc}>
-                India's premier BGMI mobile tournament. Compete in weekly league slots,
-                climb the leaderboard, and battle your way to the Grand Finals.
+                India's premier competitive BGMI mobile league. Grind daily slots, climb the Best-16 standings, and punch your ticket to the Grand Finals.
               </p>
 
               <div className={styles.heroCountdown}>
@@ -46,33 +48,33 @@ export default async function LandingPage() {
               </div>
 
               <div className={styles.heroCta}>
-                <Link href="/register" className="btn btn-primary btn-lg">
-                  Register Now — ₹50/slot
+                <Link href="/register" className={styles.primaryCta}>
+                  BOOK SLOT — ₹50 ENTRY
                 </Link>
-                <Link href="/leaderboard" className="btn btn-secondary btn-lg">
-                  View Leaderboard
+                <Link href="/leaderboard" className={styles.secondaryCta}>
+                  VIEW LEADERBOARD
                 </Link>
               </div>
 
               <div className={styles.heroStats}>
                 <div className={styles.heroStat}>
                   <span className={styles.heroStatVal}>₹270+</span>
-                  <span className={styles.heroStatLabel}>Cash per slot</span>
+                  <span className={styles.heroStatLabel}>PRIZE PER SLOT</span>
                 </div>
                 <div className={styles.heroStatDivider} />
                 <div className={styles.heroStat}>
                   <span className={styles.heroStatVal}>3</span>
-                  <span className={styles.heroStatLabel}>Matches per slot</span>
+                  <span className={styles.heroStatLabel}>MATCHES PER SLOT</span>
                 </div>
                 <div className={styles.heroStatDivider} />
                 <div className={styles.heroStat}>
                   <span className={styles.heroStatVal}>16</span>
-                  <span className={styles.heroStatLabel}>Teams qualify</span>
+                  <span className={styles.heroStatLabel}>TEAMS QUALIFY</span>
                 </div>
                 <div className={styles.heroStatDivider} />
                 <div className={styles.heroStat}>
-                  <span className={styles.heroStatVal}>Free</span>
-                  <span className={styles.heroStatLabel}>Grand Finals entry</span>
+                  <span className={styles.heroStatVal}>FREE</span>
+                  <span className={styles.heroStatLabel}>GRAND FINALS ENTRY</span>
                 </div>
               </div>
             </div>
@@ -80,46 +82,48 @@ export default async function LandingPage() {
         </section>
 
         {/* ── HOW IT WORKS ── */}
-        <section className={`${styles.howItWorks} section`}>
+        <section className={styles.howItWorks}>
           <div className="container">
-            <h2 className={`section-title text-heading ${styles.sectionCenter}`}>
-              How It Works
-            </h2>
-            <p className={`section-subtitle ${styles.sectionCenter}`}>
-              From signup to Grand Finals in 4 simple steps
-            </p>
+            <div className={styles.sectionCenter}>
+              <h2 className={styles.sectionTitle}>
+                ROAD TO GRAND FINALS
+              </h2>
+              <p className={styles.sectionSubtitle}>
+                Four seamless steps from signup to championship glory
+              </p>
+            </div>
 
             <div className={styles.stepsGrid}>
               {[
                 {
-                  step: '01',
-                  title: 'Sign Up & Form Your Team',
-                  desc: 'Login with your email OTP, create your team, and share the invite code with your squad.',
+                  step: 'STEP 01',
+                  title: 'SIGN UP & SQUAD UP',
+                  desc: 'Log in via secure email OTP, create your roster, and invite your teammates.',
                   icon: '👥',
                 },
                 {
-                  step: '02',
-                  title: 'Book Your Slot',
-                  desc: 'Pick a day and time slot. Pay ₹50 entry fee. Your team name appears live on the roster.',
+                  step: 'STEP 02',
+                  title: 'BOOK LEAGUE SLOTS',
+                  desc: 'Select preferred daily match slots. Instant slot confirmation after ₹50 checkout.',
                   icon: '🎯',
                 },
                 {
-                  step: '03',
-                  title: 'Play & Grind',
-                  desc: '3 matches per slot. Play as many slots as you want. Only your best 16 matches count — no penalty for bad days.',
+                  step: 'STEP 03',
+                  title: 'GRIND & DOMINATE',
+                  desc: '3 matches per slot. Play as many slots as you want — only your top 16 match scores count.',
                   icon: '🔫',
                 },
                 {
-                  step: '04',
-                  title: 'Win Prizes & Qualify',
-                  desc: 'Top teams in each slot win cash. Top 16 overall qualify for FREE Grand Finals (Sat–Sun).',
+                  step: 'STEP 04',
+                  title: 'WIN CASH & QUALIFY',
+                  desc: 'Instant UPI payouts after every slot. Top 16 overall teams advance to FREE Grand Finals.',
                   icon: '🏆',
                 },
               ].map((s) => (
                 <div key={s.step} className={styles.stepCard}>
                   <div className={styles.stepNum}>{s.step}</div>
                   <div className={styles.stepIcon}>{s.icon}</div>
-                  <h3 className={`text-heading ${styles.stepTitle}`}>{s.title}</h3>
+                  <h3 className={styles.stepTitle}>{s.title}</h3>
                   <p className={styles.stepDesc}>{s.desc}</p>
                 </div>
               ))}
@@ -128,68 +132,69 @@ export default async function LandingPage() {
         </section>
 
         {/* ── PRIZE STRUCTURE ── */}
-        <section className={`section ${styles.prizesSection}`}>
+        <section className={styles.prizesSection}>
           <div className="container">
-            <h2 className={`section-title text-heading ${styles.sectionCenter}`}>
-              Prizes Every Slot
-            </h2>
-            <p className={`section-subtitle ${styles.sectionCenter}`}>
-              At 18 teams per slot — prizes distributed after every 3-match slot
-            </p>
+            <div className={styles.sectionCenter}>
+              <h2 className={styles.sectionTitle}>
+                SLOT PRIZE POOL
+              </h2>
+              <p className={styles.sectionSubtitle}>
+                Guaranteed cash payouts after every 3-match slot completion
+              </p>
+            </div>
 
             <div className={styles.prizesGrid}>
               <div className={`${styles.prizeCard} ${styles.prizeGold}`}>
                 <div className={styles.prizeMedal}>🥇</div>
-                <div className={styles.prizePlace}>1st Place</div>
+                <div className={styles.prizePlace}>1ST PLACE</div>
                 <div className={styles.prizeAmount}>₹170</div>
-                <div className={styles.prizeType}>Cash via UPI</div>
+                <div className={styles.prizeType}>INSTANT UPI CASH</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeSilver}`}>
                 <div className={styles.prizeMedal}>🥈</div>
-                <div className={styles.prizePlace}>2nd Place</div>
+                <div className={styles.prizePlace}>2ND PLACE</div>
                 <div className={styles.prizeAmount}>₹100</div>
-                <div className={styles.prizeType}>Cash via UPI</div>
+                <div className={styles.prizeType}>INSTANT UPI CASH</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeBronze}`}>
                 <div className={styles.prizeMedal}>🥉</div>
-                <div className={styles.prizePlace}>3rd Place</div>
-                <div className={styles.prizeAmount}>Free Slot</div>
-                <div className={styles.prizeType}>Next slot entry (₹50 value)</div>
+                <div className={styles.prizePlace}>3RD PLACE</div>
+                <div className={styles.prizeAmount}>FREE SLOT</div>
+                <div className={styles.prizeType}>NEXT SLOT PASS (₹50 VALUE)</div>
               </div>
             </div>
 
             <div className={styles.prizeNote}>
-              <span>💡</span>
-              <p>Top 16 teams overall qualify for the Grand Finals — <strong>no entry fee, completely free.</strong></p>
+              <span>⚡</span>
+              <p>Top 16 teams overall qualify for the Grand Finals — <strong>zero entry fee, 100% free qualification.</strong></p>
             </div>
           </div>
         </section>
 
         {/* ── SCORING FORMAT ── */}
-        <section className={`section ${styles.scoringSection}`}>
+        <section className={styles.scoringSection}>
           <div className="container">
             <div className={styles.scoringInner}>
-              <div className={styles.scoringText}>
-                <h2 className="text-heading section-title">BGIS-Style Scoring</h2>
+              <div>
+                <h2 className={styles.sectionTitle}>BGIS SCORING SYSTEM</h2>
                 <p className={styles.scoringDesc}>
-                  Standard competitive format — 10-point placement system + 1 point per kill.
-                  Play unlimited slots. Only your <strong>best 16 match scores</strong> count toward final standings.
+                  Official esports placement point system + 1 finish point per kill. Play unlimited slots without punishment — our system automatically aggregates your <strong>Best 16 match performances</strong>.
                 </p>
                 <div className={styles.scoringFeatures}>
                   {[
-                    '✅ 1st place = 10 points',
-                    '✅ Every kill = 1 point',
-                    '✅ No cap on slots you can buy',
-                    '✅ Best 16 of all matches counted',
-                    '✅ Bad matches don\'t hurt your rank',
+                    '✓ 1st Place = 10 Placement Points',
+                    '✓ 1 Finish = 1 Point',
+                    '✓ Unlimited Slot Re-entry allowed',
+                    '✓ Best 16 match score auto-calculation',
+                    '✓ Off-days do not hurt your overall rank',
                   ].map(f => <p key={f} className={styles.scoringFeature}>{f}</p>)}
                 </div>
-                <Link href="/leaderboard" className="btn btn-secondary" style={{ marginTop: '1.5rem' }}>
-                  See Current Standings →
+                <Link href="/leaderboard" className={styles.secondaryCta} style={{ display: 'inline-block', marginTop: '1.5rem' }}>
+                  VIEW STANDINGS →
                 </Link>
               </div>
               <div className={styles.scoringTable}>
-                <h3 className={styles.tableHeading}>Placement Points</h3>
+                <h3 className={styles.tableHeading}>Placement Point Table</h3>
                 <table>
                   <thead>
                     <tr>
@@ -199,12 +204,12 @@ export default async function LandingPage() {
                   </thead>
                   <tbody>
                     {[
-                      ['1st', '10'], ['2nd', '6'], ['3rd', '5'], ['4th', '4'],
-                      ['5th', '3'], ['6th–10th', '2'], ['11th–15th', '1'], ['16th–24th', '0'],
+                      ['1st Place', '10 Pts'], ['2nd Place', '6 Pts'], ['3rd Place', '5 Pts'], ['4th Place', '4 Pts'],
+                      ['5th Place', '3 Pts'], ['6th–10th', '2 Pts'], ['11th–15th', '1 Pt'], ['16th–24th', '0 Pts'],
                     ].map(([p, pts]) => (
                       <tr key={p}>
                         <td>{p}</td>
-                        <td><strong style={{ color: 'var(--brand-primary)' }}>{pts}</strong></td>
+                        <td style={{ color: '#fbbf24', fontWeight: '800' }}>{pts}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -215,17 +220,17 @@ export default async function LandingPage() {
         </section>
 
         {/* ── CTA ── */}
-        <section className={`section ${styles.ctaSection}`}>
+        <section className={styles.ctaSection}>
           <div className="container">
             <div className={styles.ctaBox}>
-              <h2 className={`text-display ${styles.ctaTitle}`}>
-                Ready to <span className="gradient-text">Drop In?</span>
+              <h2 className={styles.ctaTitle}>
+                READY TO <span className={styles.goldText}>CLAIM YOUR SLOT?</span>
               </h2>
               <p className={styles.ctaDesc}>
-                Slots fill up fast. Book your spot, grind the leaderboard, and make it to the Grand Finals.
+                Limited 18 teams per slot. Secure your spot now and start grinding toward the Grand Finals.
               </p>
-              <Link href="/register" className="btn btn-primary btn-lg">
-                Book Your Slot — ₹50
+              <Link href="/register" className={styles.primaryCta}>
+                BOOK SLOT NOW — ₹50
               </Link>
             </div>
           </div>
@@ -237,21 +242,21 @@ export default async function LandingPage() {
         <div className="container">
           <div className={styles.footerInner}>
             <div>
-              <span className="text-display" style={{ fontSize: '1.2rem', background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                BGFS
+              <span className={styles.goldText} style={{ fontFamily: 'Inter', fontSize: '1.3rem', fontWeight: '900', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                BGFS FACEOFF
               </span>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                Battlegrounds Faceoff Series
+              <p style={{ color: '#777777', fontSize: '0.8rem', marginTop: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Battlegrounds Faceoff Series • Season 1
               </p>
             </div>
             <div className={styles.footerLinks}>
-              <Link href="/leaderboard" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Leaderboard</Link>
-              <Link href="/register" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Register</Link>
-              <Link href="/login" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Login</Link>
+              <Link href="/leaderboard" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Leaderboard</Link>
+              <Link href="/register" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Book Slot</Link>
+              <Link href="/login" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Login</Link>
             </div>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', marginTop: '1.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
-            © 2025 BGFS. Not affiliated with Krafton or BGMI. This is an independently organised tournament.
+          <p style={{ color: '#777777', fontSize: '0.75rem', textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #212121', paddingTop: '1.25rem' }}>
+            © 2025 BGFS. Independent competitive gaming platform. All game graphics and trademarks belong to Krafton.
           </p>
         </div>
       </footer>

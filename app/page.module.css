@@ -1,20 +1,21 @@
 /* ── HERO ── */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 85vh;
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 5rem 0 4rem;
+  padding: 4rem 0 4rem;
+  background: #111111;
 }
 
 .heroBg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%),
-    var(--bg-base);
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(251, 191, 36, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(220, 38, 38, 0.06) 0%, transparent 50%),
+    #111111;
   z-index: 0;
 }
 
@@ -24,39 +25,77 @@
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
+  background-size: 50px 50px;
   z-index: 0;
-  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+  mask-image: radial-gradient(ellipse at center, black 25%, transparent 80%);
 }
 
 .heroContent {
   position: relative;
   z-index: 1;
-  max-width: 700px;
+  max-width: 800px;
+}
+
+.badgeHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #272727;
+  border: 1px solid #323232;
+  border-radius: 6px;
+  padding: 6px 14px;
+  margin-bottom: 1.5rem;
+}
+
+.badgeDot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.badgeText {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fbbf24;
 }
 
 .heroTitle {
-  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(2.5rem, 6.5vw, 5rem);
+  font-weight: 900;
   line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: #ffffff;
   margin-bottom: 1.25rem;
 }
 
+.goldText {
+  color: #fbbf24;
+}
+
 .heroDesc {
+  font-family: 'Inter', sans-serif;
   font-size: 1.1rem;
-  color: var(--text-secondary);
+  color: #b8b8b8;
   line-height: 1.7;
-  max-width: 540px;
+  max-width: 580px;
   margin-bottom: 2rem;
 }
 
 .heroCountdown {
   margin-bottom: 2rem;
   display: inline-block;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  background: #1d1d1d;
+  border: 1px solid #272727;
+  border-radius: 12px;
   padding: 1.25rem 2rem;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .heroCta {
@@ -64,6 +103,48 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 2.5rem;
+}
+
+.primaryCta {
+  background: #fbbf24;
+  color: #111111;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(251, 191, 36, 0.3);
+}
+
+.primaryCta:hover {
+  background: #fde047;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.45);
+}
+
+.secondaryCta {
+  background: #272727;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 28px;
+  border-radius: 6px;
+  border: 1px solid #3e3e3e;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.secondaryCta:hover {
+  background: #323232;
+  border-color: #fbbf24;
+  color: #fbbf24;
 }
 
 .heroStats {
@@ -80,32 +161,53 @@
 }
 
 .heroStatVal {
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fbbf24;
 }
 
 .heroStatLabel {
+  font-family: 'Inter', sans-serif;
   font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: #b8b8b8;
 }
 
 .heroStatDivider {
   width: 1px;
   height: 36px;
-  background: var(--border-subtle);
+  background: #272727;
 }
 
 /* ── HOW IT WORKS ── */
 .howItWorks {
-  background: var(--bg-surface);
+  background: #151515;
+  padding: 5rem 0;
+  border-top: 1px solid #212121;
 }
 
 .sectionCenter {
   text-align: center;
+}
+
+.sectionTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.sectionSubtitle {
+  font-family: 'Inter', sans-serif;
+  color: #b8b8b8;
+  font-size: 1rem;
+  margin-bottom: 3rem;
 }
 
 .stepsGrid {
@@ -115,63 +217,72 @@
 }
 
 .stepCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  padding: 1.75rem 1.25rem;
+  background: #1d1d1d;
+  border: 1px solid #272727;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
   position: relative;
-  transition: border-color var(--transition-default), transform var(--transition-default);
+  transition: all 0.2s ease;
 }
 
 .stepCard:hover {
-  border-color: var(--border-emphasis);
+  border-color: #fbbf24;
   transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .stepNum {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
   font-weight: 900;
-  color: var(--brand-primary);
+  color: #fbbf24;
   letter-spacing: 0.1em;
-  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
 }
 
 .stepIcon {
-  font-size: 2rem;
-  margin-bottom: 0.75rem;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
 }
 
 .stepTitle {
-  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #ffffff;
   margin-bottom: 0.5rem;
 }
 
 .stepDesc {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: #b8b8b8;
   line-height: 1.6;
 }
 
 /* ── PRIZES ── */
 .prizesSection {
-  background: var(--bg-base);
+  background: #111111;
+  padding: 5rem 0;
+  border-top: 1px solid #212121;
 }
 
 .prizesGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  max-width: 800px;
-  margin: 0 auto 2rem;
+  max-width: 900px;
+  margin: 0 auto 2.5rem;
 }
 
 .prizeCard {
-  border-radius: var(--radius-xl);
-  padding: 2rem 1.5rem;
+  border-radius: 12px;
+  padding: 2.25rem 1.5rem;
   text-align: center;
   border: 1px solid;
-  transition: transform var(--transition-default);
+  transition: transform 0.2s ease;
 }
 
 .prizeCard:hover {
@@ -179,18 +290,19 @@
 }
 
 .prizeGold {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, transparent 100%);
-  border-color: rgba(251, 191, 36, 0.3);
+  background: #1d1d1d;
+  border-color: #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
 }
 
 .prizeSilver {
-  background: linear-gradient(135deg, rgba(148, 163, 184, 0.08) 0%, transparent 100%);
-  border-color: rgba(148, 163, 184, 0.3);
+  background: #1d1d1d;
+  border-color: #9ca3af;
 }
 
 .prizeBronze {
-  background: linear-gradient(135deg, rgba(205, 127, 50, 0.08) 0%, transparent 100%);
-  border-color: rgba(205, 127, 50, 0.3);
+  background: #1d1d1d;
+  border-color: #b45309;
 }
 
 .prizeMedal {
@@ -199,44 +311,50 @@
 }
 
 .prizePlace {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-secondary);
+  color: #b8b8b8;
   margin-bottom: 0.5rem;
 }
 
 .prizeAmount {
-  font-family: var(--font-heading);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fbbf24;
   margin-bottom: 0.25rem;
 }
 
 .prizeType {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: #777777;
+  text-transform: uppercase;
 }
 
 .prizeNote {
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  background: rgba(245, 158, 11, 0.06);
-  border: 1px solid rgba(245, 158, 11, 0.15);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  align-items: center;
+  gap: 1rem;
+  background: #1d1d1d;
+  border: 1px solid #323232;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #b8b8b8;
 }
 
 /* ── SCORING ── */
 .scoringSection {
-  background: var(--bg-surface);
+  background: #151515;
+  padding: 5rem 0;
+  border-top: 1px solid #212121;
 }
 
 .scoringInner {
@@ -247,71 +365,82 @@
 }
 
 .scoringDesc {
-  color: var(--text-secondary);
-  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  color: #b8b8b8;
+  font-size: 1.05rem;
   line-height: 1.7;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .scoringFeatures {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .scoringFeature {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #b8b8b8;
+  font-weight: 500;
 }
 
 .scoringTable {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
+  background: #1d1d1d;
+  border: 1px solid #272727;
+  border-radius: 12px;
   overflow: hidden;
-  min-width: 260px;
+  min-width: 280px;
 }
 
 .tableHeading {
-  font-family: var(--font-heading);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-secondary);
-  padding: 1rem 1rem 0.5rem;
+  color: #fbbf24;
+  padding: 1.25rem 1.25rem 0.75rem;
 }
 
 /* ── CTA ── */
 .ctaSection {
-  background: var(--bg-base);
+  background: #111111;
+  padding: 5rem 0;
+  border-top: 1px solid #212121;
 }
 
 .ctaBox {
   text-align: center;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(239, 68, 68, 0.04) 100%);
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-2xl);
+  background: #1d1d1d;
+  border: 1px solid #fbbf24;
+  border-radius: 16px;
   padding: 4rem 2rem;
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.12);
 }
 
 .ctaTitle {
+  font-family: 'Inter', sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
   margin-bottom: 1rem;
 }
 
 .ctaDesc {
-  color: var(--text-secondary);
-  max-width: 500px;
+  font-family: 'Inter', sans-serif;
+  color: #b8b8b8;
+  max-width: 540px;
   margin: 0 auto 2rem;
   font-size: 1.05rem;
 }
 
 /* ── FOOTER ── */
 .footer {
-  background: var(--bg-surface);
-  border-top: 1px solid var(--border-subtle);
-  padding: 2rem 0;
+  background: #111111;
+  border-top: 1px solid #212121;
+  padding: 2.5rem 0;
 }
 
 .footerInner {
@@ -333,11 +462,11 @@
 
   .scoringInner {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 
   .scoringTable {
-    max-width: 360px;
+    max-width: 400px;
   }
 }
 
@@ -348,7 +477,7 @@
 
   .prizesGrid {
     grid-template-columns: 1fr;
-    max-width: 320px;
+    max-width: 340px;
   }
 
   .stepsGrid {
@@ -357,7 +486,7 @@
 
   .footerInner {
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     text-align: center;
   }
 

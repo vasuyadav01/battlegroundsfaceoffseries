@@ -1,0 +1,183 @@
+.page {
+  padding: 2rem 0 4rem;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 0 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  width: 220px;
+}
+
+.tableInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* Desktop table */
+.tableWrapper {
+  /* shown on desktop */
+}
+
+.teamRow {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.teamRow.qualifies {
+  /* subtle indication for top-16 */
+}
+
+.teamRow.qualifies td:first-child::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 24px;
+  background: var(--brand-primary);
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+}
+
+.teamRow.expanded {
+  background: var(--bg-elevated);
+}
+
+.teamNameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.teamNameText {
+  font-weight: 600;
+}
+
+.expandIcon {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.expandedCell {
+  background: var(--bg-elevated);
+  padding: 0 !important;
+  border-bottom: 2px solid var(--border-emphasis) !important;
+}
+
+/* Mobile list */
+.mobileList {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobileCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.mobileCard:hover {
+  border-color: var(--border-emphasis);
+}
+
+.mobileCardHeader {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.mobileCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobileTeamName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.mobileTeamMeta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.mobileCardRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mobileStatVal {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  text-align: right;
+}
+
+.mobileStatLabel {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.mobileExpanded {
+  border-top: 1px solid var(--border-subtle);
+  padding: 0.75rem 1.25rem 1.25rem;
+}
+
+.mobileStats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .tableWrapper {
+    display: none;
+  }
+
+  .mobileList {
+    display: flex;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+
+  .headerRight {
+    width: 100%;
+  }
+}

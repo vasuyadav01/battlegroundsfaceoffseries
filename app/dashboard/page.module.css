@@ -1,0 +1,192 @@
+.page {
+  padding: 2rem 0 4rem;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 2rem 0 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.teamName {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.inviteCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.inviteCodeBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inviteCode {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  color: var(--brand-primary);
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-md);
+  padding: 0.375rem 0.75rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}
+
+.slotList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.slotCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  transition: border-color var(--transition-fast);
+  flex-wrap: wrap;
+}
+
+.slotCard:hover {
+  border-color: var(--border-emphasis);
+}
+
+.slotCardPast {
+  opacity: 0.7;
+}
+
+.slotInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.slotDate {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.slotTime {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.roomInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.roomRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-end;
+}
+
+.roomCode {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--brand-primary);
+}
+
+.playerName {
+  font-weight: 500;
+}
+
+.couponsSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.couponsTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.couponsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.coupon {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .slotCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .roomInfo {
+    justify-content: flex-start;
+  }
+
+  .roomRow {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .inviteCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

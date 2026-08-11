@@ -41,8 +41,8 @@ export default function Navbar() {
           <Image
             src="/images/faceofflogo.png"
             alt="BGFS Faceoff Series"
-            width={180}
-            height={44}
+            width={320}
+            height={74}
             className={styles.logoImg}
             priority
           />

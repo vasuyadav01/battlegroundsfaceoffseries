@@ -1,15 +1,16 @@
 /* ── HERO ── */
 .hero {
   position: relative;
+  width: 100%;
   min-height: 88vh;
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 5rem 0 4rem;
+  padding: 4.5rem 0 4rem;
   background-color: #111111;
   background-image: url('/images/homepagewallpaper.jpg');
   background-size: cover;
-  background-position: center right;
+  background-position: center center;
   background-repeat: no-repeat;
 }
 
@@ -18,7 +19,7 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to right, rgba(11, 11, 11, 0.96) 0%, rgba(11, 11, 11, 0.88) 32%, rgba(11, 11, 11, 0.55) 58%, rgba(11, 11, 11, 0) 78%),
+    linear-gradient(to right, rgba(11, 11, 11, 0.96) 0%, rgba(11, 11, 11, 0.88) 35%, rgba(11, 11, 11, 0.55) 60%, rgba(11, 11, 11, 0) 80%),
     linear-gradient(to bottom, rgba(17, 17, 17, 0.5) 0%, transparent 20%, transparent 80%, #111111 100%);
   z-index: 1;
   pointer-events: none;
@@ -39,17 +40,17 @@
 .heroContent {
   position: relative;
   z-index: 2;
-  max-width: 740px;
+  max-width: 780px;
 }
 
 .heroLogoWrapper {
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
 }
 
 .heroLogoImg {
-  height: 52px;
+  height: 110px;
   width: auto;
-  max-width: 260px;
+  max-width: 460px;
   object-fit: contain;
   display: block;
 }
@@ -508,6 +509,11 @@
     min-height: auto;
     padding: 3rem 0 3.5rem;
     background-position: center center;
+  }
+
+  .heroLogoImg {
+    height: 72px;
+    max-width: 300px;
   }
 
   .heroOverlay {

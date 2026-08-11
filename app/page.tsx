@@ -37,8 +37,8 @@ export default async function LandingPage() {
                 <Image
                   src="/images/faceofflogo.png"
                   alt="BGFS Faceoff Series"
-                  width={240}
-                  height={52}
+                  width={460}
+                  height={110}
                   className={styles.heroLogoImg}
                   priority
                 />

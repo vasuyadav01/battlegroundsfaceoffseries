@@ -12,16 +12,16 @@ export const metadata: Metadata = {
 export default async function SlotsPage() {
   const supabase = await createClient()
 
-  // Fetch all slots
+  // Fetch all slots (whatsapp_link included via *)
   const { data: slots } = await supabase
     .from('slots')
     .select('*')
     .order('date', { ascending: true })
+    .order('time_label', { ascending: true })
 
-  // Check if user has a team + unused coupons
+  // Check if user is logged in and has a team
   const { data: { user } } = await supabase.auth.getUser()
   let userTeam = null
-  let coupons: any[] = []
 
   if (user) {
     const { data: userProfile } = await supabase
@@ -32,18 +32,10 @@ export default async function SlotsPage() {
 
     if (userProfile?.team_id) {
       userTeam = userProfile.teams
-
-      const { data: couponRows } = await supabase
-        .from('coupons')
-        .select('*')
-        .eq('team_id', userProfile.team_id)
-        .eq('status', 'unused')
-
-      coupons = couponRows || []
     }
   }
 
-  // Fetch config (WhatsApp link & entry fee)
+  // Fetch global config fallbacks (WhatsApp link & entry fee)
   const { data: configRows } = await supabase
     .from('config')
     .select('key, value')
@@ -56,7 +48,6 @@ export default async function SlotsPage() {
     <SlotsClient
       slots={slots || []}
       userTeam={userTeam}
-      coupons={coupons}
       whatsappLink={config.whatsapp_invite_link || ''}
       entryFee={parseInt(config.slot_entry_fee || '50')}
       isLoggedIn={!!user}

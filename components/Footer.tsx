@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './Footer.module.css'
 
 export default function Footer() {
@@ -8,7 +9,14 @@ export default function Footer() {
         <div className={styles.footerTop}>
           {/* Brand */}
           <div className={styles.brand}>
-            <span className={styles.brandName}>BGFS FACEOFF</span>
+            <Image
+              src="/images/faceofflogo.png"
+              alt="BGFS Faceoff Series"
+              width={320}
+              height={74}
+              className={styles.brandLogo}
+              style={{ height: '144px', width: 'auto' }}
+            />
             <p className={styles.brandSub}>Battlegrounds Faceoff Series • Season 1</p>
             <p className={styles.brandTagline}>
               India's premier BGMI mobile tournament platform.

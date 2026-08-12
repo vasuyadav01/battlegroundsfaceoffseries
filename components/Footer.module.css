@@ -1,7 +1,7 @@
 .footer {
   background: #111111;
   border-top: 1px solid #212121;
-  padding: 3.5rem 0 0;
+  padding: 1.25rem 0 0;
 }
 
 /* ── TOP ROW ── */
@@ -20,13 +20,12 @@
   gap: 0.35rem;
 }
 
-.brandName {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #fbbf24;
+.brandLogo {
+  height: 52px;
+  width: auto;
+  max-width: 260px;
+  object-fit: contain;
+  display: block;
 }
 
 .brandSub {

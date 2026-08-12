@@ -75,7 +75,7 @@ export default async function DashboardPage() {
   // Fetch team info
   const { data: team } = await admin
     .from('teams')
-    .select('team_id, team_name, captain_user_id')
+    .select('team_id, team_name, captain_user_id, name_changed')
     .eq('team_id', teamId)
     .maybeSingle()
 
@@ -83,6 +83,7 @@ export default async function DashboardPage() {
     team_id: teamId || 'default',
     team_name: 'My Team',
     captain_user_id: user.id,
+    name_changed: false,
   }
 
   // Fetch booked slots for this team

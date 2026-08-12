@@ -37,6 +37,140 @@
   letter-spacing: 0.05em;
 }
 
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.teamNameRow {
+  margin-top: 0.35rem;
+}
+
+.teamNameBadgeWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.teamNameDisplay {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.02em;
+}
+
+.renameTriggerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.renameTriggerBtn:hover {
+  background: rgba(251, 191, 36, 0.25);
+  border-color: #fbbf24;
+}
+
+.nameLockedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333333;
+  color: #888888;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+
+.renameForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.2rem;
+}
+
+.renameInput {
+  background: #181818;
+  border: 1px solid #fbbf24;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  outline: none;
+  width: 220px;
+}
+
+.renameSaveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #22c55e;
+  color: #ffffff;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.45rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.renameSaveBtn:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.renameCancelBtn {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: #888888;
+  border: 1px solid #333333;
+  font-size: 0.78rem;
+  padding: 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.renameCancelBtn:hover:not(:disabled) {
+  color: #ffffff;
+  border-color: #555555;
+}
+
+.renameNotice {
+  font-size: 0.72rem;
+  color: #888888;
+  font-weight: 600;
+}
+
+.renameErrorMsg {
+  color: #ef4444;
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
+
+.renameSuccessMsg {
+  color: #22c55e;
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+  font-weight: 700;
+}
+
 .emailText {
   color: #777777;
   font-size: 0.82rem;

@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { Calendar, TrendingUp, Wallet } from 'lucide-react'
+import { Calendar, TrendingUp, Wallet, Edit3, Lock, Check, X } from 'lucide-react'
 import styles from './page.module.css'
 
 interface SlotInfo {
@@ -39,6 +40,7 @@ interface Props {
     team_id: string
     team_name: string
     captain_user_id: string
+    name_changed?: boolean
   }
   userEmail: string
   bookings: Booking[]
@@ -63,6 +65,49 @@ export default function DashboardClient({
   payouts,
   isCaptain,
 }: Props) {
+  // Team name edit state
+  const [currentTeamName, setCurrentTeamName] = useState(team.team_name)
+  const [hasChangedName, setHasChangedName] = useState(!!team.name_changed)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [newTeamNameInput, setNewTeamNameInput] = useState(team.team_name)
+  const [renameLoading, setRenameLoading] = useState(false)
+  const [renameError, setRenameError] = useState('')
+  const [renameSuccessMsg, setRenameSuccessMsg] = useState('')
+
+  // Handle Team Rename submit
+  async function handleRenameSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newTeamNameInput.trim()) return
+
+    setRenameError('')
+    setRenameSuccessMsg('')
+    setRenameLoading(true)
+
+    try {
+      const res = await fetch('/api/team/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_team_name: newTeamNameInput.trim() }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setRenameError(data.error || 'Failed to update team name.')
+        setRenameLoading(false)
+        return
+      }
+
+      setCurrentTeamName(data.new_team_name)
+      setHasChangedName(true)
+      setIsEditingName(false)
+      setRenameSuccessMsg('Team name updated successfully! (Locked)')
+      setRenameLoading(false)
+    } catch (err: any) {
+      setRenameError(err.message || 'Network error')
+      setRenameLoading(false)
+    }
+  }
+
   // Normalize slot info for each booking
   const normalizedBookings = bookings.map(b => ({
     ...b,
@@ -109,13 +154,61 @@ export default function DashboardClient({
       <div className="container">
         {/* Header */}
         <div className={styles.header}>
-          <div>
+          <div className={styles.headerContent}>
             <h1 className={styles.title}>PLAYER DASHBOARD</h1>
-            <p className={styles.subtitle}>
-              {team.team_name}
-              {userEmail && <span className={styles.emailText}>({userEmail})</span>}
-              {isCaptain && <span className={styles.captainBadge}>CAPTAIN</span>}
-            </p>
+
+            {/* Team Name display & 1-time Edit */}
+            <div className={styles.teamNameRow}>
+              {!isEditingName ? (
+                <div className={styles.teamNameBadgeWrap}>
+                  <span className={styles.teamNameDisplay}>{currentTeamName}</span>
+
+                  {userEmail && <span className={styles.emailText}>({userEmail})</span>}
+                  {isCaptain && <span className={styles.captainBadge}>CAPTAIN</span>}
+
+                  {!hasChangedName ? (
+                    <button
+                      className={styles.renameTriggerBtn}
+                      onClick={() => { setIsEditingName(true); setRenameError(''); setRenameSuccessMsg('') }}
+                      title="Change Team Name (1-time only)"
+                    >
+                      <Edit3 size={13} /> Edit Name
+                    </button>
+                  ) : (
+                    <span className={styles.nameLockedBadge} title="Team name cannot be changed again">
+                      <Lock size={11} /> Name Locked
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <form onSubmit={handleRenameSubmit} className={styles.renameForm}>
+                  <input
+                    type="text"
+                    className={styles.renameInput}
+                    value={newTeamNameInput}
+                    onChange={e => setNewTeamNameInput(e.target.value)}
+                    placeholder="Enter new team name"
+                    autoFocus
+                    required
+                  />
+                  <button type="submit" className={styles.renameSaveBtn} disabled={renameLoading}>
+                    {renameLoading ? 'Saving...' : <><Check size={14} /> Save</>}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.renameCancelBtn}
+                    onClick={() => setIsEditingName(false)}
+                    disabled={renameLoading}
+                  >
+                    <X size={14} />
+                  </button>
+                  <span className={styles.renameNotice}>⚠️ 1-time change only</span>
+                </form>
+              )}
+
+              {renameError && <div className={styles.renameErrorMsg}>{renameError}</div>}
+              {renameSuccessMsg && <div className={styles.renameSuccessMsg}>{renameSuccessMsg}</div>}
+            </div>
           </div>
         </div>
 

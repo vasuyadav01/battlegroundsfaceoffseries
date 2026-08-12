@@ -444,22 +444,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
               <div className={styles.previewFee}>Entry Fee: <span style={{ textDecoration: 'line-through' }}>₹50</span> <strong>₹0 FREE</strong></div>
             </div>
 
-            {/* Team Name Input if missing */}
-            {!userTeam?.team_name && (
-              <div className={styles.teamInputSection}>
-                <label className={styles.inputLabel}>
-                  <Users size={14} color="#fbbf24" /> Team Name
-                </label>
-                <input
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="e.g. Soul Esports"
-                  value={inputTeamName}
-                  onChange={e => setInputTeamName(e.target.value)}
-                  required
-                />
-              </div>
-            )}
+
 
             <p className={styles.modalWarningText}>
               ⚠️ Accidental booking safeguard: Once confirmed, your reward will be marked as used for this slot.
@@ -500,29 +485,11 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
               {selectedSlot.time_label} · {fmtDateShort(selectedSlot.date)}
             </p>
 
-            {/* Team Name Input if user has no team name set yet */}
-            <div className={styles.teamInputSection}>
-              <label className={styles.inputLabel}>
-                <Users size={14} color="#fbbf24" /> Team Name
-              </label>
-              {userTeam?.team_name ? (
-                <div className={styles.existingTeamBox}>
-                  <ShieldCheck size={16} color="#22c55e" />
-                  <strong>{userTeam.team_name}</strong>
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  className={styles.modalInput}
-                  placeholder="Enter your BGMI Team Name (e.g. GodLike)"
-                  value={inputTeamName}
-                  onChange={e => setInputTeamName(e.target.value)}
-                  required
-                />
-              )}
-            </div>
-
             <div className={styles.modalSummaryBox}>
+              <div className={styles.summaryRow}>
+                <span>Team</span>
+                <strong style={{ color: '#ffffff' }}>{userTeam?.team_name || 'My Team'}</strong>
+              </div>
               <div className={styles.summaryRow}>
                 <span>Format</span>
                 <strong>3 BGMI Matches</strong>

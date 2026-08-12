@@ -405,7 +405,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
                           className={styles.cardBtnNormal}
                           onClick={() => handleSlotAction(slot, false)}
                         >
-                          BOOK SLOT (₹{slot.entry_fee || entryFee})
+                          BOOK SLOT →
                         </button>
                       )}
                     </div>

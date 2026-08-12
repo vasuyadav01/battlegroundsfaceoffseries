@@ -1,8 +1,8 @@
 /* ── PAGE LAYOUT ── */
 .page {
-  padding: 2rem 0 5rem;
+  padding: 2.5rem 0 5rem;
   min-height: 100vh;
-  background: #111111;
+  background: #0d0d0d;
   font-family: 'Inter', sans-serif;
 }
 
@@ -13,7 +13,7 @@
   padding: 0.5rem 0 1.5rem;
   gap: 1rem;
   flex-wrap: wrap;
-  border-bottom: 1px solid #222222;
+  border-bottom: 1px solid #212121;
   margin-bottom: 2rem;
 }
 
@@ -27,22 +27,21 @@
 
 .subtitle {
   color: #a0a0a0;
-  font-size: 0.95rem;
-  margin-top: 0.25rem;
+  font-size: 0.92rem;
+  margin-top: 0.3rem;
 }
 
 /* ── FREE REWARD BANNER ── */
 .freeRewardBanner {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%);
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(34, 197, 94, 0.12) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: 12px;
   padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.12);
 }
 
 .freeRewardBannerLeft {
@@ -60,7 +59,7 @@
 .bannerSubtext {
   display: block;
   font-size: 0.82rem;
-  color: #cccccc;
+  color: #b8b8b8;
   margin-top: 0.15rem;
 }
 
@@ -69,7 +68,7 @@
   color: #ffffff;
   font-size: 0.75rem;
   font-weight: 900;
-  padding: 0.3rem 0.7rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 999px;
   letter-spacing: 0.06em;
   flex-shrink: 0;
@@ -81,59 +80,60 @@
 }
 
 .dayHeader {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 900;
   text-transform: uppercase;
   color: #fbbf24;
-  letter-spacing: 0.04em;
-  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* ── SQUARE CARD GRID ── */
+/* ── PROPORTIONED CARD GRID ── */
 .slotGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.25rem;
 }
 
-/* ── SLOT CARD (COMPACT / NEAR-SQUARE) ── */
+/* ── SLOT CARD (PROPORTIONED & SLEEK) ── */
 .slotCard {
-  background: #181818;
-  border: 1px solid #282828;
+  background: #161616;
+  border: 1px solid #242424;
   border-radius: 14px;
-  padding: 1rem;
+  padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   justify-content: space-between;
   position: relative;
-  min-height: 185px;
+  min-height: 180px;
   transition: all 0.2s ease;
-  overflow: hidden;
 }
 
 .slotCard:hover:not(.slotCardFull) {
   border-color: #fbbf24;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .slotCardFull {
   opacity: 0.45;
-  background: #141414;
-  border-color: #222222;
+  background: #121212;
+  border-color: #202020;
 }
 
 .slotCardFree {
   border: 1px solid rgba(34, 197, 94, 0.45);
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.06) 0%, #181818 100%);
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.06) 0%, #161616 100%);
 }
 
 .slotCardFree:hover {
   border-color: #22c55e !important;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2) !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.2) !important;
 }
 
 /* Badges */
@@ -146,13 +146,13 @@
 }
 
 .spotsBadge {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  padding: 0.2rem 0.5rem;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #bbbbbb;
+  background: rgba(255, 255, 255, 0.06);
+  color: #aaaaaa;
 }
 
 .spotsFull {
@@ -182,10 +182,9 @@
 
 /* Time */
 .cardTime {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 900;
   color: #ffffff;
-  text-align: center;
   margin: 0.75rem 0 0.25rem;
   letter-spacing: -0.01em;
   line-height: 1.25;
@@ -195,14 +194,12 @@
   font-size: 0.72rem;
   font-weight: 800;
   color: #fbbf24;
-  text-align: center;
   margin-bottom: 0.25rem;
 }
 
 /* Price */
 .cardPriceRow {
-  text-align: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .normalPriceTag {
@@ -213,7 +210,7 @@
 
 .priceMeta {
   font-size: 0.72rem;
-  color: #777777;
+  color: #666666;
   font-weight: 500;
 }
 
@@ -226,7 +223,7 @@
 
 .strikePrice {
   text-decoration: line-through;
-  color: #666666;
+  color: #555555;
   font-size: 0.85rem;
 }
 
@@ -236,7 +233,7 @@
   font-weight: 900;
 }
 
-/* Bottom Action Button */
+/* Pinned Action Button */
 .cardBottomAction {
   margin-top: auto;
   width: 100%;
@@ -244,13 +241,13 @@
 
 .cardBtnNormal {
   width: 100%;
-  padding: 0.65rem 0.5rem;
+  padding: 0.7rem 0.5rem;
   background: #fbbf24;
   color: #111111;
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -267,13 +264,13 @@
 
 .cardBtnFree {
   width: 100%;
-  padding: 0.65rem 0.5rem;
+  padding: 0.7rem 0.5rem;
   background: #22c55e;
   color: #ffffff;
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -291,10 +288,10 @@
 
 .cardBtnDisabled {
   width: 100%;
-  padding: 0.65rem 0.5rem;
-  background: #252525;
-  color: #666666;
-  border: 1px solid #333333;
+  padding: 0.7rem 0.5rem;
+  background: #202020;
+  color: #555555;
+  border: 1px solid #2a2a2a;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
@@ -313,7 +310,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
   z-index: 1000;
   display: flex;
@@ -323,14 +320,14 @@
 }
 
 .modalContent {
-  background: #1c1c1c;
-  border: 1px solid #2e2e2e;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
   border-radius: 16px;
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   padding: 2rem 1.5rem;
   position: relative;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
 }
 
 .modalCloseBtn {
@@ -382,55 +379,9 @@
   line-height: 1.45;
 }
 
-/* Team Input Section inside modal */
-.teamInputSection {
-  margin-bottom: 1.25rem;
-}
-
-.inputLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #fbbf24;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.modalInput {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: #141414;
-  border: 1px solid #333333;
-  border-radius: 8px;
-  color: #ffffff;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.18s ease;
-}
-
-.modalInput:focus {
-  border-color: #fbbf24;
-}
-
-.existingTeamBox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #141414;
-  border: 1px solid #282828;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 0.95rem;
-}
-
 .modalSlotPreview {
-  background: #141414;
-  border: 1px solid #272727;
+  background: #121212;
+  border: 1px solid #242424;
   border-radius: 10px;
   padding: 1rem;
   text-align: center;
@@ -464,8 +415,8 @@
 }
 
 .modalSummaryBox {
-  background: #141414;
-  border: 1px solid #252525;
+  background: #121212;
+  border: 1px solid #242424;
   border-radius: 10px;
   padding: 0.85rem 1rem;
   margin-bottom: 1.25rem;
@@ -477,8 +428,8 @@
   align-items: center;
   font-size: 0.85rem;
   color: #aaaaaa;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #1e1e1e;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #1c1c1c;
 }
 
 .summaryRow:last-child {
@@ -488,7 +439,7 @@
 .summaryRowTotal {
   margin-top: 0.25rem;
   padding-top: 0.65rem;
-  border-top: 1px solid #2a2a2a !important;
+  border-top: 1px solid #282828 !important;
   font-weight: 700;
   color: #ffffff;
 }
@@ -507,7 +458,7 @@
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -526,7 +477,7 @@
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -557,7 +508,7 @@
 
 .cancelBtn:hover:not(:disabled) {
   color: #cccccc;
-  border-color: #3d3d3d;
+  border-color: #3a3a3a;
 }
 
 .errorMsg {
@@ -587,9 +538,9 @@
 
 /* ── CONFIRMATION CARD ── */
 .confirmationCard {
-  max-width: 500px;
+  max-width: 480px;
   margin: 2rem auto;
-  background: #1d1d1d;
+  background: #181818;
   border: 1px solid #22c55e;
   border-radius: 16px;
   padding: 2.5rem 2rem;
@@ -597,8 +548,8 @@
 }
 
 .confirmIconWrap {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 50%;
@@ -609,7 +560,7 @@
 }
 
 .confirmTitle {
-  font-size: 1.8rem;
+  font-size: 1.75rem;
   font-weight: 900;
   text-transform: uppercase;
   color: #ffffff;
@@ -618,7 +569,7 @@
 
 .confirmSubtitle {
   color: #b8b8b8;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   margin-bottom: 1.75rem;
   line-height: 1.6;
 }
@@ -630,11 +581,11 @@
   gap: 0.5rem;
   background: #22c55e;
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 0.875rem 1.5rem;
+  padding: 0.85rem 1.5rem;
   border-radius: 8px;
   text-decoration: none;
   transition: background 0.18s ease;
@@ -665,13 +616,6 @@
 }
 
 /* ── RESPONSIVE BREAKPOINTS ── */
-@media (max-width: 900px) {
-  .slotGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Mobile: 2-column square grid & bottom sheet modal */
 @media (max-width: 600px) {
   .page {
     padding: 1.5rem 0 3.5rem;
@@ -688,7 +632,7 @@
 
   .slotCard {
     padding: 0.85rem 0.75rem;
-    min-height: 175px;
+    min-height: 170px;
     border-radius: 12px;
   }
 

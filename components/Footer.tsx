@@ -15,7 +15,7 @@ export default function Footer() {
               width={320}
               height={74}
               className={styles.brandLogo}
-              style={{ height: '144px', width: 'auto' }}
+              style={{ height: '64px', width: 'auto' }}
             />
             <p className={styles.brandSub}>Battlegrounds Faceoff Series • Season 1</p>
             <p className={styles.brandTagline}>

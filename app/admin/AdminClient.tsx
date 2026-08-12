@@ -88,7 +88,7 @@ export default function AdminClient({ userRole = 'admin', slots, teams, payouts:
           {isSuperAdmin && tab === 'slots' && <SlotsTab slots={slots} supabase={supabase} teams={teams} />}
           {isSuperAdmin && tab === 'payouts' && <PayoutsTab payouts={payouts} onMarkPaid={markPayoutPaid} />}
           {isSuperAdmin && tab === 'bookings' && <BookingsTab bookings={bookings} />}
-          {isSuperAdmin && tab === 'coupons' && <CouponsTab coupons={coupons} />}
+          {isSuperAdmin && tab === 'coupons' && <CouponsTab coupons={coupons} teams={teams} supabase={supabase} />}
           {isSuperAdmin && tab === 'config' && <ConfigTab config={config} supabase={supabase} />}
           {isSuperAdmin && tab === 'users' && <UsersTab users={users} onUpdateRole={updateUserRole} />}
         </div>
@@ -106,6 +106,17 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   const [kills, setKills] = useState('')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+  const [bookedTeams, setBookedTeams] = useState<any[]>([])
+
+  async function loadBookedTeams(slotId: string) {
+    if (!slotId) { setBookedTeams([]); return }
+    const { data } = await supabase
+      .from('bookings')
+      .select('team_id, teams(team_id, team_name)')
+      .eq('slot_id', slotId)
+      .eq('payment_status', 'paid')
+    setBookedTeams(data?.map((b: any) => b.teams).filter(Boolean) || [])
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -150,7 +161,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
         <div className={styles.formRow}>
           <div className="form-group">
             <label className="form-label">Slot</label>
-            <select className="form-input" value={selectedSlot} onChange={e => setSelectedSlot(e.target.value)} required>
+            <select className="form-input" value={selectedSlot} onChange={e => { setSelectedSlot(e.target.value); setSelectedTeam(''); loadBookedTeams(e.target.value) }} required>
               <option value="">Select slot...</option>
               {slots.map((s: any) => (
                 <option key={s.slot_id} value={s.slot_id}>
@@ -161,10 +172,10 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Team</label>
+            <label className="form-label">Team {bookedTeams.length > 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({bookedTeams.length} booked in slot)</span>}</label>
             <select className="form-input" value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} required>
-              <option value="">Select team...</option>
-              {teams.map((t: any) => (
+              <option value="">{selectedSlot ? (bookedTeams.length > 0 ? 'Select team...' : 'No paid bookings in this slot') : 'Select a slot first'}</option>
+              {(bookedTeams.length > 0 ? bookedTeams : teams).map((t: any) => (
                 <option key={t.team_id} value={t.team_id}>{t.team_name}</option>
               ))}
             </select>
@@ -249,9 +260,12 @@ function SlotsTab({ slots, supabase }: any) {
   const [creating, setCreating] = useState(false)
   const [newDate, setNewDate] = useState('')
   const [newTime, setNewTime] = useState('')
+  const [newCapacity, setNewCapacity] = useState('20')
+  const [newFee, setNewFee] = useState('50')
+  const [newWhatsapp, setNewWhatsapp] = useState('')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
-  const [editRooms, setEditRooms] = useState<Record<string, { roomId: string; roomPw: string }>>({})
+  const [editRooms, setEditRooms] = useState<Record<string, { roomId: string; roomPw: string; whatsapp: string }>>({})
 
   async function createSlot(e: React.FormEvent) {
     e.preventDefault()
@@ -259,14 +273,15 @@ function SlotsTab({ slots, supabase }: any) {
     const { error } = await supabase.from('slots').insert({
       date: newDate,
       time_label: newTime,
-      capacity: 24,
-      entry_fee: 50,
+      capacity: parseInt(newCapacity) || 20,
+      entry_fee: parseInt(newFee) || 50,
+      whatsapp_link: newWhatsapp.trim() || null,
     })
     setSaving(false)
     if (error) { setMsg('❌ ' + error.message); return }
     setMsg('✅ Slot created!')
     setCreating(false)
-    setNewDate(''); setNewTime('')
+    setNewDate(''); setNewTime(''); setNewWhatsapp('')
     window.location.reload()
   }
 
@@ -275,9 +290,16 @@ function SlotsTab({ slots, supabase }: any) {
     if (!details) return
     await supabase
       .from('slots')
-      .update({ room_id: details.roomId, room_password: details.roomPw })
+      .update({ room_id: details.roomId, room_password: details.roomPw, whatsapp_link: details.whatsapp || null })
       .eq('slot_id', slotId)
-    setMsg('✅ Room details saved for slot!')
+    setMsg('✅ Slot details saved!')
+  }
+
+  async function deleteSlot(slotId: string) {
+    if (!confirm('Delete this slot? This cannot be undone.')) return
+    const { error } = await supabase.from('slots').delete().eq('slot_id', slotId)
+    if (error) { setMsg('❌ ' + error.message); return }
+    window.location.reload()
   }
 
   async function markSlotComplete(slotId: string) {
@@ -309,6 +331,20 @@ function SlotsTab({ slots, supabase }: any) {
               <input type="text" className="form-input" placeholder="e.g. 7:00 PM – 9:00 PM" value={newTime} onChange={e => setNewTime(e.target.value)} required />
             </div>
           </div>
+          <div className={styles.formRow}>
+            <div className="form-group">
+              <label className="form-label">Capacity (teams)</label>
+              <input type="number" className="form-input" min={1} max={100} value={newCapacity} onChange={e => setNewCapacity(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Entry Fee (₹)</label>
+              <input type="number" className="form-input" min={0} value={newFee} onChange={e => setNewFee(e.target.value)} />
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">WhatsApp Group Link (optional)</label>
+            <input type="url" className="form-input" placeholder="https://chat.whatsapp.com/..." value={newWhatsapp} onChange={e => setNewWhatsapp(e.target.value)} />
+          </div>
           {msg && <p className={styles.scoreMsg}>{msg}</p>}
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
@@ -323,21 +359,22 @@ function SlotsTab({ slots, supabase }: any) {
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Time</th>
+              <th>Date / Time</th>
               <th>Teams</th>
               <th>Status</th>
-              <th>Room ID / PW</th>
+              <th>Room ID / PW / WhatsApp</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {slots.map((slot: any) => {
-              const edit = editRooms[slot.slot_id] || { roomId: slot.room_id || '', roomPw: slot.room_password || '' }
+              const edit = editRooms[slot.slot_id] || { roomId: slot.room_id || '', roomPw: slot.room_password || '', whatsapp: slot.whatsapp_link || '' }
               return (
                 <tr key={slot.slot_id}>
-                  <td>{new Date(slot.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</td>
-                  <td style={{ fontSize: '0.85rem' }}>{slot.time_label}</td>
+                  <td>
+                    <div><strong>{new Date(slot.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</strong></div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{slot.time_label}</div>
+                  </td>
                   <td>{slot.teams_booked_count}/{slot.capacity}</td>
                   <td>
                     <span className={`badge ${slot.status === 'open' ? 'badge-success' : slot.status === 'full' ? 'badge-warning' : 'badge-neutral'}`}>
@@ -345,35 +382,22 @@ function SlotsTab({ slots, supabase }: any) {
                     </span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                      <input
-                        type="text"
-                        className="form-input"
-                        style={{ padding: '0.375rem 0.5rem', fontSize: '0.8rem' }}
-                        placeholder="Room ID"
-                        value={edit.roomId}
-                        onChange={e => setEditRooms(prev => ({ ...prev, [slot.slot_id]: { ...edit, roomId: e.target.value } }))}
-                      />
-                      <input
-                        type="text"
-                        className="form-input"
-                        style={{ padding: '0.375rem 0.5rem', fontSize: '0.8rem' }}
-                        placeholder="Password"
-                        value={edit.roomPw}
-                        onChange={e => setEditRooms(prev => ({ ...prev, [slot.slot_id]: { ...edit, roomPw: e.target.value } }))}
-                      />
+                    <div style={{ display: 'flex', gap: '0.4rem', flexDirection: 'column' }}>
+                      <input type="text" className="form-input" style={{ padding: '0.3rem 0.5rem', fontSize: '0.78rem' }} placeholder="Room ID"
+                        value={edit.roomId} onChange={e => setEditRooms(prev => ({ ...prev, [slot.slot_id]: { ...edit, roomId: e.target.value } }))} />
+                      <input type="text" className="form-input" style={{ padding: '0.3rem 0.5rem', fontSize: '0.78rem' }} placeholder="Password"
+                        value={edit.roomPw} onChange={e => setEditRooms(prev => ({ ...prev, [slot.slot_id]: { ...edit, roomPw: e.target.value } }))} />
+                      <input type="text" className="form-input" style={{ padding: '0.3rem 0.5rem', fontSize: '0.78rem' }} placeholder="WhatsApp link (optional)"
+                        value={edit.whatsapp} onChange={e => setEditRooms(prev => ({ ...prev, [slot.slot_id]: { ...edit, whatsapp: e.target.value } }))} />
                     </div>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                      <button className="btn btn-success btn-sm" onClick={() => saveRoomDetails(slot.slot_id)}>
-                        Save Room
-                      </button>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexDirection: 'column' }}>
+                      <button className="btn btn-success btn-sm" onClick={() => saveRoomDetails(slot.slot_id)}>💾 Save</button>
                       {slot.status !== 'completed' && (
-                        <button className="btn btn-secondary btn-sm" onClick={() => markSlotComplete(slot.slot_id)}>
-                          Mark Done
-                        </button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => markSlotComplete(slot.slot_id)}>✓ Done</button>
                       )}
+                      <button className="btn btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => deleteSlot(slot.slot_id)}>🗑 Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -526,27 +550,72 @@ function BookingsTab({ bookings }: { bookings: any[] }) {
 }
 
 // ── COUPONS TAB ──────────────────────────────────────────────────
-function CouponsTab({ coupons }: { coupons: any[] }) {
+function CouponsTab({ coupons, teams, supabase }: { coupons: any[]; teams: any[]; supabase: any }) {
+  const [list, setList] = useState(coupons)
+  const [issueTeam, setIssueTeam] = useState('')
+  const [issuing, setIssuing] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  async function issueCoupon(e: React.FormEvent) {
+    e.preventDefault()
+    if (!issueTeam) return
+    setIssuing(true); setMsg('')
+    // Generate code client-side (server will also auto-generate if blank, but we want to show it)
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase()
+    const { data, error } = await supabase
+      .from('coupons')
+      .insert({ team_id: issueTeam, type: 'free_slot', status: 'unused', code })
+      .select('*, teams(team_name)')
+      .single()
+    setIssuing(false)
+    if (error) { setMsg('❌ ' + error.message); return }
+    setList(prev => [data, ...prev])
+    setMsg(`✅ Coupon issued! Code: ${data.code} — share this with the team via WhatsApp.`)
+    setIssueTeam('')
+  }
+
   return (
     <div>
       <h2 className={styles.tabTitle}>Coupons</h2>
-      <p className={styles.tabDesc}>Free slot coupons issued to 3rd-place teams per slot.</p>
-      <div className="table-wrapper" style={{ marginTop: '1rem' }}>
+      <p className={styles.tabDesc}>Issue free slot coupons to 3rd-place teams. Share the code with them via WhatsApp.</p>
+
+      {/* Issue Form */}
+      <form onSubmit={issueCoupon} className={styles.createSlotForm}>
+        <div className={styles.formRow}>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Issue Coupon To Team</label>
+            <select className="form-input" value={issueTeam} onChange={e => setIssueTeam(e.target.value)} required>
+              <option value="">Select team...</option>
+              {teams.map((t: any) => (
+                <option key={t.team_id} value={t.team_id}>{t.team_name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={issuing}>
+              {issuing ? 'Issuing...' : '+ Issue Free Coupon'}
+            </button>
+          </div>
+        </div>
+        {msg && <p className={`${styles.scoreMsg} ${msg.includes('✅') ? styles.scoreMsgOk : styles.scoreMsgErr}`}>{msg}</p>}
+      </form>
+
+      <div className="table-wrapper" style={{ marginTop: '1.25rem' }}>
         <table>
           <thead>
             <tr>
               <th>Team</th>
-              <th>Type</th>
+              <th>Code</th>
               <th>Status</th>
               <th>Issued</th>
               <th>Used</th>
             </tr>
           </thead>
           <tbody>
-            {coupons.map(c => (
+            {list.map(c => (
               <tr key={c.coupon_id}>
                 <td><strong>{c.teams?.team_name}</strong></td>
-                <td><span className="badge badge-info">Free Slot</span></td>
+                <td><code style={{ background: '#1a1a1a', padding: '0.2rem 0.5rem', borderRadius: '4px', letterSpacing: '0.08em', color: '#fbbf24' }}>{c.code || '—'}</code></td>
                 <td>
                   <span className={`badge ${c.status === 'unused' ? 'badge-success' : 'badge-neutral'}`}>
                     {c.status}
@@ -560,7 +629,7 @@ function CouponsTab({ coupons }: { coupons: any[] }) {
                 </td>
               </tr>
             ))}
-            {coupons.length === 0 && (
+            {list.length === 0 && (
               <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No coupons issued yet</td></tr>
             )}
           </tbody>

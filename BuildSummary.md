@@ -166,8 +166,24 @@ BGFS/
 
 ---
 
+## ⚠️ Important Implementation & Testing Notes
+
+### 1. Database Schema Cache Fix (`amount_paid` column)
+If Supabase returns the error: `could not find the 'amount_paid' column of 'bookings' in the schema cache`, execute the following SQL statement in your **Supabase SQL Editor**:
+```sql
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS amount_paid NUMERIC DEFAULT 50;
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS name_changed BOOLEAN DEFAULT FALSE;
+NOTIFY pgrst, 'reload schema';
+```
+
+### 2. Direct Slot Booking & Razorpay Integration Strategy
+- **Current Development Mode**: Razorpay payment requirement is temporarily bypassed in `SlotsClient.tsx` to allow instant, friction-free slot booking testing for teams.
+- **Future Production Phase**: When Razorpay credentials (`RAZORPAY_KEY_ID` & `RAZORPAY_KEY_SECRET`) are added to `.env.local` and Vercel, swap `handleSimulatePayment` in `app/slots/SlotsClient.tsx` to invoke `/api/payment/create-order` and initialize the standard Razorpay Checkout JS modal.
+
+---
+
 ## 📋 Quick Setup Checklist for Live Deployment:
-1. Execute `supabase/migrations/001_initial_schema.sql` in your Supabase SQL Editor.
+1. Execute `supabase/migrations/001_initial_schema.sql`, `002_slot_booking_v2.sql`, and `003_team_name_change.sql` in your Supabase SQL Editor.
 2. In Vercel Project Settings > **Environment Variables**, add:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`

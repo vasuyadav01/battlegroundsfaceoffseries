@@ -2,11 +2,9 @@ import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 // POST /api/booking/create
-// Creates a PENDING booking record before payment.
-// Returns booking_id so the confirm step can reference it.
 export async function POST(request: Request) {
   try {
-    const { slot_id } = await request.json()
+    const { slot_id, team_name, phone } = await request.json()
 
     if (!slot_id) {
       return NextResponse.json({ error: 'slot_id is required' }, { status: 400 })
@@ -16,23 +14,52 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ error: 'Please sign in to book a slot.' }, { status: 401 })
     }
 
     const admin = await createAdminClient()
 
-    // Get user's team
+    // Get user's team profile
     const { data: userProfile } = await admin
       .from('users')
       .select('team_id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (!userProfile?.team_id) {
-      return NextResponse.json({ error: 'No team found. Please complete onboarding first.' }, { status: 400 })
+    let team_id = userProfile?.team_id
+
+    // If user has no team yet, create one seamlessly on the spot!
+    if (!team_id) {
+      const finalTeamName = (team_name && team_name.trim()) || user.email?.split('@')[0] || 'Team User'
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+      const { data: newTeam, error: teamErr } = await admin
+        .from('teams')
+        .insert({
+          team_name: finalTeamName,
+          captain_id: user.id,
+          invite_code: inviteCode,
+          phone: phone || null,
+        })
+        .select('team_id')
+        .single()
+
+      if (teamErr) {
+        return NextResponse.json({ error: 'Failed to set up team name: ' + teamErr.message }, { status: 500 })
+      }
+
+      team_id = newTeam.team_id
+
+      // Link team to user profile
+      await admin
+        .from('users')
+        .upsert({
+          user_id: user.id,
+          email: user.email,
+          team_id: team_id,
+          role: 'captain',
+        }, { onConflict: 'user_id' })
     }
-
-    const team_id = userProfile.team_id
 
     // Check slot exists and has capacity
     const { data: slot, error: slotErr } = await admin
@@ -49,7 +76,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This slot is full. Please choose another slot.' }, { status: 409 })
     }
 
-    // Check for duplicate booking (any status — prevent ghost pending records too)
+    // Check for duplicate booking
     const { data: existingBooking } = await admin
       .from('bookings')
       .select('booking_id, payment_status')
@@ -61,7 +88,6 @@ export async function POST(request: Request) {
       if (existingBooking.payment_status === 'paid') {
         return NextResponse.json({ error: 'Your team has already booked this slot.' }, { status: 409 })
       }
-      // Reuse existing pending booking
       return NextResponse.json({
         success: true,
         booking_id: existingBooking.booking_id,

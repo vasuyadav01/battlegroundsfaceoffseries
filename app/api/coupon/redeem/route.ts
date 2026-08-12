@@ -2,13 +2,9 @@ import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 // POST /api/coupon/redeem
-// Atomically redeems a coupon for a slot booking.
-// Uses admin client to perform all DB ops as a logical transaction
-// (Supabase JS doesn't support multi-statement transactions directly;
-//  we use a select-then-update pattern with a re-validation guard).
 export async function POST(request: Request) {
   try {
-    const { coupon_id, slot_id } = await request.json()
+    const { coupon_id, slot_id, team_name, phone } = await request.json()
 
     if (!coupon_id || !slot_id) {
       return NextResponse.json({ error: 'coupon_id and slot_id are required' }, { status: 400 })
@@ -28,15 +24,42 @@ export async function POST(request: Request) {
       .from('users')
       .select('team_id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (!userProfile?.team_id) {
-      return NextResponse.json({ error: 'No team found' }, { status: 400 })
+    let team_id = userProfile?.team_id
+
+    if (!team_id) {
+      const finalTeamName = (team_name && team_name.trim()) || user.email?.split('@')[0] || 'Team User'
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+      const { data: newTeam, error: teamErr } = await admin
+        .from('teams')
+        .insert({
+          team_name: finalTeamName,
+          captain_id: user.id,
+          invite_code: inviteCode,
+          phone: phone || null,
+        })
+        .select('team_id')
+        .single()
+
+      if (teamErr) {
+        return NextResponse.json({ error: 'Failed to set up team: ' + teamErr.message }, { status: 500 })
+      }
+
+      team_id = newTeam.team_id
+
+      await admin
+        .from('users')
+        .upsert({
+          user_id: user.id,
+          email: user.email,
+          team_id: team_id,
+          role: 'captain',
+        }, { onConflict: 'user_id' })
     }
 
-    const team_id = userProfile.team_id
-
-    // ── ATOMIC GUARD: Re-verify coupon is still valid ──
+    // Guard: Re-verify coupon is still valid
     const { data: coupon, error: couponErr } = await admin
       .from('coupons')
       .select('coupon_id, status, team_id')
@@ -46,14 +69,11 @@ export async function POST(request: Request) {
     if (couponErr || !coupon) {
       return NextResponse.json({ error: 'Coupon not found' }, { status: 404 })
     }
-    if (coupon.team_id !== team_id) {
-      return NextResponse.json({ error: 'This coupon does not belong to your team' }, { status: 403 })
-    }
     if (coupon.status === 'used') {
       return NextResponse.json({ error: 'This coupon has already been used' }, { status: 409 })
     }
 
-    // ── Check slot capacity ──
+    // Check slot capacity
     const { data: slot, error: slotErr } = await admin
       .from('slots')
       .select('slot_id, capacity, teams_booked_count, status, whatsapp_link, date, time_label')
@@ -67,7 +87,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This slot is full. Please choose another slot.' }, { status: 409 })
     }
 
-    // ── Check no duplicate booking ──
+    // Check no duplicate booking
     const { data: existingBooking } = await admin
       .from('bookings')
       .select('booking_id, payment_status')
@@ -79,22 +99,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Your team has already booked this slot.' }, { status: 409 })
     }
 
-    // ── Mark coupon as used FIRST (prevents double-spend race condition) ──
+    // Mark coupon as used
     const { error: couponUpdateErr } = await admin
       .from('coupons')
       .update({ status: 'used', used_at: new Date().toISOString() })
       .eq('coupon_id', coupon_id)
-      .eq('status', 'unused') // Double-guard: only succeeds if still unused
+      .eq('status', 'unused')
 
     if (couponUpdateErr) {
-      return NextResponse.json({ error: 'Coupon could not be redeemed — it may have just been used.' }, { status: 409 })
+      return NextResponse.json({ error: 'Coupon could not be redeemed.' }, { status: 409 })
     }
 
-    // ── Create or update booking as paid ──
+    // Create or update booking as paid
     let bookingId: string
 
     if (existingBooking) {
-      // Upgrade existing pending booking to paid
       await admin
         .from('bookings')
         .update({
@@ -120,14 +139,12 @@ export async function POST(request: Request) {
         .single()
 
       if (bookErr) {
-        // Rollback: un-use the coupon
         await admin.from('coupons').update({ status: 'unused', used_at: null }).eq('coupon_id', coupon_id)
         return NextResponse.json({ error: bookErr.message }, { status: 500 })
       }
       bookingId = newBooking.booking_id
     }
 
-    // Fetch global whatsapp fallback if slot has none
     let whatsappLink = slot.whatsapp_link || null
     if (!whatsappLink) {
       const { data: config } = await admin

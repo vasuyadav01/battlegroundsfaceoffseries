@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, AlertCircle, Sparkles, ChevronRight, X, Lock } from 'lucide-react'
+import { Check, Sparkles, ChevronRight, X, Lock, ShieldCheck, Users } from 'lucide-react'
 import styles from './page.module.css'
 
 interface Slot {
@@ -45,12 +45,16 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
   const [modalState, setModalState] = useState<ModalState>('none')
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
 
+  // Team input if user doesn't have a team yet (eliminates onboarding redirect!)
+  const [inputTeamName, setInputTeamName] = useState('')
+  const [inputPhone, setInputPhone] = useState('')
+
   const [bookingId, setBookingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [confirmed, setConfirmed] = useState<ConfirmedData | null>(null)
 
-  // Track if coupon has been used in current session to immediately revert cards to paid state
+  // Track if coupon has been used in current session to immediately update UI
   const [couponUsedInSession, setCouponUsedInSession] = useState(false)
   const activeFreeCoupon = !couponUsedInSession ? freeCoupon : null
 
@@ -67,17 +71,18 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
   // ── Handle Card Button Click ──
   function handleSlotAction(slot: Slot, isFreeAction: boolean) {
     if (!isLoggedIn) {
-      router.push('/login')
-      return
-    }
-    if (!userTeam) {
-      router.push('/onboard')
+      router.push('/login?redirectTo=/slots')
       return
     }
 
     setSelectedSlot(slot)
     setError('')
     setBookingId(null)
+
+    // Pre-fill team name if available
+    if (userTeam?.team_name) {
+      setInputTeamName(userTeam.team_name)
+    }
 
     if (isFreeAction && activeFreeCoupon) {
       setModalState('freeConfirm')
@@ -89,6 +94,13 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
   // ── Proceed to Paid Booking ──
   async function handleProceedToPay() {
     if (!selectedSlot) return
+
+    const teamNameToUse = userTeam?.team_name || inputTeamName.trim()
+    if (!teamNameToUse) {
+      setError('Please enter your Team Name to proceed.')
+      return
+    }
+
     setError('')
     setLoading(true)
 
@@ -96,12 +108,16 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
       const res = await fetch('/api/booking/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slot_id: selectedSlot.slot_id }),
+        body: JSON.stringify({
+          slot_id: selectedSlot.slot_id,
+          team_name: teamNameToUse,
+          phone: inputPhone.trim() || null,
+        }),
       })
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Failed to initialize booking. Please try again.')
+        setError(data.error || 'Failed to create booking. Please try again.')
         setLoading(false)
         return
       }
@@ -151,6 +167,9 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
   // ── Redeem Free Slot Reward ──
   async function handleRedeemFreeSlot() {
     if (!selectedSlot || !activeFreeCoupon) return
+
+    const teamNameToUse = userTeam?.team_name || inputTeamName.trim() || 'Team User'
+
     setLoading(true)
     setError('')
 
@@ -161,6 +180,8 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
         body: JSON.stringify({
           coupon_id: activeFreeCoupon.coupon_id,
           slot_id: selectedSlot.slot_id,
+          team_name: teamNameToUse,
+          phone: inputPhone.trim() || null,
         }),
       })
       const data = await res.json()
@@ -185,7 +206,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
     }
   }
 
-  // Deterministic date formatters (prevents SSR/Client locale hydration mismatch)
+  // Deterministic date formatters (SSR match)
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -215,10 +236,10 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
             </div>
             <h1 className={styles.confirmTitle}>Slot Booked!</h1>
             <p className={styles.confirmSubtitle}>
-              Your team <strong style={{ color: '#ffffff' }}>{userTeam?.team_name}</strong> is confirmed for{' '}
+              Your team is confirmed for{' '}
               <strong style={{ color: '#fbbf24' }}>{confirmed.slotTime}</strong> on{' '}
               <strong style={{ color: '#fbbf24' }}>{fmtDateShort(confirmed.slotDate)}</strong>.
-              Match Room ID & Password will be shared in the WhatsApp group.
+              Match Room ID & Password will be shared in the official WhatsApp group.
             </p>
 
             {confirmed.whatsappLink && (
@@ -261,13 +282,13 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
             <div className={styles.freeRewardBannerLeft}>
               <Sparkles size={20} className={styles.sparkleIcon} />
               <div>
-                <strong style={{ color: '#ffffff' }}>FREE SLOT REWARD AVAILABLE!</strong>
+                <strong style={{ color: '#ffffff', fontSize: '0.95rem' }}>FREE SLOT REWARD UNLOCKED!</strong>
                 <span className={styles.bannerSubtext}>
                   You earned a free slot reward (3rd place finish). Choose any open slot below to claim for ₹0!
                 </span>
               </div>
             </div>
-            <span className={styles.freeRewardTag}>1 FREE SLOT</span>
+            <span className={styles.freeRewardTag}>1 FREE REWARD</span>
           </div>
         )}
 
@@ -276,11 +297,11 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
           <div>
             <h1 className={styles.title}>MATCH SLOTS</h1>
             <p className={styles.subtitle}>
-              3 Matches per Slot · ₹{entryFee} per Slot · Max 20 Teams
+              3 Matches per Slot · ₹{entryFee} Entry · Max 20 Teams
             </p>
           </div>
           {!isLoggedIn && (
-            <Link href="/login" className="btn btn-primary" style={{ background: '#fbbf24', color: '#111' }}>
+            <Link href="/login?redirectTo=/slots" className="btn btn-primary" style={{ background: '#fbbf24', color: '#111' }}>
               SIGN IN TO BOOK →
             </Link>
           )}
@@ -316,8 +337,8 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
                       ${showFreeOption ? styles.slotCardFree : ''}
                     `}
                   >
-                    {/* Badge row */}
-                    <div className={styles.cardBadgeRow}>
+                    {/* Top Row: Spots Pill & Free Ribbon */}
+                    <div className={styles.cardTopRow}>
                       <span className={`
                         ${styles.spotsBadge}
                         ${isFull ? styles.spotsFull : ''}
@@ -326,18 +347,18 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
                         {isCompleted
                           ? 'ENDED'
                           : isFull
-                          ? '20/20 FULL'
-                          : `${spotsLeft} / ${slot.capacity} SPOTS LEFT`}
+                          ? 'FULL'
+                          : `${spotsLeft} / ${slot.capacity} SPOTS`}
                       </span>
 
                       {showFreeOption && (
                         <span className={styles.freeRibbon}>
-                          <Sparkles size={11} /> FREE
+                          <Sparkles size={10} /> FREE
                         </span>
                       )}
                     </div>
 
-                    {/* Time */}
+                    {/* Time Label */}
                     <div className={styles.cardTime}>
                       {slot.time_label}
                     </div>
@@ -348,7 +369,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
                       </div>
                     )}
 
-                    {/* Price Tag */}
+                    {/* Fee */}
                     <div className={styles.cardPriceRow}>
                       {showFreeOption ? (
                         <div className={styles.freePriceTag}>
@@ -362,7 +383,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
                       )}
                     </div>
 
-                    {/* Card Bottom Pinned Action Button */}
+                    {/* Bottom Action Button */}
                     <div className={styles.cardBottomAction}>
                       {isCompleted ? (
                         <button disabled className={styles.cardBtnDisabled}>
@@ -377,14 +398,14 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
                           className={styles.cardBtnFree}
                           onClick={() => handleSlotAction(slot, true)}
                         >
-                          <Sparkles size={14} /> BOOK FREE →
+                          <Sparkles size={13} /> BOOK FREE
                         </button>
                       ) : (
                         <button
                           className={styles.cardBtnNormal}
                           onClick={() => handleSlotAction(slot, false)}
                         >
-                          BOOK SLOT →
+                          BOOK SLOT (₹{slot.entry_fee || entryFee})
                         </button>
                       )}
                     </div>
@@ -400,7 +421,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
       {/* MODALS / BOTTOM SHEETS */}
       {/* ───────────────────────────────────────────── */}
 
-      {/* ── 1. FREE SLOT ACCIDENTAL Safeguard Dialog ── */}
+      {/* ── 1. FREE SLOT Safeguard Dialog ── */}
       {modalState === 'freeConfirm' && selectedSlot && activeFreeCoupon && (
         <div className={styles.modalOverlay} onClick={() => setModalState('none')}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -409,12 +430,12 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
             </button>
 
             <div className={styles.modalIconWrapGold}>
-              <Sparkles size={32} color="#fbbf24" />
+              <Sparkles size={30} color="#fbbf24" />
             </div>
 
             <h2 className={styles.modalTitle}>Redeem Free Slot Reward?</h2>
             <p className={styles.modalBody}>
-              You are using your <strong style={{ color: '#fbbf24' }}>3rd Place Free Slot Reward</strong> to book:
+              Using your 3rd-place Free Slot Reward for:
             </p>
 
             <div className={styles.modalSlotPreview}>
@@ -423,8 +444,25 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
               <div className={styles.previewFee}>Entry Fee: <span style={{ textDecoration: 'line-through' }}>₹50</span> <strong>₹0 FREE</strong></div>
             </div>
 
+            {/* Team Name Input if missing */}
+            {!userTeam?.team_name && (
+              <div className={styles.teamInputSection}>
+                <label className={styles.inputLabel}>
+                  <Users size={14} color="#fbbf24" /> Team Name
+                </label>
+                <input
+                  type="text"
+                  className={styles.modalInput}
+                  placeholder="e.g. Soul Esports"
+                  value={inputTeamName}
+                  onChange={e => setInputTeamName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             <p className={styles.modalWarningText}>
-              ⚠️ Accidental booking safeguard: Once confirmed, your 3rd-place reward will be permanently marked as used for this slot.
+              ⚠️ Accidental booking safeguard: Once confirmed, your reward will be marked as used for this slot.
             </p>
 
             {error && <p className={styles.errorMsg}>{error}</p>}
@@ -449,7 +487,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
         </div>
       )}
 
-      {/* ── 2. PAID CHECKOUT MODAL / BOTTOM SHEET ── */}
+      {/* ── 2. PAID CHECKOUT MODAL ── */}
       {modalState === 'checkout' && selectedSlot && (
         <div className={styles.modalOverlay} onClick={() => setModalState('none')}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -457,30 +495,40 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
               <X size={20} />
             </button>
 
-            <h2 className={styles.modalTitle}>BOOKING SUMMARY</h2>
+            <h2 className={styles.modalTitle}>BOOK SLOT</h2>
             <p className={styles.modalBody}>
-              Review details for your tournament entry:
+              {selectedSlot.time_label} · {fmtDateShort(selectedSlot.date)}
             </p>
 
+            {/* Team Name Input if user has no team name set yet */}
+            <div className={styles.teamInputSection}>
+              <label className={styles.inputLabel}>
+                <Users size={14} color="#fbbf24" /> Team Name
+              </label>
+              {userTeam?.team_name ? (
+                <div className={styles.existingTeamBox}>
+                  <ShieldCheck size={16} color="#22c55e" />
+                  <strong>{userTeam.team_name}</strong>
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  className={styles.modalInput}
+                  placeholder="Enter your BGMI Team Name (e.g. GodLike)"
+                  value={inputTeamName}
+                  onChange={e => setInputTeamName(e.target.value)}
+                  required
+                />
+              )}
+            </div>
+
             <div className={styles.modalSummaryBox}>
-              <div className={styles.summaryRow}>
-                <span>Slot Time</span>
-                <strong>{selectedSlot.time_label}</strong>
-              </div>
-              <div className={styles.summaryRow}>
-                <span>Date</span>
-                <strong>{fmtDateShort(selectedSlot.date)}</strong>
-              </div>
-              <div className={styles.summaryRow}>
-                <span>Team</span>
-                <strong>{userTeam?.team_name || '—'}</strong>
-              </div>
               <div className={styles.summaryRow}>
                 <span>Format</span>
                 <strong>3 BGMI Matches</strong>
               </div>
               <div className={`${styles.summaryRow} ${styles.summaryRowTotal}`}>
-                <span>TOTAL FEE</span>
+                <span>ENTRY FEE</span>
                 <strong style={{ color: '#fbbf24', fontSize: '1.3rem' }}>₹{selectedSlot.entry_fee || entryFee}</strong>
               </div>
             </div>
@@ -514,7 +562,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
             <div className={styles.simulateDevBadge}>⚙ DEV MODE — PAYMENT SIMULATION</div>
             <h2 className={styles.modalTitle}>Payment Gateway</h2>
             <p className={styles.modalBody}>
-              Click below to simulate instant payment success for testing.
+              Simulate instant payment for testing.
             </p>
 
             <div className={styles.modalSummaryBox}>
@@ -524,7 +572,7 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
               </div>
               <div className={styles.summaryRow}>
                 <span>Team</span>
-                <strong>{userTeam?.team_name}</strong>
+                <strong>{userTeam?.team_name || inputTeamName || 'Team User'}</strong>
               </div>
               <div className={`${styles.summaryRow} ${styles.summaryRowTotal}`}>
                 <span>AMOUNT</span>

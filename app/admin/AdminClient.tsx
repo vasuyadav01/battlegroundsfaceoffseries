@@ -295,15 +295,17 @@ function SlotsTab({ slots, supabase }: any) {
     setMsg('✅ Slot details saved!')
   }
 
+  async function changeSlotStatus(slotId: string, newStatus: 'open' | 'full' | 'completed') {
+    const { error } = await supabase.from('slots').update({ status: newStatus }).eq('slot_id', slotId)
+    if (error) { setMsg('❌ ' + error.message); return }
+    setMsg(`✅ Slot status updated to ${newStatus.toUpperCase()}`)
+    window.location.reload()
+  }
+
   async function deleteSlot(slotId: string) {
     if (!confirm('Delete this slot? This cannot be undone.')) return
     const { error } = await supabase.from('slots').delete().eq('slot_id', slotId)
     if (error) { setMsg('❌ ' + error.message); return }
-    window.location.reload()
-  }
-
-  async function markSlotComplete(slotId: string) {
-    await supabase.from('slots').update({ status: 'completed' }).eq('slot_id', slotId)
     window.location.reload()
   }
 
@@ -312,7 +314,7 @@ function SlotsTab({ slots, supabase }: any) {
       <div className={styles.tabHeader}>
         <div>
           <h2 className={styles.tabTitle}>Slots Management</h2>
-          <p className={styles.tabDesc}>Create slots, set room details, mark as completed.</p>
+          <p className={styles.tabDesc}>Create slots, set room details, mark completed, or revert open.</p>
         </div>
         <button className="btn btn-primary btn-sm" onClick={() => setCreating(!creating)}>
           + New Slot
@@ -394,9 +396,45 @@ function SlotsTab({ slots, supabase }: any) {
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem', flexDirection: 'column' }}>
                       <button className="btn btn-success btn-sm" onClick={() => saveRoomDetails(slot.slot_id)}>💾 Save</button>
-                      {slot.status !== 'completed' && (
-                        <button className="btn btn-secondary btn-sm" onClick={() => markSlotComplete(slot.slot_id)}>✓ Done</button>
+
+                      {slot.status === 'completed' ? (
+                        <button
+                          className="btn btn-primary btn-sm"
+                          style={{ background: '#fbbf24', color: '#111', fontWeight: 'bold' }}
+                          onClick={() => changeSlotStatus(slot.slot_id, 'open')}
+                          title="Revert back to Open status if clicked by mistake"
+                        >
+                          ↺ REVERT TO OPEN
+                        </button>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '0.3rem' }}>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            style={{ flex: 1, fontSize: '0.75rem' }}
+                            onClick={() => changeSlotStatus(slot.slot_id, 'completed')}
+                          >
+                            ✓ Done
+                          </button>
+                          {slot.status === 'open' ? (
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              style={{ fontSize: '0.75rem', borderColor: '#eab308', color: '#eab308' }}
+                              onClick={() => changeSlotStatus(slot.slot_id, 'full')}
+                            >
+                              Full
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              style={{ fontSize: '0.75rem', borderColor: '#22c55e', color: '#22c55e' }}
+                              onClick={() => changeSlotStatus(slot.slot_id, 'open')}
+                            >
+                              Open
+                            </button>
+                          )}
+                        </div>
                       )}
+
                       <button className="btn btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => deleteSlot(slot.slot_id)}>🗑 Delete</button>
                     </div>
                   </td>

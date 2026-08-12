@@ -1,15 +1,11 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Check, AlertCircle, Ticket, Zap, ChevronRight } from 'lucide-react'
+import { Check, AlertCircle, Sparkles, ChevronRight, X, Lock } from 'lucide-react'
 import styles from './page.module.css'
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
 interface Slot {
   slot_id: string
   date: string
@@ -21,19 +17,21 @@ interface Slot {
   is_grand_finals: boolean
 }
 
+interface FreeCoupon {
+  coupon_id: string
+  code: string
+}
+
 interface Props {
   slots: Slot[]
   userTeam: any
-  whatsappLink: string   // global fallback
+  freeCoupon: FreeCoupon | null
+  whatsappLink: string
   entryFee: number
   isLoggedIn: boolean
 }
 
-// ─────────────────────────────────────────────
-// Step machine: browse → checkout → simulating → confirmed
-//              browse → checkout → couponConfirm → confirmed
-// ─────────────────────────────────────────────
-type Step = 'browse' | 'checkout' | 'simulating' | 'couponConfirm' | 'confirmed'
+type ModalState = 'none' | 'checkout' | 'freeConfirm' | 'simulating' | 'confirmed'
 
 interface ConfirmedData {
   whatsappLink: string
@@ -41,24 +39,20 @@ interface ConfirmedData {
   slotTime: string
 }
 
-export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, isLoggedIn }: Props) {
+export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink, entryFee, isLoggedIn }: Props) {
   const router = useRouter()
-  const supabase = createClient()
 
-  const [step, setStep] = useState<Step>('browse')
+  const [modalState, setModalState] = useState<ModalState>('none')
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
 
-  // Coupon state
-  const [couponCode, setCouponCode] = useState('')
-  const [couponState, setCouponState] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle')
-  const [couponId, setCouponId] = useState<string | null>(null)
-  const [couponError, setCouponError] = useState('')
-
-  // Booking state
   const [bookingId, setBookingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [confirmed, setConfirmed] = useState<ConfirmedData | null>(null)
+
+  // Track if coupon has been used in current session to immediately revert cards to paid state
+  const [couponUsedInSession, setCouponUsedInSession] = useState(false)
+  const activeFreeCoupon = !couponUsedInSession ? freeCoupon : null
 
   // Group slots by date
   const slotsByDate = useMemo(() => {
@@ -70,55 +64,31 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
     return grouped
   }, [slots])
 
-  // ── Select a slot and go to checkout ──
-  function handleSelectSlot(slot: Slot) {
+  // ── Handle Card Button Click ──
+  function handleSlotAction(slot: Slot, isFreeAction: boolean) {
+    if (!isLoggedIn) {
+      router.push('/login')
+      return
+    }
+    if (!userTeam) {
+      router.push('/onboard')
+      return
+    }
+
     setSelectedSlot(slot)
     setError('')
-    setCouponCode('')
-    setCouponState('idle')
-    setCouponId(null)
-    setCouponError('')
     setBookingId(null)
-    setStep('checkout')
-  }
 
-  function handleBack() {
-    setStep('browse')
-    setError('')
-  }
-
-  // ── Validate coupon code ──
-  const handleValidateCoupon = useCallback(async () => {
-    if (!couponCode.trim()) return
-    setCouponState('validating')
-    setCouponError('')
-
-    try {
-      const res = await fetch('/api/coupon/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: couponCode.trim() }),
-      })
-      const data = await res.json()
-      if (data.valid) {
-        setCouponState('valid')
-        setCouponId(data.coupon_id)
-      } else {
-        setCouponState('invalid')
-        setCouponError(data.error || 'Invalid coupon code')
-      }
-    } catch {
-      setCouponState('invalid')
-      setCouponError('Failed to validate coupon')
+    if (isFreeAction && activeFreeCoupon) {
+      setModalState('freeConfirm')
+    } else {
+      setModalState('checkout')
     }
-  }, [couponCode])
+  }
 
-  // ── Proceed to payment (no coupon) ──
+  // ── Proceed to Paid Booking ──
   async function handleProceedToPay() {
     if (!selectedSlot) return
-    if (!isLoggedIn) { router.push('/login'); return }
-    if (!userTeam) { router.push('/onboard'); return }
-
     setError('')
     setLoading(true)
 
@@ -131,21 +101,21 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Failed to create booking. Please try again.')
+        setError(data.error || 'Failed to initialize booking. Please try again.')
         setLoading(false)
         return
       }
 
       setBookingId(data.booking_id)
       setLoading(false)
-      setStep('simulating')
+      setModalState('simulating')
     } catch (err: any) {
-      setError(err.message || 'Network error')
+      setError(err.message || 'Network connection error')
       setLoading(false)
     }
   }
 
-  // ── Simulate payment success ──
+  // ── Simulate Payment Success ──
   async function handleSimulatePayment() {
     if (!bookingId) return
     setLoading(true)
@@ -160,7 +130,7 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
       const data = await res.json()
 
       if (!res.ok || !data.success) {
-        setError(data.error || 'Confirmation failed. Please contact support.')
+        setError(data.error || 'Payment confirmation failed.')
         setLoading(false)
         return
       }
@@ -171,25 +141,16 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
         slotTime: data.slot_time || selectedSlot?.time_label || '',
       })
       setLoading(false)
-      setStep('confirmed')
+      setModalState('confirmed')
     } catch (err: any) {
-      setError(err.message || 'Network error')
+      setError(err.message || 'Network connection error')
       setLoading(false)
     }
   }
 
-  // ── Coupon: show confirm dialog ──
-  function handleCouponConfirmStep() {
-    if (couponState !== 'valid') return
-    setStep('couponConfirm')
-  }
-
-  // ── Coupon: final redeem ──
-  async function handleRedeemCoupon() {
-    if (!selectedSlot || !couponId) return
-    if (!isLoggedIn) { router.push('/login'); return }
-    if (!userTeam) { router.push('/onboard'); return }
-
+  // ── Redeem Free Slot Reward ──
+  async function handleRedeemFreeSlot() {
+    if (!selectedSlot || !activeFreeCoupon) return
     setLoading(true)
     setError('')
 
@@ -197,33 +158,35 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
       const res = await fetch('/api/coupon/redeem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ coupon_id: couponId, slot_id: selectedSlot.slot_id }),
+        body: JSON.stringify({
+          coupon_id: activeFreeCoupon.coupon_id,
+          slot_id: selectedSlot.slot_id,
+        }),
       })
       const data = await res.json()
 
       if (!res.ok || !data.success) {
-        setError(data.error || 'Redemption failed. Please contact support.')
+        setError(data.error || 'Free slot redemption failed.')
         setLoading(false)
-        setStep('checkout')
         return
       }
 
+      setCouponUsedInSession(true)
       setConfirmed({
         whatsappLink: data.whatsapp_link || whatsappLink,
         slotDate: data.slot_date || selectedSlot?.date || '',
         slotTime: data.slot_time || selectedSlot?.time_label || '',
       })
       setLoading(false)
-      setStep('confirmed')
+      setModalState('confirmed')
     } catch (err: any) {
-      setError(err.message || 'Network error')
+      setError(err.message || 'Network connection error')
       setLoading(false)
-      setStep('checkout')
     }
   }
 
-  // ── Format date ──
-  function fmtDate(d: string) {
+  // Format date functions
+  function fmtDateHeader(d: string) {
     return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {
       weekday: 'long', day: 'numeric', month: 'short', year: 'numeric',
     })
@@ -238,7 +201,7 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
   // ─────────────────────────────────────────────
   // RENDER — CONFIRMED STATE
   // ─────────────────────────────────────────────
-  if (step === 'confirmed' && confirmed) {
+  if (modalState === 'confirmed' && confirmed) {
     return (
       <main className={styles.page}>
         <div className="container">
@@ -248,10 +211,10 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
             </div>
             <h1 className={styles.confirmTitle}>Slot Booked!</h1>
             <p className={styles.confirmSubtitle}>
-              You're confirmed for{' '}
-              <strong style={{ color: '#fbbf24' }}>{confirmed.slotTime}</strong>{' '}
-              on <strong style={{ color: '#fbbf24' }}>{fmtDateShort(confirmed.slotDate)}</strong>.
-              Room ID and password will be shared on the official WhatsApp group before match time.
+              Your team <strong style={{ color: '#ffffff' }}>{userTeam?.team_name}</strong> is confirmed for{' '}
+              <strong style={{ color: '#fbbf24' }}>{confirmed.slotTime}</strong> on{' '}
+              <strong style={{ color: '#fbbf24' }}>{fmtDateShort(confirmed.slotDate)}</strong>.
+              Match Room ID & Password will be shared in the WhatsApp group.
             </p>
 
             {confirmed.whatsappLink && (
@@ -271,7 +234,7 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
               </Link>
               <button
                 className="btn btn-ghost"
-                onClick={() => { setStep('browse'); setSelectedSlot(null); setConfirmed(null) }}
+                onClick={() => { setModalState('none'); setSelectedSlot(null); setConfirmed(null) }}
               >
                 BOOK ANOTHER SLOT
               </button>
@@ -283,42 +246,196 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
   }
 
   // ─────────────────────────────────────────────
-  // RENDER — COUPON CONFIRM DIALOG
+  // RENDER — MAIN GRID UI
   // ─────────────────────────────────────────────
-  if (step === 'couponConfirm' && selectedSlot) {
-    return (
-      <main className={styles.page}>
-        <div className="container">
-          <div className={styles.couponConfirmCard}>
-            <div className={styles.couponConfirmIcon}>
-              <Ticket size={32} color="#fbbf24" strokeWidth={1.75} />
+  return (
+    <main className={styles.page}>
+      <div className="container">
+        {/* Banner if team has earned a free slot */}
+        {activeFreeCoupon && (
+          <div className={styles.freeRewardBanner}>
+            <div className={styles.freeRewardBannerLeft}>
+              <Sparkles size={20} className={styles.sparkleIcon} />
+              <div>
+                <strong style={{ color: '#ffffff' }}>FREE SLOT REWARD AVAILABLE!</strong>
+                <span className={styles.bannerSubtext}>
+                  You earned a free slot reward (3rd place finish). Choose any open slot below to claim for ₹0!
+                </span>
+              </div>
             </div>
-            <h2 className={styles.couponConfirmTitle}>Use Your Free Slot Reward?</h2>
-            <p className={styles.couponConfirmBody}>
-              You are about to use your{' '}
-              <strong style={{ color: '#fbbf24' }}>Free Slot Coupon</strong> to book:
+            <span className={styles.freeRewardTag}>1 FREE SLOT</span>
+          </div>
+        )}
+
+        {/* Page header */}
+        <div className={styles.pageHeader}>
+          <div>
+            <h1 className={styles.title}>MATCH SLOTS</h1>
+            <p className={styles.subtitle}>
+              3 Matches per Slot · ₹{entryFee} per Slot · Max 20 Teams
             </p>
-            <div className={styles.couponConfirmSlot}>
-              <div className={styles.couponConfirmSlotTime}>{selectedSlot.time_label}</div>
-              <div className={styles.couponConfirmSlotDate}>{fmtDate(selectedSlot.date)}</div>
+          </div>
+          {!isLoggedIn && (
+            <Link href="/login" className="btn btn-primary" style={{ background: '#fbbf24', color: '#111' }}>
+              SIGN IN TO BOOK →
+            </Link>
+          )}
+        </div>
+
+        {/* Empty state */}
+        {Object.keys(slotsByDate).length === 0 && (
+          <div className={styles.emptyState}>
+            No active tournament slots available right now. Check back soon!
+          </div>
+        )}
+
+        {/* Date groups with Square Card Grid */}
+        {Object.entries(slotsByDate).map(([date, dateSlots]) => (
+          <div key={date} className={styles.daySection}>
+            <h2 className={styles.dayHeader}>📅 {fmtDateHeader(date)}</h2>
+
+            <div className={styles.slotGrid}>
+              {dateSlots.map(slot => {
+                const spotsLeft = slot.capacity - slot.teams_booked_count
+                const isFull = spotsLeft <= 0 || slot.status === 'full'
+                const isCompleted = slot.status === 'completed'
+                const isUrgent = !isFull && !isCompleted && spotsLeft <= 5
+
+                const showFreeOption = Boolean(activeFreeCoupon && !isFull && !isCompleted)
+
+                return (
+                  <div
+                    key={slot.slot_id}
+                    className={`
+                      ${styles.slotCard}
+                      ${isFull || isCompleted ? styles.slotCardFull : ''}
+                      ${showFreeOption ? styles.slotCardFree : ''}
+                    `}
+                  >
+                    {/* Badge row */}
+                    <div className={styles.cardBadgeRow}>
+                      <span className={`
+                        ${styles.spotsBadge}
+                        ${isFull ? styles.spotsFull : ''}
+                        ${isUrgent ? styles.spotsUrgent : ''}
+                      `}>
+                        {isCompleted
+                          ? 'ENDED'
+                          : isFull
+                          ? '20/20 FULL'
+                          : `${spotsLeft} / ${slot.capacity} SPOTS LEFT`}
+                      </span>
+
+                      {showFreeOption && (
+                        <span className={styles.freeRibbon}>
+                          <Sparkles size={11} /> FREE
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Time */}
+                    <div className={styles.cardTime}>
+                      {slot.time_label}
+                    </div>
+
+                    {slot.is_grand_finals && (
+                      <div className={styles.cardGFBadge}>
+                        🏆 Grand Finals
+                      </div>
+                    )}
+
+                    {/* Price Tag */}
+                    <div className={styles.cardPriceRow}>
+                      {showFreeOption ? (
+                        <div className={styles.freePriceTag}>
+                          <span className={styles.strikePrice}>₹{slot.entry_fee || entryFee}</span>
+                          <span className={styles.freeText}>₹0 FREE</span>
+                        </div>
+                      ) : (
+                        <div className={styles.normalPriceTag}>
+                          ₹{slot.entry_fee || entryFee} <span className={styles.priceMeta}>/ 3 Matches</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Bottom Pinned Action Button */}
+                    <div className={styles.cardBottomAction}>
+                      {isCompleted ? (
+                        <button disabled className={styles.cardBtnDisabled}>
+                          ENDED
+                        </button>
+                      ) : isFull ? (
+                        <button disabled className={styles.cardBtnDisabled}>
+                          <Lock size={13} /> FULL
+                        </button>
+                      ) : showFreeOption ? (
+                        <button
+                          className={styles.cardBtnFree}
+                          onClick={() => handleSlotAction(slot, true)}
+                        >
+                          <Sparkles size={14} /> BOOK FREE →
+                        </button>
+                      ) : (
+                        <button
+                          className={styles.cardBtnNormal}
+                          onClick={() => handleSlotAction(slot, false)}
+                        >
+                          BOOK SLOT →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            <p className={styles.couponConfirmWarning}>
-              ⚠️ This action is irreversible. Your coupon will be marked as used permanently.
+          </div>
+        ))}
+      </div>
+
+      {/* ───────────────────────────────────────────── */}
+      {/* MODALS / BOTTOM SHEETS */}
+      {/* ───────────────────────────────────────────── */}
+
+      {/* ── 1. FREE SLOT ACCIDENTAL Safeguard Dialog ── */}
+      {modalState === 'freeConfirm' && selectedSlot && activeFreeCoupon && (
+        <div className={styles.modalOverlay} onClick={() => setModalState('none')}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalCloseBtn} onClick={() => setModalState('none')}>
+              <X size={20} />
+            </button>
+
+            <div className={styles.modalIconWrapGold}>
+              <Sparkles size={32} color="#fbbf24" />
+            </div>
+
+            <h2 className={styles.modalTitle}>Redeem Free Slot Reward?</h2>
+            <p className={styles.modalBody}>
+              You are using your <strong style={{ color: '#fbbf24' }}>3rd Place Free Slot Reward</strong> to book:
+            </p>
+
+            <div className={styles.modalSlotPreview}>
+              <div className={styles.previewTime}>{selectedSlot.time_label}</div>
+              <div className={styles.previewDate}>{fmtDateShort(selectedSlot.date)}</div>
+              <div className={styles.previewFee}>Entry Fee: <span style={{ textDecoration: 'line-through' }}>₹50</span> <strong>₹0 FREE</strong></div>
+            </div>
+
+            <p className={styles.modalWarningText}>
+              ⚠️ Accidental booking safeguard: Once confirmed, your 3rd-place reward will be permanently marked as used for this slot.
             </p>
 
             {error && <p className={styles.errorMsg}>{error}</p>}
 
-            <div className={styles.couponConfirmBtns}>
+            <div className={styles.modalActionColumn}>
               <button
-                className={styles.couponConfirmYes}
-                onClick={handleRedeemCoupon}
+                className={styles.confirmFreeBtn}
+                onClick={handleRedeemFreeSlot}
                 disabled={loading}
               >
-                {loading ? <><span className="spinner" /> REDEEMING...</> : '✓ YES, CLAIM FREE SLOT'}
+                {loading ? <><span className="spinner" /> REDEEMING...</> : '✓ CONFIRM & CLAIM FREE SLOT'}
               </button>
               <button
-                className={styles.couponConfirmNo}
-                onClick={() => setStep('checkout')}
+                className={styles.cancelBtn}
+                onClick={() => setModalState('none')}
                 disabled={loading}
               >
                 Cancel
@@ -326,310 +443,112 @@ export default function SlotsClient({ slots, userTeam, whatsappLink, entryFee, i
             </div>
           </div>
         </div>
-      </main>
-    )
-  }
+      )}
 
-  // ─────────────────────────────────────────────
-  // RENDER — SIMULATE PAYMENT SCREEN
-  // ─────────────────────────────────────────────
-  if (step === 'simulating' && selectedSlot) {
-    return (
-      <main className={styles.page}>
-        <div className="container">
-          <div className={styles.simulateCard}>
-            <div className={styles.simulateDevBadge}>⚙ DEV MODE — PAYMENT SIMULATION</div>
-            <h2 className={styles.simulateTitle}>Payment Gateway</h2>
-            <p className={styles.simulateSubtitle}>
-              In production this will open the Razorpay checkout. For now, click below to simulate a successful payment.
+      {/* ── 2. PAID CHECKOUT MODAL / BOTTOM SHEET ── */}
+      {modalState === 'checkout' && selectedSlot && (
+        <div className={styles.modalOverlay} onClick={() => setModalState('none')}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalCloseBtn} onClick={() => setModalState('none')}>
+              <X size={20} />
+            </button>
+
+            <h2 className={styles.modalTitle}>BOOKING SUMMARY</h2>
+            <p className={styles.modalBody}>
+              Review details for your tournament entry:
             </p>
 
-            <div className={styles.simulateSummary}>
-              <div className={styles.simulateRow}>
-                <span>Slot</span>
+            <div className={styles.modalSummaryBox}>
+              <div className={styles.summaryRow}>
+                <span>Slot Time</span>
                 <strong>{selectedSlot.time_label}</strong>
               </div>
-              <div className={styles.simulateRow}>
+              <div className={styles.summaryRow}>
                 <span>Date</span>
                 <strong>{fmtDateShort(selectedSlot.date)}</strong>
               </div>
-              <div className={styles.simulateRow}>
+              <div className={styles.summaryRow}>
                 <span>Team</span>
                 <strong>{userTeam?.team_name || '—'}</strong>
               </div>
-              <div className={`${styles.simulateRow} ${styles.simulateTotal}`}>
-                <span>TOTAL</span>
-                <strong style={{ color: '#fbbf24', fontSize: '1.4rem' }}>₹{selectedSlot.entry_fee || entryFee}</strong>
+              <div className={styles.summaryRow}>
+                <span>Format</span>
+                <strong>3 BGMI Matches</strong>
+              </div>
+              <div className={`${styles.summaryRow} ${styles.summaryRowTotal}`}>
+                <span>TOTAL FEE</span>
+                <strong style={{ color: '#fbbf24', fontSize: '1.3rem' }}>₹{selectedSlot.entry_fee || entryFee}</strong>
               </div>
             </div>
 
             {error && <p className={styles.errorMsg}>{error}</p>}
 
-            <button
-              className={styles.simulateBtn}
-              onClick={handleSimulatePayment}
-              disabled={loading}
-            >
-              {loading ? <><span className="spinner" /> CONFIRMING...</> : '⚡ SIMULATE PAYMENT SUCCESS'}
-            </button>
-
-            <button
-              className="btn btn-ghost"
-              style={{ marginTop: '1rem', width: '100%' }}
-              onClick={() => setStep('checkout')}
-              disabled={loading}
-            >
-              ← BACK TO BOOKING
-            </button>
+            <div className={styles.modalActionColumn}>
+              <button
+                className={styles.proceedPayBtn}
+                onClick={handleProceedToPay}
+                disabled={loading}
+              >
+                {loading ? <><span className="spinner" /> PROCESSING...</> : <><ChevronRight size={18} /> PROCEED TO PAYMENT</>}
+              </button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setModalState('none')}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      </main>
-    )
-  }
+      )}
 
-  // ─────────────────────────────────────────────
-  // RENDER — MAIN BROWSE + CHECKOUT
-  // ─────────────────────────────────────────────
-  return (
-    <main className={styles.page}>
-      <div className="container">
-        {/* Page header */}
-        <div className={styles.pageHeader}>
-          <div>
-            <h1 className={styles.title}>SLOT BOOKING</h1>
-            <p className={styles.subtitle}>
-              {step === 'checkout' && selectedSlot
-                ? `Booking ${selectedSlot.time_label} · ${fmtDateShort(selectedSlot.date)}`
-                : 'Choose your match time and secure your team\'s spot.'
-              }
+      {/* ── 3. SIMULATE PAYMENT MODAL ── */}
+      {modalState === 'simulating' && selectedSlot && (
+        <div className={styles.modalOverlay} onClick={() => setModalState('none')}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.simulateDevBadge}>⚙ DEV MODE — PAYMENT SIMULATION</div>
+            <h2 className={styles.modalTitle}>Payment Gateway</h2>
+            <p className={styles.modalBody}>
+              Click below to simulate instant payment success for testing.
             </p>
-          </div>
-          {!isLoggedIn && (
-            <Link href="/login" className="btn btn-primary" style={{ background: '#facc15', color: '#111' }}>
-              SIGN IN TO BOOK →
-            </Link>
-          )}
-          {step === 'checkout' && (
-            <button className="btn btn-ghost" onClick={handleBack}>← BACK TO SLOTS</button>
-          )}
-        </div>
 
-        <div className={styles.layout}>
-          {/* ── LEFT: Slot Calendar ── */}
-          <div className={styles.slotCalendar}>
-            {Object.keys(slotsByDate).length === 0 && (
-              <div className={styles.emptyState}>
-                No active tournament slots available right now. Check back soon!
+            <div className={styles.modalSummaryBox}>
+              <div className={styles.summaryRow}>
+                <span>Slot</span>
+                <strong>{selectedSlot.time_label} ({fmtDateShort(selectedSlot.date)})</strong>
               </div>
-            )}
-
-            {Object.entries(slotsByDate).map(([date, dateSlots]) => (
-              <div key={date} className={styles.dayBlock}>
-                <div className={styles.dayHeader}>
-                  <span className={styles.dayName}>📅 {fmtDate(date)}</span>
-                </div>
-                <div className={styles.daySlots}>
-                  {dateSlots.map(slot => {
-                    const spotsLeft = slot.capacity - slot.teams_booked_count
-                    const isFull = spotsLeft <= 0 || slot.status === 'full'
-                    const isCompleted = slot.status === 'completed'
-                    const isSelected = selectedSlot?.slot_id === slot.slot_id && step === 'checkout'
-                    const isUrgent = !isFull && spotsLeft <= 5
-
-                    return (
-                      <button
-                        key={slot.slot_id}
-                        disabled={isFull || isCompleted}
-                        className={`
-                          ${styles.slotBtn}
-                          ${isSelected ? styles.slotBtnSelected : ''}
-                          ${isFull || isCompleted ? styles.slotBtnFull : ''}
-                        `}
-                        onClick={() => handleSelectSlot(slot)}
-                      >
-                        <div className={styles.slotBtnInner}>
-                          <div className={styles.slotTime}>
-                            ⏰ {slot.time_label}
-                            {slot.is_grand_finals && (
-                              <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: '#fbbf24' }}>
-                                🏆 Grand Finals
-                              </span>
-                            )}
-                          </div>
-                          <div className={styles.slotMeta}>
-                            <span className={`${styles.slotCapacity} ${isUrgent ? styles.slotCapacityUrgent : ''}`}>
-                              👥 {slot.teams_booked_count}/{slot.capacity}
-                              {isUrgent && <span className={styles.urgentPill}>{spotsLeft} LEFT!</span>}
-                            </span>
-                            {isCompleted ? (
-                              <span className="badge badge-neutral">ENDED</span>
-                            ) : isFull ? (
-                              <span className="badge badge-silver">FULL</span>
-                            ) : (
-                              <span className="badge badge-gold">₹{slot.entry_fee || entryFee}</span>
-                            )}
-                          </div>
-                        </div>
-                        {isSelected && (
-                          <div className={styles.slotSelectedBar} />
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
+              <div className={styles.summaryRow}>
+                <span>Team</span>
+                <strong>{userTeam?.team_name}</strong>
               </div>
-            ))}
-          </div>
-
-          {/* ── RIGHT: Booking Sidebar ── */}
-          <div className={styles.sidebar}>
-            {step === 'browse' && (
-              <div className={styles.summaryCard}>
-                <h3 className={styles.summaryTitle}>BOOKING SUMMARY</h3>
-                <p style={{ color: '#666666', fontSize: '0.9rem', textAlign: 'center', padding: '1.5rem 0' }}>
-                  Select a slot from the list to view details and book.
-                </p>
-                {!isLoggedIn && (
-                  <div className={styles.signInNudge}>
-                    <AlertCircle size={16} color="#fbbf24" />
-                    <span>You must be signed in to book a slot.</span>
-                    <Link href="/login" style={{ color: '#fbbf24', fontWeight: 700 }}>Sign In →</Link>
-                  </div>
-                )}
+              <div className={`${styles.summaryRow} ${styles.summaryRowTotal}`}>
+                <span>AMOUNT</span>
+                <strong style={{ color: '#fbbf24', fontSize: '1.3rem' }}>₹{selectedSlot.entry_fee || entryFee}</strong>
               </div>
-            )}
+            </div>
 
-            {step === 'checkout' && selectedSlot && (
-              <div className={styles.summaryCard}>
-                <h3 className={styles.summaryTitle}>BOOKING SUMMARY</h3>
+            {error && <p className={styles.errorMsg}>{error}</p>}
 
-                {/* Slot info */}
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Slot Time</span>
-                  <span className={styles.summaryValue}>{selectedSlot.time_label}</span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Date</span>
-                  <span className={styles.summaryValue}>{fmtDateShort(selectedSlot.date)}</span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Team</span>
-                  <span className={styles.summaryValue}>
-                    {userTeam ? userTeam.team_name : (isLoggedIn ? 'No team set' : 'Not signed in')}
-                  </span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Matches</span>
-                  <span className={styles.summaryValue}>3 Matches</span>
-                </div>
-
-                {/* Coupon input */}
-                <div className={styles.couponSection}>
-                  <div className={styles.couponHeader}>
-                    <Ticket size={14} color="#fbbf24" />
-                    <span className={styles.couponHeaderLabel}>Have a free slot coupon?</span>
-                  </div>
-                  <div className={styles.couponInputRow}>
-                    <input
-                      type="text"
-                      className={`form-input ${styles.couponInput} ${
-                        couponState === 'valid' ? styles.couponInputValid :
-                        couponState === 'invalid' ? styles.couponInputInvalid : ''
-                      }`}
-                      placeholder="Enter code (e.g. A3F9BC21)"
-                      value={couponCode}
-                      onChange={e => {
-                        setCouponCode(e.target.value.toUpperCase())
-                        setCouponState('idle')
-                        setCouponError('')
-                      }}
-                      maxLength={12}
-                      disabled={couponState === 'validating' || couponState === 'valid'}
-                    />
-                    {couponState !== 'valid' ? (
-                      <button
-                        className={styles.couponApplyBtn}
-                        onClick={handleValidateCoupon}
-                        disabled={!couponCode.trim() || couponState === 'validating'}
-                      >
-                        {couponState === 'validating' ? <span className="spinner" /> : 'APPLY'}
-                      </button>
-                    ) : (
-                      <button
-                        className={styles.couponRemoveBtn}
-                        onClick={() => {
-                          setCouponCode('')
-                          setCouponState('idle')
-                          setCouponId(null)
-                          setCouponError('')
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  {couponState === 'valid' && (
-                    <p className={styles.couponValid}>
-                      <Check size={13} /> Coupon valid — this slot will be FREE!
-                    </p>
-                  )}
-                  {couponState === 'invalid' && (
-                    <p className={styles.couponInvalid}>
-                      <AlertCircle size={13} /> {couponError}
-                    </p>
-                  )}
-                </div>
-
-                {/* Total */}
-                <div className={styles.totalRow}>
-                  <span className={styles.totalLabel}>TOTAL</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {couponState === 'valid' && (
-                      <span className={styles.strikeThrough}>₹{selectedSlot.entry_fee || entryFee}</span>
-                    )}
-                    <span className={styles.totalAmount}>
-                      {couponState === 'valid' ? '₹0' : `₹${selectedSlot.entry_fee || entryFee}`}
-                    </span>
-                  </div>
-                </div>
-
-                {error && <p className={styles.errorMsg} style={{ marginTop: '0.75rem' }}>{error}</p>}
-
-                {/* CTA */}
-                {couponState === 'valid' ? (
-                  <button
-                    className={styles.couponBookBtn}
-                    onClick={handleCouponConfirmStep}
-                    disabled={loading}
-                  >
-                    <Ticket size={16} />
-                    CLAIM FREE SLOT →
-                  </button>
-                ) : (
-                  <button
-                    className={styles.bookBtn}
-                    onClick={handleProceedToPay}
-                    disabled={loading || !isLoggedIn || !userTeam}
-                  >
-                    {loading
-                      ? <><span className="spinner" /> PROCESSING...</>
-                      : <><ChevronRight size={16} /> PROCEED TO PAYMENT</>
-                    }
-                  </button>
-                )}
-
-                {!isLoggedIn && (
-                  <div className={styles.signInNudge} style={{ marginTop: '0.75rem' }}>
-                    <AlertCircle size={14} color="#fbbf24" />
-                    <Link href="/login" style={{ color: '#fbbf24' }}>Sign in to book</Link>
-                  </div>
-                )}
-              </div>
-            )}
+            <div className={styles.modalActionColumn}>
+              <button
+                className={styles.simulateBtn}
+                onClick={handleSimulatePayment}
+                disabled={loading}
+              >
+                {loading ? <><span className="spinner" /> CONFIRMING...</> : '⚡ SIMULATE PAYMENT SUCCESS'}
+              </button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setModalState('checkout')}
+                disabled={loading}
+              >
+                ← Back
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </main>
   )
 }

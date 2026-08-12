@@ -23,6 +23,7 @@ export default async function SlotsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   let userTeam = null
   let freeCoupon = null
+  let userBookedSlotIds: string[] = []
 
   if (user) {
     const admin = await createAdminClient()
@@ -64,8 +65,8 @@ export default async function SlotsPage() {
       userTeam = teamData
     }
 
-    // 3. Fetch unused free slot coupon for this team if available
     if (teamId) {
+      // 3. Fetch unused free slot coupon for this team if available
       const { data: couponData } = await admin
         .from('coupons')
         .select('coupon_id, code')
@@ -75,6 +76,15 @@ export default async function SlotsPage() {
         .maybeSingle()
 
       freeCoupon = couponData
+
+      // 4. Fetch all slot IDs already booked by this team (paid)
+      const { data: userBookings } = await admin
+        .from('bookings')
+        .select('slot_id')
+        .eq('team_id', teamId)
+        .eq('payment_status', 'paid')
+
+      userBookedSlotIds = userBookings?.map(b => b.slot_id) || []
     }
   }
 
@@ -92,6 +102,7 @@ export default async function SlotsPage() {
       slots={slots || []}
       userTeam={userTeam}
       freeCoupon={freeCoupon}
+      userBookedSlotIds={userBookedSlotIds}
       whatsappLink={config.whatsapp_invite_link || ''}
       entryFee={parseInt(config.slot_entry_fee || '50')}
       isLoggedIn={!!user}

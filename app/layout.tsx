@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import '../styles/globals.css'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -32,7 +34,11 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>{children}</body>
+      <body>
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
     </html>
   )
 }

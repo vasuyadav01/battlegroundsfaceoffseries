@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic'
 
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
 import DashboardClient from './DashboardClient'
 import type { Metadata } from 'next'
 
@@ -114,17 +113,14 @@ export default async function DashboardPage() {
     .eq('team_id', safeTeam.team_id)
 
   return (
-    <>
-      <Navbar />
-      <DashboardClient
-        team={safeTeam}
-        userEmail={user.email || ''}
-        bookings={bookings || []}
-        leaderboardEntry={leaderboardEntry}
-        rank={rank}
-        payouts={payouts || []}
-        isCaptain={safeTeam.captain_user_id === user.id}
-      />
-    </>
+    <DashboardClient
+      team={safeTeam}
+      userEmail={user.email || ''}
+      bookings={bookings || []}
+      leaderboardEntry={leaderboardEntry}
+      rank={rank}
+      payouts={payouts || []}
+      isCaptain={safeTeam.captain_user_id === user.id}
+    />
   )
 }

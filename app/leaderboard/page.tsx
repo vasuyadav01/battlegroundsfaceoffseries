@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
 import LeaderboardClient from './LeaderboardClient'
 import type { Metadata } from 'next'
 
@@ -39,13 +38,10 @@ export default async function LeaderboardPage() {
   const ranked = (rows || []).map((row, idx) => ({ ...row, rank: idx + 1 }))
 
   return (
-    <>
-      <Navbar />
-      <LeaderboardClient
-        rows={ranked}
-        allMatches={allMatches || []}
-        slots={slots || []}
-      />
-    </>
+    <LeaderboardClient
+      rows={ranked}
+      allMatches={allMatches || []}
+      slots={slots || []}
+    />
   )
 }

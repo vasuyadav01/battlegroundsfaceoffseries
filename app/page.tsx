@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Users, Calendar, Crosshair, Trophy, Medal, Award, Zap, Check, ArrowRight } from 'lucide-react'
-import Navbar from '@/components/Navbar'
 import CountdownTimer from '@/components/CountdownTimer'
 import { createClient } from '@/lib/supabase/server'
 import styles from './page.module.css'
@@ -22,9 +21,7 @@ export default async function LandingPage() {
   const grandFinalsDate = '2026-08-29T23:00:00+05:30'
 
   return (
-    <>
-      <Navbar />
-      <main>
+    <main>
         {/* ── HERO ── */}
         <section className={styles.hero}>
           <div className={styles.heroOverlay} />
@@ -240,31 +237,6 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
-      </main>
-
-      {/* ── FOOTER ── */}
-      <footer className={styles.footer}>
-        <div className="container">
-          <div className={styles.footerInner}>
-            <div>
-              <span className={styles.goldText} style={{ fontFamily: 'Inter', fontSize: '1.3rem', fontWeight: '900', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                BGFS FACEOFF
-              </span>
-              <p style={{ color: '#777777', fontSize: '0.8rem', marginTop: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Battlegrounds Faceoff Series • Season 1
-              </p>
-            </div>
-            <div className={styles.footerLinks}>
-              <Link href="/leaderboard" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Leaderboard</Link>
-              <Link href="/slots" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Book Slot</Link>
-              <Link href="/login" style={{ color: '#b8b8b8', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.05em' }}>Login</Link>
-            </div>
-          </div>
-          <p style={{ color: '#777777', fontSize: '0.75rem', textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #212121', paddingTop: '1.25rem' }}>
-            © 2025 BGFS. Independent competitive gaming platform. All game graphics and trademarks belong to Krafton.
-          </p>
-        </div>
-      </footer>
-    </>
+    </main>
   )
 }

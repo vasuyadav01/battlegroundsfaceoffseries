@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
 import SlotsClient from './SlotsClient'
 import type { Metadata } from 'next'
 
@@ -54,16 +53,13 @@ export default async function SlotsPage() {
   configRows?.forEach(row => { config[row.key] = row.value })
 
   return (
-    <>
-      <Navbar />
-      <SlotsClient
-        slots={slots || []}
-        userTeam={userTeam}
-        coupons={coupons}
-        whatsappLink={config.whatsapp_invite_link || ''}
-        entryFee={parseInt(config.slot_entry_fee || '50')}
-        isLoggedIn={!!user}
-      />
-    </>
+    <SlotsClient
+      slots={slots || []}
+      userTeam={userTeam}
+      coupons={coupons}
+      whatsappLink={config.whatsapp_invite_link || ''}
+      entryFee={parseInt(config.slot_entry_fee || '50')}
+      isLoggedIn={!!user}
+    />
   )
 }

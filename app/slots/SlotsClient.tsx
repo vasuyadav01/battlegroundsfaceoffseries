@@ -185,17 +185,21 @@ export default function SlotsClient({ slots, userTeam, freeCoupon, whatsappLink,
     }
   }
 
-  // Format date functions
-  function fmtDateHeader(d: string) {
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {
-      weekday: 'long', day: 'numeric', month: 'short', year: 'numeric',
-    })
+  // Deterministic date formatters (prevents SSR/Client locale hydration mismatch)
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  function fmtDateHeader(dStr: string) {
+    const d = new Date(dStr + 'T00:00:00')
+    if (isNaN(d.getTime())) return dStr
+    return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
   }
 
-  function fmtDateShort(d: string) {
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {
-      weekday: 'short', day: 'numeric', month: 'short',
-    })
+  function fmtDateShort(dStr: string) {
+    const d = new Date(dStr + 'T00:00:00')
+    if (isNaN(d.getTime())) return dStr
+    return `${DAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`
   }
 
   // ─────────────────────────────────────────────

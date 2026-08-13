@@ -111,27 +111,49 @@
   gap: 0.5rem;
 }
 
-/* ── PROPORTIONED CARD GRID ── */
+/* ── RESPONSIVE GRID LAYOUT (2 mobile, 3 tablet, 4-5 desktop) ── */
 .slotGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
 }
 
-/* ── SLOT CARD ── */
+@media (max-width: 1200px) {
+  .slotGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .slotGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .slotGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+  }
+}
+
+/* ── SQUARE-ISH SLOT CARD ── */
 .slotCard {
   background: #151515;
   border: 1px solid #262626;
   border-radius: 12px;
-  padding: 1.1rem 0.85rem;
+  padding: 0.85rem 0.7rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   justify-content: space-between;
   position: relative;
-  min-height: 175px;
+  aspect-ratio: 1 / 1.05;
+  min-height: 165px;
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .slotCard:hover:not(.slotCardFull) {
@@ -141,24 +163,24 @@
 }
 
 .slotCardFull {
-  opacity: 0.45;
+  opacity: 0.5;
   background: #121212;
   border-color: #202020;
 }
 
 .slotCardFree {
-  border: 1px solid rgba(34, 197, 94, 0.45);
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.06) 0%, #151515 100%);
+  border: 2px solid #22c55e !important;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, #151515 100%);
 }
 
 .slotCardFree:hover {
   border-color: #22c55e !important;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2) !important;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.25) !important;
 }
 
 .slotCardBooked {
-  border: 1px solid rgba(34, 197, 94, 0.5) !important;
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, #151515 100%);
+  border: 2px solid rgba(34, 197, 94, 0.6) !important;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, #151515 100%);
 }
 
 .spotsBooked {
@@ -167,7 +189,7 @@
   border: 1px solid rgba(34, 197, 94, 0.4);
   font-size: 0.65rem;
   font-weight: 900;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 5px;
   display: inline-flex;
   align-items: center;
@@ -177,14 +199,14 @@
 
 .bookedText {
   color: #22c55e;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 
 .cardBtnWhatsapp {
   width: 100%;
-  padding: 0.65rem 0.5rem;
+  padding: 0.65rem 0.4rem;
   background: #22c55e;
   color: #ffffff;
   border: none;
@@ -197,7 +219,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   white-space: nowrap;
   transition: all 0.18s ease;
   box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3);
@@ -215,77 +237,81 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .spotsBadge {
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  padding: 3px 7px;
+  padding: 2px 7px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: #aaaaaa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   white-space: nowrap;
 }
 
 .spotsFull {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .spotsUrgent {
   background: rgba(239, 68, 68, 0.18);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid rgba(239, 68, 68, 0.4);
   animation: pulse 1.5s ease infinite;
 }
 
 .freeRibbon {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   background: #22c55e;
   color: #ffffff;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 900;
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
 }
 
 /* Time */
 .cardTime {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 900;
   color: #ffffff;
-  margin: 0.6rem 0 0.2rem;
+  margin: 0.4rem 0 0.15rem;
   letter-spacing: -0.01em;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .cardGFBadge {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: #fbbf24;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
 
 /* Price */
 .cardPriceRow {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .normalPriceTag {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 900;
   color: #fbbf24;
 }
 
 .priceMeta {
-  font-size: 0.7rem;
-  color: #777777;
+  font-size: 0.68rem;
+  color: #888888;
   font-weight: 500;
 }
 
@@ -293,18 +319,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .strikePrice {
   text-decoration: line-through;
-  color: #555555;
-  font-size: 0.85rem;
+  color: #666666;
+  font-size: 0.8rem;
 }
 
 .freeText {
   color: #22c55e;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 900;
 }
 
@@ -316,21 +342,21 @@
 
 .cardBtnNormal {
   width: 100%;
-  padding: 0.65rem 0.5rem;
+  padding: 0.6rem 0.4rem;
   background: #fbbf24;
   color: #111111;
   border: none;
   border-radius: 7px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   cursor: pointer;
   transition: all 0.18s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   white-space: nowrap;
 }
 
@@ -340,21 +366,21 @@
 
 .cardBtnFree {
   width: 100%;
-  padding: 0.65rem 0.5rem;
+  padding: 0.6rem 0.4rem;
   background: #22c55e;
   color: #ffffff;
   border: none;
   border-radius: 7px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   cursor: pointer;
   transition: all 0.18s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3);
   white-space: nowrap;
 }
@@ -365,23 +391,23 @@
 
 .cardBtnDisabled {
   width: 100%;
-  padding: 0.65rem 0.5rem;
-  background: #202020;
-  color: #555555;
-  border: 1px solid #2a2a2a;
+  padding: 0.6rem 0.4rem;
+  background: #222222;
+  color: #666666;
+  border: 1px solid #2e2e2e;
   border-radius: 7px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
   cursor: not-allowed;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   white-space: nowrap;
 }
 
-/* ── MODALS & BOTTOM SHEETS ── */
+/* ── CONFIRMATION DIALOG ── */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -402,8 +428,8 @@
   border: 1px solid #2a2a2a;
   border-radius: 16px;
   width: 100%;
-  max-width: 420px;
-  padding: 2rem 1.5rem;
+  max-width: 400px;
+  padding: 1.75rem 1.35rem;
   position: relative;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
 }
@@ -431,8 +457,8 @@
 .modalIconWrapGold {
   width: 54px;
   height: 54px;
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -441,7 +467,7 @@
 }
 
 .modalTitle {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 900;
   text-transform: uppercase;
   color: #ffffff;
@@ -450,10 +476,10 @@
 }
 
 .modalBody {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: #aaaaaa;
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
   line-height: 1.45;
 }
 
@@ -463,111 +489,58 @@
   border-radius: 10px;
   padding: 1rem;
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
 }
 
 .previewTime {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 900;
   color: #fbbf24;
 }
 
 .previewDate {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #888888;
   margin-top: 0.2rem;
 }
 
 .previewFee {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #aaaaaa;
   margin-top: 0.4rem;
 }
 
 .modalWarningText {
   font-size: 0.78rem;
-  color: #777777;
+  color: #888888;
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
   line-height: 1.45;
-}
-
-.modalSummaryBox {
-  background: #121212;
-  border: 1px solid #242424;
-  border-radius: 10px;
-  padding: 0.85rem 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.summaryRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  color: #aaaaaa;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid #1c1c1c;
-}
-
-.summaryRow:last-child {
-  border-bottom: none;
-}
-
-.summaryRowTotal {
-  margin-top: 0.25rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid #282828 !important;
-  font-weight: 700;
-  color: #ffffff;
 }
 
 .modalActionColumn {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .confirmFreeBtn {
   width: 100%;
-  padding: 0.88rem;
+  padding: 0.85rem;
   background: #22c55e;
   color: #ffffff;
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   cursor: pointer;
   transition: background 0.18s ease;
 }
 
-.confirmFreeBtn:hover:not(:disabled) {
+.confirmFreeBtn:hover {
   background: #16a34a;
-}
-
-.proceedPayBtn, .simulateBtn {
-  width: 100%;
-  padding: 0.88rem;
-  background: #fbbf24;
-  color: #111111;
-  border: none;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  transition: background 0.18s ease;
-}
-
-.proceedPayBtn:hover:not(:disabled), .simulateBtn:hover:not(:disabled) {
-  background: #fde047;
 }
 
 .cancelBtn {
@@ -578,107 +551,15 @@
   border: 1px solid #2a2a2a;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
 }
 
-.cancelBtn:hover:not(:disabled) {
+.cancelBtn:hover {
   color: #cccccc;
   border-color: #3a3a3a;
-}
-
-.errorMsg {
-  font-size: 0.82rem;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.simulateDevBadge {
-  display: inline-block;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 4px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #60a5fa;
-  padding: 0.2rem 0.6rem;
-  margin-bottom: 0.8rem;
-}
-
-/* ── CONFIRMATION CARD ── */
-.confirmationCard {
-  max-width: 480px;
-  margin: 2rem auto;
-  background: #181818;
-  border: 1px solid #22c55e;
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  text-align: center;
-}
-
-.confirmIconWrap {
-  width: 60px;
-  height: 60px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.25rem;
-}
-
-.confirmTitle {
-  font-size: 1.75rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #ffffff;
-  margin-bottom: 0.75rem;
-}
-
-.confirmSubtitle {
-  color: #b8b8b8;
-  font-size: 0.9rem;
-  margin-bottom: 1.75rem;
-  line-height: 1.6;
-}
-
-.whatsappBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: #22c55e;
-  color: #ffffff;
-  font-size: 0.88rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.85rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.18s ease;
-  margin-bottom: 1.25rem;
-}
-
-.whatsappBtn:hover {
-  background: #16a34a;
-}
-
-.confirmActions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 .emptyState {
@@ -694,7 +575,7 @@
 }
 
 /* ── RESPONSIVE BREAKPOINTS ── */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .page {
     padding: 1.5rem 0 3.5rem;
   }
@@ -703,29 +584,24 @@
     font-size: 1.5rem;
   }
 
-  .slotGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
-  }
-
   .slotCard {
-    padding: 0.8rem 0.6rem;
-    min-height: 165px;
+    padding: 0.75rem 0.55rem;
+    min-height: 155px;
     border-radius: 10px;
   }
 
   .cardTime {
-    font-size: 0.9rem;
-    margin: 0.45rem 0 0.15rem;
+    font-size: 0.88rem;
+    margin: 0.35rem 0 0.1rem;
   }
 
   .normalPriceTag, .freeText {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .cardBtnNormal, .cardBtnFree {
     font-size: 0.75rem;
-    padding: 0.6rem 0.4rem;
+    padding: 0.55rem 0.35rem;
   }
 
   /* Bottom sheet modal animation on mobile */
@@ -739,14 +615,9 @@
     border-bottom-right-radius: 0;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    padding: 1.75rem 1.25rem 2.25rem;
+    padding: 1.6rem 1.25rem 2.25rem;
     max-width: 100%;
     animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .confirmationCard {
-    margin: 1rem 0;
-    padding: 1.75rem 1.25rem;
   }
 }
 

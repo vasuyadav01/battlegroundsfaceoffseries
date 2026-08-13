@@ -46,6 +46,7 @@ export default function SlotsClient({
 
   const [bookedSlotIds, setBookedSlotIds] = useState<string[]>(userBookedSlotIds)
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
+  const [confirmFreeSlot, setConfirmFreeSlot] = useState<Slot | null>(null)
   const [couponUsedInSession, setCouponUsedInSession] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
 
@@ -62,7 +63,16 @@ export default function SlotsClient({
     return groups
   }, [slots])
 
-  // ── 1-CLICK DIRECT SLOT BOOKING ──
+  // Handle Free Slot button click -> opens confirm dialog
+  function handleFreeButtonClick(slot: Slot) {
+    if (!isLoggedIn) {
+      router.push(`/login?redirectTo=/slots`)
+      return
+    }
+    setConfirmFreeSlot(slot)
+  }
+
+  // ── DIRECT SLOT BOOKING (PAID OR FREE) ──
   async function handleDirectBookSlot(slot: Slot, isFree: boolean = false) {
     if (!isLoggedIn) {
       router.push(`/login?redirectTo=/slots`)
@@ -73,7 +83,7 @@ export default function SlotsClient({
 
     try {
       if (isFree && activeFreeCoupon) {
-        // Redeem free slot coupon
+        // Redeem free slot reward
         const res = await fetch('/api/coupon/redeem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -93,7 +103,7 @@ export default function SlotsClient({
 
         setCouponUsedInSession(true)
       } else {
-        // 1. Create booking
+        // Paid booking (bypassed for dev testing)
         const createRes = await fetch('/api/booking/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -110,7 +120,6 @@ export default function SlotsClient({
           return
         }
 
-        // 2. Confirm booking
         const confirmRes = await fetch('/api/booking/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -216,7 +225,7 @@ export default function SlotsClient({
                 const spotsLeft = slot.capacity - slot.teams_booked_count
                 const isFull = spotsLeft <= 0 || slot.status === 'full'
                 const isCompleted = slot.status === 'completed'
-                const isUrgent = !isFull && !isCompleted && !isAlreadyBooked && spotsLeft <= 5
+                const isUrgent = !isFull && !isCompleted && !isAlreadyBooked && spotsLeft < 5
 
                 const showFreeOption = Boolean(activeFreeCoupon && !isFull && !isCompleted && !isAlreadyBooked)
                 const currentFee = slot.entry_fee || entryFee
@@ -231,7 +240,7 @@ export default function SlotsClient({
                       ${showFreeOption ? styles.slotCardFree : ''}
                     `}
                   >
-                    {/* Top Row: Spots Pill / Booked Badge & Free Ribbon */}
+                    {/* Top Row: Spots Badge & Free Ribbon */}
                     <div className={styles.cardTopRow}>
                       {isAlreadyBooked ? (
                         <span className={styles.spotsBooked}>
@@ -247,7 +256,7 @@ export default function SlotsClient({
                             ? 'ENDED'
                             : isFull
                             ? 'FULL'
-                            : `${spotsLeft} / ${slot.capacity} SPOTS`}
+                            : `${spotsLeft}/${slot.capacity} SPOTS`}
                         </span>
                       )}
 
@@ -285,7 +294,7 @@ export default function SlotsClient({
                       )}
                     </div>
 
-                    {/* Bottom Action Button */}
+                    {/* Bottom Action Button (Pinned) */}
                     <div className={styles.cardBottomAction}>
                       {isAlreadyBooked ? (
                         <a
@@ -302,18 +311,18 @@ export default function SlotsClient({
                         </button>
                       ) : isFull ? (
                         <button disabled className={styles.cardBtnDisabled}>
-                          <Lock size={13} /> FULL
+                          <Lock size={13} /> Full
                         </button>
                       ) : showFreeOption ? (
                         <button
                           className={styles.cardBtnFree}
-                          onClick={() => handleDirectBookSlot(slot, true)}
+                          onClick={() => handleFreeButtonClick(slot)}
                           disabled={isBookingThis}
                         >
                           {isBookingThis ? (
                             <><span className="spinner" /> BOOKING...</>
                           ) : (
-                            <><Sparkles size={13} /> BOOK FREE (₹0)</>
+                            <><Sparkles size={13} /> Book free</>
                           )}
                         </button>
                       ) : (
@@ -325,7 +334,7 @@ export default function SlotsClient({
                           {isBookingThis ? (
                             <><span className="spinner" /> BOOKING...</>
                           ) : (
-                            `BOOK SLOT (₹${currentFee})`
+                            'Book slot'
                           )}
                         </button>
                       )}
@@ -337,6 +346,58 @@ export default function SlotsClient({
           </div>
         ))}
       </div>
+
+      {/* ── CONFIRM DIALOG FOR FREE SLOT ── */}
+      {confirmFreeSlot && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmFreeSlot(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalCloseBtn} onClick={() => setConfirmFreeSlot(null)}>
+              <X size={20} />
+            </button>
+
+            <div className={styles.modalIconWrapGold}>
+              <Sparkles size={28} color="#22c55e" />
+            </div>
+
+            <h2 className={styles.modalTitle}>Redeem Free Slot?</h2>
+            <p className={styles.modalBody}>
+              You are claiming your 3rd-place Free Slot Reward for:
+            </p>
+
+            <div className={styles.modalSlotPreview}>
+              <div className={styles.previewTime}>{confirmFreeSlot.time_label}</div>
+              <div className={styles.previewDate}>{fmtDateHeader(confirmFreeSlot.date)}</div>
+              <div className={styles.previewFee}>
+                Entry Fee: <span style={{ textDecoration: 'line-through' }}>₹{confirmFreeSlot.entry_fee || entryFee}</span>{' '}
+                <strong style={{ color: '#22c55e' }}>₹0 FREE</strong>
+              </div>
+            </div>
+
+            <p className={styles.modalWarningText}>
+              Confirming will mark your 3rd-place reward as redeemed and immediately book your team into this slot.
+            </p>
+
+            <div className={styles.modalActionColumn}>
+              <button
+                className={styles.confirmFreeBtn}
+                onClick={() => {
+                  const slotToBook = confirmFreeSlot
+                  setConfirmFreeSlot(null)
+                  handleDirectBookSlot(slotToBook, true)
+                }}
+              >
+                ✓ CONFIRM & CLAIM FREE SLOT
+              </button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setConfirmFreeSlot(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

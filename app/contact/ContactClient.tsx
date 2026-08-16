@@ -20,7 +20,7 @@ export default function ContactPage() {
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     )
-    window.location.href = `mailto:support@battlegroundsfaceoffseries.com?subject=${subject}&body=${body}`
+    window.location.href = `mailto:battlegroundsfaceoffseries@gmail.com?subject=${subject}&body=${body}`
     setTimeout(() => setStatus('sent'), 800)
   }
 
@@ -56,8 +56,8 @@ export default function ContactPage() {
                   <div>
                     <p className={styles.contactLabel}>Email</p>
                     <p className={styles.contactValue}>
-                      <a href="mailto:support@battlegroundsfaceoffseries.com" style={{ color: '#fbbf24' }}>
-                        support@battlegroundsfaceoffseries.com
+                      <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>
+                        battlegroundsfaceoffseries@gmail.com
                       </a>
                     </p>
                     <p className={styles.contactValueNote}>We typically reply within 12–24 hours</p>

@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
 
             <div className={styles.legalSection}>
               <h2 className={styles.legalSectionTitle}>1. Who We Are</h2>
-              <p className={styles.legalBody}>BGFS is an independent BGMI tournament platform operated in India. Contact: <a href="mailto:support@battlegroundsfaceoffseries.com" style={{ color: '#fbbf24' }}>support@battlegroundsfaceoffseries.com</a>.</p>
+              <p className={styles.legalBody}>BGFS is an independent BGMI tournament platform operated in India. Contact: <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a>.</p>
             </div>
             <hr className={styles.legalDivider} />
 
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
 
             <div className={styles.legalSection}>
               <h2 className={styles.legalSectionTitle}>6. Data Retention &amp; Your Rights</h2>
-              <p className={styles.legalBody}>We retain data for the active season plus up to 12 months for record-keeping. You may request access, correction, or deletion of your data by contacting <a href="mailto:support@battlegroundsfaceoffseries.com" style={{ color: '#fbbf24' }}>support@battlegroundsfaceoffseries.com</a>.</p>
+              <p className={styles.legalBody}>We retain data for the active season plus up to 12 months for record-keeping. You may request access, correction, or deletion of your data by contacting <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a>.</p>
             </div>
 
             <div className={styles.noteBox}>

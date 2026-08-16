@@ -91,7 +91,7 @@ export default function RefundPolicyPage() {
               <h2 className={styles.legalSectionTitle}>4. Refund Process</h2>
               <p className={styles.legalBody}>To request a refund under an eligible exception:</p>
               <ul className={styles.legalList}>
-                <li><span className={styles.legalBullet}>●</span><span>Email us at <a href="mailto:support@battlegroundsfaceoffseries.com" style={{ color: '#fbbf24' }}>support@battlegroundsfaceoffseries.com</a> with your registered email and Razorpay Order ID.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span>Email us at <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a> with your registered email and Razorpay Order ID.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>Our team will verify the claim within 2–3 business days.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>Approved refunds are credited to the original payment method within 5–7 business days. Processing time may vary by bank or UPI provider.</span></li>
               </ul>
@@ -102,8 +102,8 @@ export default function RefundPolicyPage() {
               <h2 className={styles.legalSectionTitle}>5. Contact</h2>
               <p className={styles.legalBody}>
                 For any payment or refund concerns, reach us at{' '}
-                <a href="mailto:support@battlegroundsfaceoffseries.com" style={{ color: '#fbbf24' }}>
-                  support@battlegroundsfaceoffseries.com
+                <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>
+                  battlegroundsfaceoffseries@gmail.com
                 </a>{' '}
                 or via our <a href="/contact" style={{ color: '#fbbf24' }}>contact page</a>.
                 Support is available 10:00 AM – 8:00 PM IST, all days.

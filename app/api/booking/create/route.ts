@@ -28,24 +28,55 @@ export async function POST(request: Request) {
 
     let team_id = userProfile?.team_id
 
+    // Fallback: Check if user is already captain of an existing team in teams table
+    if (!team_id) {
+      const { data: existingTeam } = await admin
+        .from('teams')
+        .select('team_id')
+        .eq('captain_user_id', user.id)
+        .maybeSingle()
+
+      if (existingTeam) {
+        team_id = existingTeam.team_id
+        await admin
+          .from('users')
+          .upsert({ user_id: user.id, email: user.email, team_id, role: 'captain' }, { onConflict: 'user_id' })
+      }
+    }
+
     // If user has no team yet, create one seamlessly on the spot!
     if (!team_id) {
       const finalTeamName = (team_name && team_name.trim()) || user.email?.split('@')[0] || 'Team User'
       const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase()
 
-      const { data: newTeam, error: teamErr } = await admin
+      let teamToInsert = finalTeamName
+      let { data: newTeam, error: teamErr } = await admin
         .from('teams')
         .insert({
-          team_name: finalTeamName,
-          captain_id: user.id,
+          team_name: teamToInsert,
+          captain_user_id: user.id,
           invite_code: inviteCode,
-          phone: phone || null,
         })
         .select('team_id')
         .single()
 
-      if (teamErr) {
-        return NextResponse.json({ error: 'Failed to set up team name: ' + teamErr.message }, { status: 500 })
+      if (teamErr && teamErr.code === '23505') {
+        teamToInsert = `${finalTeamName} ${Math.floor(1000 + Math.random() * 9000)}`
+        const retry = await admin
+          .from('teams')
+          .insert({
+            team_name: teamToInsert,
+            captain_user_id: user.id,
+            invite_code: inviteCode,
+          })
+          .select('team_id')
+          .single()
+        newTeam = retry.data
+        teamErr = retry.error
+      }
+
+      if (teamErr || !newTeam) {
+        return NextResponse.json({ error: 'Failed to set up team name: ' + (teamErr?.message || 'Error creating team') }, { status: 500 })
       }
 
       team_id = newTeam.team_id

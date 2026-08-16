@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, X, Lock, MessageCircle } from 'lucide-react'
+import { Check, Sparkles, X, Lock, MessageCircle, Flame } from 'lucide-react'
 import styles from './page.module.css'
 
 interface Slot {
@@ -222,7 +222,7 @@ export default function SlotsClient({
               {dateSlots.map(slot => {
                 const isAlreadyBooked = bookedSlotIds.includes(slot.slot_id)
                 const isBookingThis = bookingSlotId === slot.slot_id
-                const spotsLeft = slot.capacity - slot.teams_booked_count
+                const spotsLeft = Math.max(0, slot.capacity - slot.teams_booked_count)
                 const isFull = spotsLeft <= 0 || slot.status === 'full'
                 const isCompleted = slot.status === 'completed'
                 const isUrgent = !isFull && !isCompleted && !isAlreadyBooked && spotsLeft < 5
@@ -240,7 +240,7 @@ export default function SlotsClient({
                       ${showFreeOption ? styles.slotCardFree : ''}
                     `}
                   >
-                    {/* Top Row: Spots Badge & Free Ribbon */}
+                    {/* Top Row: Spots Left Pill (Top-Left) & FREE Ribbon (Top-Right) */}
                     <div className={styles.cardTopRow}>
                       {isAlreadyBooked ? (
                         <span className={styles.spotsBooked}>
@@ -252,11 +252,15 @@ export default function SlotsClient({
                           ${isFull ? styles.spotsFull : ''}
                           ${isUrgent ? styles.spotsUrgent : ''}
                         `}>
-                          {isCompleted
-                            ? 'ENDED'
-                            : isFull
-                            ? 'FULL'
-                            : `${spotsLeft}/${slot.capacity} SPOTS`}
+                          {isCompleted ? (
+                            'ENDED'
+                          ) : isFull ? (
+                            'FULL (20/20)'
+                          ) : isUrgent ? (
+                            <><Flame size={11} className={styles.flameIcon} /> {spotsLeft} SPOTS LEFT</>
+                          ) : (
+                            `${spotsLeft}/${slot.capacity} SPOTS`
+                          )}
                         </span>
                       )}
 
@@ -267,7 +271,7 @@ export default function SlotsClient({
                       )}
                     </div>
 
-                    {/* Time Label */}
+                    {/* Time Label (Large) */}
                     <div className={styles.cardTime}>
                       {slot.time_label}
                     </div>
@@ -278,14 +282,13 @@ export default function SlotsClient({
                       </div>
                     )}
 
-                    {/* Fee / Reserved Tag */}
+                    {/* Price / Reward Available Line */}
                     <div className={styles.cardPriceRow}>
                       {isAlreadyBooked ? (
                         <div className={styles.bookedText}>SLOT RESERVED ✓</div>
                       ) : showFreeOption ? (
-                        <div className={styles.freePriceTag}>
-                          <span className={styles.strikePrice}>₹{currentFee}</span>
-                          <span className={styles.freeText}>₹0 FREE</span>
+                        <div className={styles.rewardAvailableText}>
+                          <Check size={13} color="#22c55e" /> Reward available
                         </div>
                       ) : (
                         <div className={styles.normalPriceTag}>
@@ -315,7 +318,7 @@ export default function SlotsClient({
                         </button>
                       ) : showFreeOption ? (
                         <button
-                          className={styles.cardBtnFree}
+                          className={styles.cardBtnFreeOutline}
                           onClick={() => handleFreeButtonClick(slot)}
                           disabled={isBookingThis}
                         >
@@ -356,7 +359,7 @@ export default function SlotsClient({
             </button>
 
             <div className={styles.modalIconWrapGold}>
-              <Sparkles size={28} color="#22c55e" />
+              <Sparkles size={28} color="#fbbf24" />
             </div>
 
             <h2 className={styles.modalTitle}>Redeem Free Slot?</h2>
@@ -369,7 +372,7 @@ export default function SlotsClient({
               <div className={styles.previewDate}>{fmtDateHeader(confirmFreeSlot.date)}</div>
               <div className={styles.previewFee}>
                 Entry Fee: <span style={{ textDecoration: 'line-through' }}>₹{confirmFreeSlot.entry_fee || entryFee}</span>{' '}
-                <strong style={{ color: '#22c55e' }}>₹0 FREE</strong>
+                <strong style={{ color: '#22c55e' }}>₹0 FREE (Reward Applied)</strong>
               </div>
             </div>
 

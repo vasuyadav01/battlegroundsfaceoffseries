@@ -111,73 +111,70 @@
   gap: 0.5rem;
 }
 
-/* ── RESPONSIVE GRID LAYOUT (2 mobile, 3 tablet, 4-5 desktop) ── */
+/* ── RESPONSIVE GRID LAYOUT (2 cols mobile, 3-4 cols desktop) ── */
 .slotGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
 }
 
-@media (max-width: 1200px) {
-  .slotGrid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .slotGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.85rem;
+    gap: 0.95rem;
   }
 }
 
 @media (max-width: 640px) {
   .slotGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
+    gap: 0.7rem;
   }
 }
 
-/* ── SQUARE-ISH SLOT CARD ── */
+/* ── SQUARE SLOT CARD ── */
 .slotCard {
   background: #151515;
   border: 1px solid #262626;
-  border-radius: 12px;
-  padding: 0.85rem 0.7rem;
+  border-radius: 14px;
+  padding: 0.9rem 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   justify-content: space-between;
   position: relative;
-  aspect-ratio: 1 / 1.05;
-  min-height: 165px;
-  transition: all 0.2s ease;
+  aspect-ratio: 1 / 1.02;
+  min-height: 175px;
+  transition: all 0.22s ease;
   overflow: hidden;
 }
 
 .slotCard:hover:not(.slotCardFull) {
   border-color: #fbbf24;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
 }
 
+/* Full state (~50% opacity, greyed out) */
 .slotCardFull {
   opacity: 0.5;
-  background: #121212;
-  border-color: #202020;
+  background: #111111;
+  border-color: #1e1e1e;
 }
 
+/* Free Slot Reward State (Gold Border + Gradient) */
 .slotCardFree {
-  border: 2px solid #22c55e !important;
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, #151515 100%);
+  border: 2px solid #fbbf24 !important;
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, #151515 100%);
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.15);
 }
 
 .slotCardFree:hover {
-  border-color: #22c55e !important;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.3) !important;
 }
 
+/* Booked state */
 .slotCardBooked {
   border: 2px solid rgba(34, 197, 94, 0.6) !important;
   background: linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, #151515 100%);
@@ -189,8 +186,8 @@
   border: 1px solid rgba(34, 197, 94, 0.4);
   font-size: 0.65rem;
   font-weight: 900;
-  padding: 2px 7px;
-  border-radius: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -199,7 +196,7 @@
 
 .bookedText {
   color: #22c55e;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
@@ -210,7 +207,7 @@
   background: #22c55e;
   color: #ffffff;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-size: 0.78rem;
   font-weight: 900;
@@ -231,7 +228,7 @@
   transform: translateY(-1px);
 }
 
-/* Badges */
+/* ── CARD TOP ROW: SPOTS PILL (TOP LEFT) & CORNER RIBBON ── */
 .cardTopRow {
   display: flex;
   align-items: center;
@@ -240,16 +237,20 @@
   gap: 0.35rem;
 }
 
+/* Spots Left Pill (Top Left) */
 .spotsBadge {
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  padding: 2px 7px;
-  border-radius: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.08);
-  color: #aaaaaa;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cccccc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .spotsFull {
@@ -258,34 +259,46 @@
   border-color: rgba(239, 68, 68, 0.25);
 }
 
+/* Under 5 spots left: Red/warm with flame icon */
 .spotsUrgent {
-  background: rgba(239, 68, 68, 0.18);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  animation: pulse 1.5s ease infinite;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.22) 100%);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  animation: flamePulse 1.5s ease infinite;
 }
 
+.flameIcon {
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+@keyframes flamePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.96); }
+}
+
+/* Diagonal Corner FREE Ribbon (Top Right) */
 .freeRibbon {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  background: #22c55e;
-  color: #ffffff;
+  background: #fbbf24;
+  color: #111111;
   font-size: 0.62rem;
   font-weight: 900;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 5px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
 }
 
-/* Time */
+/* Time (Large) */
 .cardTime {
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   font-weight: 900;
   color: #ffffff;
-  margin: 0.4rem 0 0.15rem;
+  margin: 0.5rem 0 0.2rem;
   letter-spacing: -0.01em;
   line-height: 1.2;
   white-space: nowrap;
@@ -298,9 +311,9 @@
   margin-bottom: 0.15rem;
 }
 
-/* Price */
+/* Price / Reward Available */
 .cardPriceRow {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 .normalPriceTag {
@@ -315,26 +328,18 @@
   font-weight: 500;
 }
 
-.freePriceTag {
+.rewardAvailableText {
+  color: #22c55e;
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
-.strikePrice {
-  text-decoration: line-through;
-  color: #666666;
-  font-size: 0.8rem;
-}
-
-.freeText {
-  color: #22c55e;
-  font-size: 1.05rem;
-  font-weight: 900;
-}
-
-/* Pinned Action Button */
+/* Pinned Action Button at Bottom */
 .cardBottomAction {
   margin-top: auto;
   width: 100%;
@@ -342,13 +347,13 @@
 
 .cardBtnNormal {
   width: 100%;
-  padding: 0.6rem 0.4rem;
+  padding: 0.65rem 0.4rem;
   background: #fbbf24;
   color: #111111;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -362,17 +367,19 @@
 
 .cardBtnNormal:hover {
   background: #fde047;
+  transform: translateY(-1px);
 }
 
-.cardBtnFree {
+/* Inverted (outline) gold style for "Book free" button */
+.cardBtnFreeOutline {
   width: 100%;
-  padding: 0.6rem 0.4rem;
-  background: #22c55e;
-  color: #ffffff;
-  border: none;
-  border-radius: 7px;
+  padding: 0.65rem 0.4rem;
+  background: transparent;
+  color: #fbbf24;
+  border: 2px solid #fbbf24;
+  border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -381,21 +388,22 @@
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
-  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3);
   white-space: nowrap;
 }
 
-.cardBtnFree:hover {
-  background: #16a34a;
+.cardBtnFreeOutline:hover {
+  background: #fbbf24;
+  color: #111111;
+  transform: translateY(-1px);
 }
 
 .cardBtnDisabled {
   width: 100%;
-  padding: 0.6rem 0.4rem;
+  padding: 0.65rem 0.4rem;
   background: #222222;
   color: #666666;
   border: 1px solid #2e2e2e;
-  border-radius: 7px;
+  border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-size: 0.78rem;
   font-weight: 800;
@@ -414,8 +422,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.84);
+  backdrop-filter: blur(6px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -431,7 +439,7 @@
   max-width: 400px;
   padding: 1.75rem 1.35rem;
   position: relative;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75);
 }
 
 .modalCloseBtn {
@@ -457,8 +465,8 @@
 .modalIconWrapGold {
   width: 54px;
   height: 54px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -527,8 +535,8 @@
 .confirmFreeBtn {
   width: 100%;
   padding: 0.85rem;
-  background: #22c55e;
-  color: #ffffff;
+  background: #fbbf24;
+  color: #111111;
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
@@ -540,7 +548,7 @@
 }
 
 .confirmFreeBtn:hover {
-  background: #16a34a;
+  background: #fde047;
 }
 
 .cancelBtn {
@@ -574,7 +582,7 @@
   50% { opacity: 0.65; }
 }
 
-/* ── RESPONSIVE BREAKPOINTS ── */
+/* ── MOBILE BREAKPOINT ── */
 @media (max-width: 640px) {
   .page {
     padding: 1.5rem 0 3.5rem;
@@ -585,22 +593,26 @@
   }
 
   .slotCard {
-    padding: 0.75rem 0.55rem;
-    min-height: 155px;
-    border-radius: 10px;
+    padding: 0.8rem 0.55rem;
+    min-height: 160px;
+    border-radius: 12px;
   }
 
   .cardTime {
-    font-size: 0.88rem;
-    margin: 0.35rem 0 0.1rem;
+    font-size: 0.95rem;
+    margin: 0.4rem 0 0.15rem;
   }
 
-  .normalPriceTag, .freeText {
-    font-size: 0.92rem;
+  .normalPriceTag {
+    font-size: 0.95rem;
   }
 
-  .cardBtnNormal, .cardBtnFree {
-    font-size: 0.75rem;
+  .rewardAvailableText {
+    font-size: 0.8rem;
+  }
+
+  .cardBtnNormal, .cardBtnFreeOutline {
+    font-size: 0.76rem;
     padding: 0.55rem 0.35rem;
   }
 

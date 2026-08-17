@@ -14,7 +14,7 @@ export default function PricingPage() {
     'Access to that slot\'s in-game room credentials via WhatsApp',
     'Scores recorded and reflected on the public leaderboard',
     'Qualifies toward your Best-16 seasonal score',
-    'Eligible for slot prize pool (₹170 / ₹100 / free next slot)',
+    'Eligible for slot rewards (₹170 / ₹100 / free next slot)',
     'Grand Finals qualification tracking (top 16 overall teams)',
   ]
 
@@ -108,8 +108,8 @@ export default function PricingPage() {
               },
               {
                 Icon: Zap,
-                title: 'Instant Payouts',
-                desc: 'Slot prize money is paid directly to winners via UPI after every slot completion — no waiting.',
+                title: 'Payouts After Slot Completion',
+                desc: 'Slot prize money is paid directly to winners via UPI after slot completion — no waiting.',
               },
               {
                 Icon: Shield,

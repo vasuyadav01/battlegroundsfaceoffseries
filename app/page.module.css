@@ -338,6 +338,20 @@
   box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
 }
 
+.winnerBadge {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+  display: inline-block;
+}
+
 .prizeSilver {
   background: #1d1d1d;
   border-color: #9ca3af;

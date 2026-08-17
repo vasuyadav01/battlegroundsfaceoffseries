@@ -103,7 +103,7 @@ export default async function LandingPage() {
                   num: '04',
                   step: 'STEP 04',
                   title: 'WIN PRIZES & QUALIFY',
-                  desc: 'Instant UPI prize payouts after every slot. Top 16 overall teams advance to FREE Grand Finals.',
+                  desc: 'UPI payout after slot completion. Top 16 overall teams advance to FREE Grand Finals.',
                   Icon: Trophy,
                 },
               ].map((s) => (
@@ -121,26 +121,27 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ── PRIZE STRUCTURE ── */}
+        {/* ── REWARDS STRUCTURE ── */}
         <section className={styles.prizesSection}>
           <div className="container">
             <div className={styles.sectionCenter}>
               <h2 className={styles.sectionTitle}>
-                SLOT PRIZE POOL
+                SLOT REWARDS
               </h2>
               <p className={styles.sectionSubtitle}>
-                Guaranteed tournament rewards after every 3-match slot completion
+                Rewards after every 3-match slot
               </p>
             </div>
 
             <div className={styles.prizesGrid}>
               <div className={`${styles.prizeCard} ${styles.prizeGold}`}>
+                <span className={styles.winnerBadge}>Featured on Leaderboard</span>
                 <div className={styles.prizeMedal}>
                   <Trophy size={36} color="#facc15" strokeWidth={1.75} />
                 </div>
                 <div className={styles.prizePlace}>1ST PLACE</div>
                 <div className={styles.prizeAmount}>₹170</div>
-                <div className={styles.prizeType}>INSTANT UPI REWARD</div>
+                <div className={styles.prizeType}>Prize money</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeSilver}`}>
                 <div className={styles.prizeMedal}>
@@ -148,15 +149,15 @@ export default async function LandingPage() {
                 </div>
                 <div className={styles.prizePlace}>2ND PLACE</div>
                 <div className={styles.prizeAmount}>₹100</div>
-                <div className={styles.prizeType}>INSTANT UPI REWARD</div>
+                <div className={styles.prizeType}>Prize money</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeBronze}`}>
                 <div className={styles.prizeMedal}>
                   <Award size={36} color="#cd7f32" strokeWidth={1.75} />
                 </div>
                 <div className={styles.prizePlace}>3RD PLACE</div>
-                <div className={styles.prizeAmount}>FREE SLOT</div>
-                <div className={styles.prizeType}>NEXT SLOT PASS</div>
+                <div className={styles.prizeAmount}>NEXT SLOT PASS</div>
+                <div className={styles.prizeType}>Free Slot Reward</div>
               </div>
             </div>
 

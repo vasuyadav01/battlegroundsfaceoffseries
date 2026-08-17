@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Users, Calendar, Crosshair, Trophy, Medal, Award, Zap, Check, ArrowRight } from 'lucide-react'
+import { Users, Calendar, Crosshair, Trophy, Medal, Award, Zap, Check, ArrowRight, ShieldCheck } from 'lucide-react'
 import CountdownTimer from '@/components/CountdownTimer'
 import { createClient } from '@/lib/supabase/server'
 import styles from './page.module.css'
@@ -45,7 +45,7 @@ export default async function LandingPage() {
                 <span className={styles.goldText}>FACEOFF SERIES</span>
               </h1>
               <p className={styles.heroDesc}>
-                India's first unofficial competitive league for players who live for BGMI. Compete from home, chase the Season 1 trophy and fight your way into the top 16 for a free ticket to the Grand Finals.
+                India's skill-based competitive esports league for BGMI mobile players. Compete from home, grind the Season 1 leaderboard, and fight your way into the top 16 for a free ticket to the Grand Finals.
               </p>
 
               {/* Countdown timer block */}
@@ -72,7 +72,7 @@ export default async function LandingPage() {
                 ROAD TO GRAND FINALS
               </h2>
               <p className={styles.sectionSubtitle}>
-                Four seamless steps from signup to championship glory
+                Four structured steps from signup to championship glory
               </p>
             </div>
 
@@ -102,8 +102,8 @@ export default async function LandingPage() {
                 {
                   num: '04',
                   step: 'STEP 04',
-                  title: 'WIN CASH & QUALIFY',
-                  desc: 'Instant UPI payouts after every slot. Top 16 overall teams advance to FREE Grand Finals.',
+                  title: 'WIN PRIZES & QUALIFY',
+                  desc: 'Instant UPI prize payouts after every slot. Top 16 overall teams advance to FREE Grand Finals.',
                   Icon: Trophy,
                 },
               ].map((s) => (
@@ -129,7 +129,7 @@ export default async function LandingPage() {
                 SLOT PRIZE POOL
               </h2>
               <p className={styles.sectionSubtitle}>
-                Guaranteed cash payouts after every 3-match slot completion
+                Guaranteed tournament rewards after every 3-match slot completion
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export default async function LandingPage() {
                 </div>
                 <div className={styles.prizePlace}>1ST PLACE</div>
                 <div className={styles.prizeAmount}>₹170</div>
-                <div className={styles.prizeType}>INSTANT UPI CASH</div>
+                <div className={styles.prizeType}>INSTANT UPI REWARD</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeSilver}`}>
                 <div className={styles.prizeMedal}>
@@ -148,7 +148,7 @@ export default async function LandingPage() {
                 </div>
                 <div className={styles.prizePlace}>2ND PLACE</div>
                 <div className={styles.prizeAmount}>₹100</div>
-                <div className={styles.prizeType}>INSTANT UPI CASH</div>
+                <div className={styles.prizeType}>INSTANT UPI REWARD</div>
               </div>
               <div className={`${styles.prizeCard} ${styles.prizeBronze}`}>
                 <div className={styles.prizeMedal}>
@@ -217,6 +217,24 @@ export default async function LandingPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SKILL-BASED GAMING DISCLAIMER BANNER ── */}
+        <section className={styles.skillSection}>
+          <div className="container">
+            <div className={styles.skillCard}>
+              <ShieldCheck size={32} color="#fbbf24" style={{ flexShrink: 0 }} />
+              <div>
+                <h3 className={styles.skillTitle}>Skill-Based Esports Tournament Platform</h3>
+                <p className={styles.skillText}>
+                  BGFS is a skill-based competitive gaming platform. Results are determined entirely by player skill, in-game performance, tactical strategy, kills, and placement points — not chance.
+                </p>
+              </div>
+              <Link href="/fair-play" className={styles.fairPlayBtn}>
+                Fair Play Policy →
+              </Link>
             </div>
           </div>
         </section>

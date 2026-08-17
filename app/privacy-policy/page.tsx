@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Account Data:</strong> Your email address (stored securely via Supabase Auth). Passwords are hashed and never stored in plain text.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Team Information:</strong> Team name, captain designation, and roster details you enter during registration.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Booking Records:</strong> Slots booked, timestamps, and payment status (paid / pending).</span></li>
-                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Payment Confirmation:</strong> Razorpay Order ID and Payment ID only. We do NOT store card numbers, UPI IDs, or any raw payment credentials.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Payment Confirmation:</strong> Transaction Reference ID and Payment ID only. We do NOT store card numbers, UPI IDs, or any raw payment credentials.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Match Scores:</strong> Placement and kill data entered by BGFS admins for leaderboard computation.</span></li>
               </ul>
             </div>
@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage() {
                 <li><span className={styles.legalBullet}>●</span><span>To authenticate you and manage your account.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>To confirm slot bookings and provide room credentials.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>To compute leaderboard standings and Best-16 scores.</span></li>
-                <li><span className={styles.legalBullet}>●</span><span>To verify payment completion via Razorpay before granting slot access.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span>To verify payment completion via secure payment gateway before granting slot access.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>To contact you regarding schedules, prize payouts, or platform updates.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>To prevent fraud and enforce our Terms &amp; Conditions.</span></li>
               </ul>
@@ -55,14 +55,14 @@ export default function PrivacyPolicyPage() {
             <hr className={styles.legalDivider} />
 
             <div className={styles.legalSection}>
-              <h2 className={styles.legalSectionTitle}>4. Payment Data &amp; Razorpay</h2>
-              <p className={styles.legalBody}>All payments are processed by <strong style={{ color: '#ffffff' }}>Razorpay</strong> (PCI-DSS compliant). BGFS never sees or stores your card/UPI details. Razorpay sends us only a payment confirmation reference. Razorpay&apos;s Privacy Policy governs their handling of your payment data: <a href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer" style={{ color: '#fbbf24' }}>razorpay.com/privacy</a>.</p>
+              <h2 className={styles.legalSectionTitle}>4. Payment Data &amp; Security</h2>
+              <p className={styles.legalBody}>All payments are processed by PCI-DSS compliant secure UPI payment gateways. BGFS never sees or stores your card, banking, or UPI PIN details. Payment gateways send us only a payment confirmation reference code to confirm your slot booking.</p>
             </div>
             <hr className={styles.legalDivider} />
 
             <div className={styles.legalSection}>
               <h2 className={styles.legalSectionTitle}>5. Data Sharing</h2>
-              <p className={styles.legalBody}>We do <strong style={{ color: '#ffffff' }}>not</strong> sell or share your personal data for marketing purposes. We share data only with Razorpay (payment processing), Supabase (secure data storage), or if required by law. Team names and scores are publicly visible on the leaderboard by design.</p>
+              <p className={styles.legalBody}>We do <strong style={{ color: '#ffffff' }}>not</strong> sell or share your personal data for marketing purposes. We share data only with PCI-DSS payment processors (payment confirmation), Supabase (secure database storage), or if required by law. Team names and match scores are publicly visible on the leaderboard by design.</p>
             </div>
             <hr className={styles.legalDivider} />
 

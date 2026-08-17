@@ -31,8 +31,8 @@ export default function RefundPolicyPage() {
                 this policy.
               </p>
               <p className={styles.legalBody}>
-                Confirmation is defined as the moment Razorpay successfully processes your payment and
-                BGFS receives a verified payment webhook. You will receive a booking confirmation
+                Confirmation is defined as the moment our payment gateway successfully processes your payment and
+                BGFS receives a verified payment confirmation. You will receive a booking confirmation
                 reflected in your Dashboard.
               </p>
             </div>
@@ -47,7 +47,7 @@ export default function RefundPolicyPage() {
                   <span>
                     <strong style={{ color: '#ffffff' }}>Tournament Cancellation by BGFS:</strong> If BGFS
                     cancels an entire tournament cycle (not an individual slot), full refunds for all
-                    booked and unpaid slots within that cycle will be processed within{' '}
+                    booked slots within that cycle will be processed within{' '}
                     <strong style={{ color: '#fbbf24' }}>5–7 business days</strong> to the original
                     payment method.
                   </span>
@@ -65,7 +65,7 @@ export default function RefundPolicyPage() {
                   <span>
                     <strong style={{ color: '#ffffff' }}>Payment Deducted but Booking Not Confirmed:</strong>{' '}
                     If your payment was deducted but your booking was not recorded in our system, contact
-                    us within 48 hours with your Razorpay Order ID. We will investigate and either
+                    us within 48 hours with your Payment Reference ID. We will investigate and either
                     confirm your booking or issue a full refund.
                   </span>
                 </li>
@@ -91,7 +91,7 @@ export default function RefundPolicyPage() {
               <h2 className={styles.legalSectionTitle}>4. Refund Process</h2>
               <p className={styles.legalBody}>To request a refund under an eligible exception:</p>
               <ul className={styles.legalList}>
-                <li><span className={styles.legalBullet}>●</span><span>Email us at <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a> with your registered email and Razorpay Order ID.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span>Email us at <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a> with your registered email and Payment Transaction Reference ID.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>Our team will verify the claim within 2–3 business days.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span>Approved refunds are credited to the original payment method within 5–7 business days. Processing time may vary by bank or UPI provider.</span></li>
               </ul>

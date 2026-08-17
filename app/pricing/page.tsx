@@ -29,7 +29,7 @@ export default function PricingPage() {
     },
     {
       q: 'What payment methods are accepted?',
-      a: 'All UPI apps (GPay, PhonePe, Paytm, BHIM), Debit/Credit Cards, and Net Banking via Razorpay.',
+      a: 'All UPI apps (GPay, PhonePe, Paytm, BHIM), Debit/Credit Cards, and Net Banking via secure payment gateway.',
     },
     {
       q: 'Are refunds available?',

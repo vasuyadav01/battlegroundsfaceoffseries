@@ -27,7 +27,7 @@ export default function AboutPage() {
     {
       icon: Shield,
       title: 'Secure Payments',
-      desc: "Entry fees processed via Razorpay — India's most trusted payment gateway. Instant UPI payouts to slot prize winners.",
+      desc: "Entry fees processed via secure UPI payment gateway. Instant UPI payouts to slot prize winners.",
     },
   ]
 

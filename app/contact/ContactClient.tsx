@@ -71,8 +71,8 @@ export default function ContactPage() {
                   <div>
                     <p className={styles.contactLabel}>WhatsApp / Phone</p>
                     <p className={styles.contactValue}>
-                      <a href="tel:+919876543210" style={{ color: '#fbbf24' }}>
-                        +91 98765 43210
+                      <a href="tel:+918303974916" style={{ color: '#fbbf24' }}>
+                        +91 83039 74916
                       </a>
                     </p>
                     <p className={styles.contactValueNote}>For urgent match-day issues only</p>
@@ -95,7 +95,7 @@ export default function ContactPage() {
                 <p>
                   For <strong style={{ color: '#ffffff' }}>payment issues</strong> or{' '}
                   <strong style={{ color: '#ffffff' }}>slot discrepancies</strong>, please include your
-                  registered email address and Razorpay Order ID when contacting us.
+                  registered email address and Payment Reference ID / Transaction ID when contacting us.
                 </p>
               </div>
             </div>

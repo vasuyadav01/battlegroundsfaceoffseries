@@ -135,7 +135,7 @@ export default async function LandingPage() {
 
             <div className={styles.prizesGrid}>
               <div className={`${styles.prizeCard} ${styles.prizeGold}`}>
-                <span className={styles.winnerBadge}>Featured on Leaderboard</span>
+                <span className={styles.winnerBadge}>Featured Winner on Website</span>
                 <div className={styles.prizeMedal}>
                   <Trophy size={36} color="#facc15" strokeWidth={1.75} />
                 </div>

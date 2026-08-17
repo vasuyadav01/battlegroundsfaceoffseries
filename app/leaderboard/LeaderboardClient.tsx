@@ -230,7 +230,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOverall.map(row => (
+                    {filteredOverall.map((row, idx) => (
                       <Fragment key={row.team_id}>
                         <tr
                           className={`${styles.teamRow} ${getRowRankClass(row.rank)} ${expandedTeam === row.team_id ? styles.expanded : ''}`}
@@ -245,7 +245,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                             <div className={styles.teamNameCell}>
                               <span className={styles.teamNameText}>{row.team_name}</span>
                               {row.rank <= 16 && (
-                                <span className="badge badge-gold" style={{ fontSize: '0.65rem' }}>FINALS QUALIFIED</span>
+                                <span className={styles.qualifiedTag}>✓ FINALS QUALIFIED</span>
                               )}
                             </div>
                           </td>
@@ -275,6 +275,17 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                             </td>
                           </tr>
                         )}
+
+                        {/* Grand Finals Qualification Cutoff Line after Rank 16 */}
+                        {row.rank === 16 && idx < filteredOverall.length - 1 && (
+                          <tr key="cutoff-row" className={styles.cutoffRow}>
+                            <td colSpan={6} style={{ padding: 0 }}>
+                              <div className={styles.cutoffBanner}>
+                                🏆 TOP 16 GRAND FINALS QUALIFICATION CUTOFF 🏆
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       </Fragment>
                     ))}
                     {filteredOverall.length === 0 && (
@@ -291,45 +302,59 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
 
             {/* Mobile Card List */}
             <div className={styles.mobileList}>
-              {filteredOverall.map(row => (
-                <div key={row.team_id} className={`${styles.mobileCard} ${getRowRankClass(row.rank)}`}>
-                  <button
-                    className={styles.mobileCardHeader}
-                    onClick={() => setExpandedTeam(expandedTeam === row.team_id ? null : row.team_id)}
-                  >
-                    <div className={styles.mobileCardLeft}>
-                      <span className={`badge ${getRankBadgeClass(row.rank)}`}>#{row.rank}</span>
-                      <div>
-                        <div className={styles.mobileTeamName}>{row.team_name}</div>
-                        <div className={styles.mobileTeamMeta}>
-                          {row.matches_played} MATCHES PLAYED
-                        </div>
-                      </div>
-                    </div>
-                    <div className={styles.mobileCardRight}>
-                      <div>
-                        <div className={styles.mobileStatVal}>{row.best_16_total}</div>
-                        <div className={styles.mobileStatLabel}>BEST-16</div>
-                      </div>
-                      <span className={styles.expandIcon}>{expandedTeam === row.team_id ? '▲' : '▼'}</span>
-                    </div>
-                  </button>
-
-                  {expandedTeam === row.team_id && (
-                    <div className={styles.mobileExpanded}>
-                      <div className={styles.mobileStats}>
+              {filteredOverall.map((row, idx) => (
+                <Fragment key={row.team_id}>
+                  <div className={`${styles.mobileCard} ${getRowRankClass(row.rank)}`}>
+                    <button
+                      className={styles.mobileCardHeader}
+                      onClick={() => setExpandedTeam(expandedTeam === row.team_id ? null : row.team_id)}
+                    >
+                      <div className={styles.mobileCardLeft}>
+                        <span className={`badge ${getRankBadgeClass(row.rank)}`}>#{row.rank}</span>
                         <div>
-                          <div className={styles.mobileStatVal}>{row.total_kills}</div>
-                          <div className={styles.mobileStatLabel}>TOTAL FINISHES</div>
+                          <div className={styles.mobileTeamNameRow}>
+                            <span className={styles.mobileTeamName}>{row.team_name}</span>
+                            {row.rank <= 16 && (
+                              <span className={styles.mobileQualifiedTag}>QUALIFIED</span>
+                            )}
+                          </div>
+                          <div className={styles.mobileTeamMeta}>
+                            {row.matches_played} MATCHES PLAYED
+                          </div>
                         </div>
-                        {row.rank <= 16 && (
-                          <span className="badge badge-gold">✓ QUALIFIES FOR FINALS</span>
-                        )}
                       </div>
-                      <MatchBreakdown matches={teamMatchesMap[row.team_id] || []} />
+                      <div className={styles.mobileCardRight}>
+                        <div>
+                          <div className={styles.mobileStatVal}>{row.best_16_total}</div>
+                          <div className={styles.mobileStatLabel}>BEST-16</div>
+                        </div>
+                        <span className={styles.expandIcon}>{expandedTeam === row.team_id ? '▲' : '▼'}</span>
+                      </div>
+                    </button>
+
+                    {expandedTeam === row.team_id && (
+                      <div className={styles.mobileExpanded}>
+                        <div className={styles.mobileStats}>
+                          <div>
+                            <div className={styles.mobileStatVal}>{row.total_kills}</div>
+                            <div className={styles.mobileStatLabel}>TOTAL FINISHES</div>
+                          </div>
+                          {row.rank <= 16 && (
+                            <span className="badge badge-gold">✓ QUALIFIES FOR FINALS</span>
+                          )}
+                        </div>
+                        <MatchBreakdown matches={teamMatchesMap[row.team_id] || []} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile Cutoff Banner */}
+                  {row.rank === 16 && idx < filteredOverall.length - 1 && (
+                    <div key="cutoff-mobile" className={styles.cutoffBannerMobile}>
+                      🏆 TOP 16 GRAND FINALS QUALIFICATION CUTOFF 🏆
                     </div>
                   )}
-                </div>
+                </Fragment>
               ))}
 
               {filteredOverall.length === 0 && (

@@ -124,42 +124,56 @@ export default async function LandingPage() {
         {/* ── GRAND FINALS PRIZE POOL ── */}
         <section className={styles.prizesSection}>
           <div className="container">
-            <div className={styles.grandFinalsCard}>
-              <div className={styles.gfTrophyWrap}>
-                <Trophy size={48} color="#fbbf24" strokeWidth={1.75} />
+            <div className={styles.gfContainer}>
+              <div className={styles.gfHeaderRow}>
+                <span className={styles.gfTag}>// SEASON 1 CHAMPIONSHIP</span>
+                <span className={styles.gfSubTag}>GRAND FINALS POOL &amp; RECOGNITION</span>
               </div>
-              <p className={styles.gfEyebrow}>SEASON 1 CHAMPIONSHIP</p>
-              <h2 className={styles.gfPrizeAmount}>
-                <span className={styles.gfPrizeAmountGold}>₹20,000</span>
-              </h2>
-              <p className={styles.gfPrizeSub}>
-                TOTAL GRAND FINALS PRIZE POOL &amp; CHAMPIONS TROPHY
-              </p>
 
-              <div className={styles.gfFeatureGrid}>
-                <div className={styles.gfFeatureItem}>
-                  <span className={styles.gfFeatureTitle}>
-                    🏆 Championship Trophy
-                  </span>
-                  <p className={styles.gfFeatureDesc}>
-                    Season 1 Champions win the official BGFS Physical Trophy + Major Share of the ₹20,000 Prize Pool.
+              <div className={styles.gfHeroSplit}>
+                {/* Left Block: Dominant Prize Amount + Trophy */}
+                <div className={styles.gfAmountBlock}>
+                  <div className={styles.gfAmountHeader}>
+                    <Trophy size={36} color="#fbbf24" strokeWidth={2} className={styles.gfInlineTrophy} />
+                    <h2 className={styles.gfMainNumber}>₹20,000</h2>
+                  </div>
+                  <div className={styles.gfAmountLabel}>Guaranteed Grand Finals Prize Pool</div>
+                  <p className={styles.gfAmountDesc}>
+                    Top 16 qualified squads fight for the Season 1 Championship title, prize money, and supreme esports bragging rights.
                   </p>
                 </div>
-                <div className={styles.gfFeatureItem}>
-                  <span className={styles.gfFeatureTitle}>
-                    🆓 100% Free Entry
-                  </span>
-                  <p className={styles.gfFeatureDesc}>
-                    Top 16 overall leaderboard teams advance directly to the Grand Finals with zero additional entry fee.
-                  </p>
-                </div>
-                <div className={styles.gfFeatureItem}>
-                  <span className={styles.gfFeatureTitle}>
-                    🌟 Winner Wall Recognition
-                  </span>
-                  <p className={styles.gfFeatureDesc}>
-                    Winning squad permanently featured on the BGFS website homepage &amp; official hall of fame.
-                  </p>
+
+                {/* Right Block: 3 Secondary Feature Rows */}
+                <div className={styles.gfFeatureList}>
+                  <div className={styles.gfFeatureRow}>
+                    <span className={styles.gfFeatureNum}>01</span>
+                    <div>
+                      <strong className={styles.gfFeatureHeading}>Official Physical Trophy</strong>
+                      <p className={styles.gfFeatureText}>
+                        Season 1 Champions win the physical BGFS Trophy + major share of the ₹20,000 pool.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.gfFeatureRow}>
+                    <span className={styles.gfFeatureNum}>02</span>
+                    <div>
+                      <strong className={styles.gfFeatureHeading}>100% Free Grand Finals Entry</strong>
+                      <p className={styles.gfFeatureText}>
+                        Top 16 overall leaderboard teams advance directly with ₹0 additional entry fee.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.gfFeatureRow}>
+                    <span className={styles.gfFeatureNum}>03</span>
+                    <div>
+                      <strong className={styles.gfFeatureHeading}>Winner&apos;s Wall Recognition</strong>
+                      <p className={styles.gfFeatureText}>
+                        Championship squad permanently showcased on the BGFS website homepage &amp; hall of fame.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

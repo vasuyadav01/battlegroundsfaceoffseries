@@ -64,6 +64,24 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* ── SKILL-BASED GAMING DISCLAIMER BANNER ── */}
+        <section className={styles.skillSection}>
+          <div className="container">
+            <div className={styles.skillCard}>
+              <div className={styles.skillHeader}>
+                <ShieldCheck size={36} color="#fbbf24" className={styles.skillIcon} />
+                <h3 className={styles.skillTitle}>Skill-Based Esports Tournament Platform</h3>
+              </div>
+              <p className={styles.skillText}>
+                BGFS is a skill-based competitive gaming platform. Match results and rankings are determined entirely by player skill, in-game performance, tactical strategy, kills, and placement points — strictly not chance.
+              </p>
+              <Link href="/fair-play" className={styles.fairPlayBtn}>
+                Read Fair Play Policy →
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* ── HOW IT WORKS ── */}
         <section className={styles.howItWorks}>
           <div className="container">
@@ -230,24 +248,6 @@ export default async function LandingPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SKILL-BASED GAMING DISCLAIMER BANNER ── */}
-        <section className={styles.skillSection}>
-          <div className="container">
-            <div className={styles.skillCard}>
-              <ShieldCheck size={32} color="#fbbf24" style={{ flexShrink: 0 }} />
-              <div>
-                <h3 className={styles.skillTitle}>Skill-Based Esports Tournament Platform</h3>
-                <p className={styles.skillText}>
-                  BGFS is a skill-based competitive gaming platform. Results are determined entirely by player skill, in-game performance, tactical strategy, kills, and placement points — not chance.
-                </p>
-              </div>
-              <Link href="/fair-play" className={styles.fairPlayBtn}>
-                Fair Play Policy →
-              </Link>
             </div>
           </div>
         </section>

@@ -121,49 +121,47 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ── REWARDS STRUCTURE ── */}
+        {/* ── GRAND FINALS PRIZE POOL ── */}
         <section className={styles.prizesSection}>
           <div className="container">
-            <div className={styles.sectionCenter}>
-              <h2 className={styles.sectionTitle}>
-                SLOT REWARDS
+            <div className={styles.grandFinalsCard}>
+              <div className={styles.gfTrophyWrap}>
+                <Trophy size={48} color="#fbbf24" strokeWidth={1.75} />
+              </div>
+              <p className={styles.gfEyebrow}>SEASON 1 CHAMPIONSHIP</p>
+              <h2 className={styles.gfPrizeAmount}>
+                <span className={styles.gfPrizeAmountGold}>₹20,000</span>
               </h2>
-              <p className={styles.sectionSubtitle}>
-                Rewards after every 3-match slot
+              <p className={styles.gfPrizeSub}>
+                TOTAL GRAND FINALS PRIZE POOL &amp; CHAMPIONS TROPHY
               </p>
-            </div>
 
-            <div className={styles.prizesGrid}>
-              <div className={`${styles.prizeCard} ${styles.prizeGold}`}>
-                <span className={styles.winnerBadge}>Featured Winner on Website</span>
-                <div className={styles.prizeMedal}>
-                  <Trophy size={36} color="#facc15" strokeWidth={1.75} />
+              <div className={styles.gfFeatureGrid}>
+                <div className={styles.gfFeatureItem}>
+                  <span className={styles.gfFeatureTitle}>
+                    🏆 Championship Trophy
+                  </span>
+                  <p className={styles.gfFeatureDesc}>
+                    Season 1 Champions win the official BGFS Physical Trophy + Major Share of the ₹20,000 Prize Pool.
+                  </p>
                 </div>
-                <div className={styles.prizePlace}>1ST PLACE</div>
-                <div className={styles.prizeAmount}>₹170</div>
-                <div className={styles.prizeType}>Prize money</div>
-              </div>
-              <div className={`${styles.prizeCard} ${styles.prizeSilver}`}>
-                <div className={styles.prizeMedal}>
-                  <Medal size={36} color="#c0c0c0" strokeWidth={1.75} />
+                <div className={styles.gfFeatureItem}>
+                  <span className={styles.gfFeatureTitle}>
+                    🆓 100% Free Entry
+                  </span>
+                  <p className={styles.gfFeatureDesc}>
+                    Top 16 overall leaderboard teams advance directly to the Grand Finals with zero additional entry fee.
+                  </p>
                 </div>
-                <div className={styles.prizePlace}>2ND PLACE</div>
-                <div className={styles.prizeAmount}>₹100</div>
-                <div className={styles.prizeType}>Prize money</div>
-              </div>
-              <div className={`${styles.prizeCard} ${styles.prizeBronze}`}>
-                <div className={styles.prizeMedal}>
-                  <Award size={36} color="#cd7f32" strokeWidth={1.75} />
+                <div className={styles.gfFeatureItem}>
+                  <span className={styles.gfFeatureTitle}>
+                    🌟 Winner Wall Recognition
+                  </span>
+                  <p className={styles.gfFeatureDesc}>
+                    Winning squad permanently featured on the BGFS website homepage &amp; official hall of fame.
+                  </p>
                 </div>
-                <div className={styles.prizePlace}>3RD PLACE</div>
-                <div className={styles.prizeAmount}>NEXT SLOT PASS</div>
-                <div className={styles.prizeType}>Free Slot Reward</div>
               </div>
-            </div>
-
-            <div className={styles.prizeNote}>
-              <Zap size={20} color="#facc15" style={{ flexShrink: 0 }} />
-              <p>Top 16 teams overall qualify for the Grand Finals — <strong>zero entry fee, 100% free qualification.</strong></p>
             </div>
           </div>
         </section>

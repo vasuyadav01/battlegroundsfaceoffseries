@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
@@ -24,13 +24,10 @@ export default function RegisterClient() {
     setLoading(true)
 
     // Step 1: Register the auth user
-    // signUp returns a session immediately when email confirmation is DISABLED in Supabase
-    // When confirmation is ENABLED, session is null and user must verify email first
     const { data: authData, error: authErr } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        // Store team name so onboard page can use it after email confirmation
         data: { display_name: teamName.trim() },
       },
     })
@@ -52,17 +49,12 @@ export default function RegisterClient() {
       return
     }
 
-    // Step 2: Check if we have a live session (email confirmation is OFF)
-    // If authData.session is null, email confirmation is ON — redirect to confirm page
     if (!authData.session) {
       setLoading(false)
-      setConfirmEmail(true) // Show "check your email" screen
+      setConfirmEmail(true)
       return
     }
 
-
-    // Step 3: Call server API to create team + user profile using service role
-    // This bypasses RLS entirely — no more silent permission failures
     const res = await fetch('/api/register-team', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -77,61 +69,30 @@ export default function RegisterClient() {
       return
     }
 
-    // All done — redirect to slot booking
     router.push('/slots?welcome=registered')
   }
 
-  // ── Email confirmation required screen ──
   if (confirmEmail) {
     return (
       <div className={styles.page}>
-        <div className={styles.bgGlow} />
+        <div className={styles.topBar}>
+          <Link href="/" className={styles.backLink}>
+            <ArrowLeft size={16} />
+            <span>Back</span>
+          </Link>
+        </div>
         <div className={styles.card}>
-          <div className={styles.logoWrapper}>
-            <Image
-              src="/images/faceofflogo.png"
-              alt="BGFS Faceoff Series"
-              width={600}
-              height={200}
-              style={{ width: 'auto', height: '160px', maxWidth: '100%', objectFit: 'contain' }}
-              priority
-            />
+          <div className={styles.headerArea}>
+            <span className={styles.brandTag}>BGMI FACEOFF SERIES</span>
+            <h1 className={styles.title}>CHECK YOUR EMAIL</h1>
           </div>
-          <h1 className={styles.title} style={{ fontSize: '1.4rem' }}>CHECK YOUR EMAIL</h1>
-          <p className={styles.subtitle} style={{ marginBottom: '1.5rem' }}>
-            We sent a confirmation link to <strong style={{ color: '#facc15' }}>{email}</strong>.
+          <p className={styles.subtitle} style={{ marginBottom: '1.25rem' }}>
+            We sent a confirmation link to <strong style={{ color: '#fbbf24' }}>{email}</strong>.
             Click the link in your email to verify your account, then sign in.
           </p>
-          <div style={{
-            background: '#1a1a1a',
-            border: '1px solid #2a2a2a',
-            borderRadius: '10px',
-            padding: '1rem 1.25rem',
-            marginBottom: '1.5rem',
-            fontSize: '0.82rem',
-            color: '#888',
-            lineHeight: '1.6',
-          }}>
-            💡 <strong style={{ color: '#facc15' }}>Tip for organizers:</strong> To skip email confirmation
-            entirely, go to <strong style={{ color: '#ccc' }}>Supabase Dashboard → Authentication → Providers → Email</strong>
-            {' '}and disable <em>"Confirm email"</em>.
-          </div>
-          <Link href="/login" className={styles.loginLink} style={{
-            display: 'block',
-            textAlign: 'center',
-            background: '#facc15',
-            color: '#111',
-            padding: '12px',
-            borderRadius: '8px',
-            fontWeight: '800',
-            textTransform: 'uppercase',
-            marginBottom: '1rem',
-          }}>
+          <Link href="/login" className={styles.submitBtn} style={{ textDecoration: 'none' }}>
             GO TO SIGN IN →
           </Link>
-          <div className={styles.homeLinkWrapper}>
-            <Link href="/" className={styles.homeLink}>← BACK TO HOME</Link>
-          </div>
         </div>
       </div>
     )
@@ -139,36 +100,32 @@ export default function RegisterClient() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bgGlow} />
+      {/* Top Left Back Button */}
+      <div className={styles.topBar}>
+        <Link href="/" className={styles.backLink}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </Link>
+      </div>
 
       <div className={styles.card}>
-        {/* Logo Placement */}
-        <div className={styles.logoWrapper}>
-          <Image
-            src="/images/faceofflogo.png"
-            alt="BGFS Faceoff Series"
-            width={600}
-            height={200}
-            style={{ width: 'auto', height: '200px', maxWidth: '100%', objectFit: 'contain' }}
-            className={styles.logoImg}
-            priority
-          />
+        <div className={styles.headerArea}>
+          <span className={styles.brandTag}>BGMI FACEOFF SERIES</span>
+          <h1 className={styles.title}>CREATE AN ACCOUNT</h1>
+          <p className={styles.subtitle}>
+            Register your squad &amp; compete in daily BGMI slots.
+          </p>
         </div>
 
-        <h1 className={styles.title}>CREATE AN ACCOUNT</h1>
-        <p className={styles.subtitle}>
-          Register your team for Battlegrounds Faceoff Series and start competing.
-        </p>
-
         <form onSubmit={handleCreateAccount} className={styles.form}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="register-teamname">
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="register-teamname">
               TEAM NAME *
             </label>
             <input
               id="register-teamname"
               type="text"
-              className="form-input"
+              className={styles.input}
               placeholder="e.g. Team Nemesis"
               value={teamName}
               onChange={e => setTeamName(e.target.value)}
@@ -177,14 +134,14 @@ export default function RegisterClient() {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="register-email">
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="register-email">
               EMAIL ADDRESS *
             </label>
             <input
               id="register-email"
               type="email"
-              className="form-input"
+              className={styles.input}
               placeholder="captain@bgfsesports.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -192,14 +149,14 @@ export default function RegisterClient() {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="register-password">
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="register-password">
               CREATE PASSWORD *
             </label>
             <input
               id="register-password"
               type="password"
-              className="form-input"
+              className={styles.input}
               placeholder="••••••••"
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -213,33 +170,17 @@ export default function RegisterClient() {
           <button
             id="register-account-btn"
             type="submit"
-            className="btn btn-primary"
-            style={{
-              width: '100%',
-              background: '#facc15',
-              color: '#111111',
-              fontWeight: '800',
-              textTransform: 'uppercase',
-              padding: '12px',
-              marginTop: '0.5rem',
-            }}
+            className={styles.submitBtn}
             disabled={loading}
           >
             {loading ? <><span className="spinner" /> CREATING ACCOUNT...</> : 'CREATE ACCOUNT & CONTINUE →'}
           </button>
         </form>
 
-        {/* Existing User Link */}
         <div className={styles.loginFooter}>
           <p className={styles.loginText}>Already have an account?</p>
           <Link href="/login" className={styles.loginLink}>
             SIGN IN TO YOUR ACCOUNT →
-          </Link>
-        </div>
-
-        <div className={styles.homeLinkWrapper}>
-          <Link href="/" className={styles.homeLink}>
-            ← BACK TO HOME
           </Link>
         </div>
       </div>

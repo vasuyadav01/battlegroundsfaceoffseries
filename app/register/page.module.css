@@ -1,110 +1,194 @@
 .page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2.5rem 1rem;
+  padding: 1.25rem 1rem;
+  background: #0d0d0d;
   position: relative;
-  overflow: hidden;
-  background: #111111;
 }
 
-.bgGlow {
+.topBar {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 30%, rgba(251, 191, 36, 0.12) 0%, transparent 70%),
-    #111111;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 10;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #9ca3af;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.825rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.backLink:hover {
+  color: #ffffff;
 }
 
 .card {
   position: relative;
   z-index: 1;
-  background: #1d1d1d;
-  border: 1px solid #272727;
+  background: #151515;
+  border: 1px solid #262626;
   border-radius: 16px;
-  padding: 2.75rem 2.25rem;
+  padding: 2.25rem 2rem;
   width: 100%;
-  max-width: 460px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  max-width: 400px;
 }
 
-.logoWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 1.5rem;
+.headerArea {
+  text-align: center;
+  margin-bottom: 1.25rem;
 }
 
-.logoImg {
-  height: 200px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
+.brandTag {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.65rem;
 }
 
 .title {
   font-family: 'Inter', sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.45rem;
   font-weight: 900;
   text-transform: uppercase;
   color: #ffffff;
-  text-align: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
 }
 
 .subtitle {
   font-family: 'Inter', sans-serif;
-  color: #b8b8b8;
-  font-size: 0.88rem;
-  text-align: center;
-  margin-bottom: 2rem;
-  line-height: 1.6;
+  color: #888888;
+  font-size: 0.825rem;
+  line-height: 1.45;
+  margin: 0;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.85rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.725rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.input {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 14px 14px;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px; /* 16px prevents iOS Safari auto-zoom */
+  width: 100%;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  border-color: #fbbf24;
+}
+
+.input::placeholder {
+  color: #555555;
+  font-size: 15px;
 }
 
 .errorMsg {
   color: #ef4444;
   font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   text-align: center;
   padding: 0.6rem 0.85rem;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 6px;
   border: 1px solid rgba(239, 68, 68, 0.3);
+  margin: 0;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 16px;
+  background: #fbbf24;
+  color: #111111;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 0.35rem;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submitBtn:hover {
+  background: #f59e0b;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .loginFooter {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #2a2a2a;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #222222;
   text-align: center;
-  font-family: 'Inter', sans-serif;
 }
 
 .loginText {
-  color: #a0a0a0;
-  font-size: 0.88rem;
-  margin-bottom: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  color: #777777;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
 }
 
 .loginLink {
-  color: #facc15;
+  font-family: 'Inter', sans-serif;
+  color: #fbbf24;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.825rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   text-decoration: none;
   transition: color 0.15s ease;
 }
@@ -113,50 +197,30 @@
   color: #ffffff;
 }
 
-.homeLinkWrapper {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid #2a2a2a;
-  text-align: center;
-}
-
-.homeLink {
-  color: #facc15;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: color 0.15s ease;
-}
-
-.homeLink:hover {
-  color: #ffffff;
-  text-decoration: underline;
-}
-
+/* ── MOBILE FIRST AUDIT (Screens <= 480px) ── */
 @media (max-width: 480px) {
   .page {
-    padding: 1.5rem 0.85rem;
+    padding: 1rem 1rem;
+    justify-content: flex-start;
+  }
+
+  .topBar {
+    position: static;
+    width: 100%;
+    margin-bottom: 1rem;
   }
 
   .card {
-    padding: 1.75rem 1.25rem;
-    border-radius: 12px;
-  }
-
-  .logoImg {
-    height: 130px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    max-width: 100%;
   }
 
   .title {
-    font-size: 1.4rem;
-  }
-
-  .subtitle {
-    font-size: 0.82rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
   }
 }
 

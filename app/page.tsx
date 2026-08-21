@@ -45,7 +45,7 @@ export default async function LandingPage() {
                 <span className={styles.goldText}>FACEOFF SERIES</span>
               </h1>
               <p className={styles.heroDesc}>
-                India's skill-based competitive esports league for BGMI mobile players. Compete from home, grind the Season 1 leaderboard, and fight your way into the top 16 for a free ticket to the Grand Finals.
+                India's 100% skill-based competitive esports league for BGMI mobile players. Match outcomes and rankings are determined strictly by in-game performance, kills, and placement points — not chance. Compete from home, grind the Season 1 leaderboard, and qualify for the Grand Finals.
               </p>
 
               {/* Countdown timer block */}
@@ -88,8 +88,8 @@ export default async function LandingPage() {
                 {
                   num: '02',
                   step: 'STEP 02',
-                  title: 'BOOK LEAGUE SLOTS',
-                  desc: 'Select preferred daily match slots with instant slot confirmation.',
+                  title: 'REGISTER FOR SLOTS',
+                  desc: 'Select preferred daily match slots with instant registration confirmation.',
                   Icon: Calendar,
                 },
                 {
@@ -102,7 +102,7 @@ export default async function LandingPage() {
                 {
                   num: '04',
                   step: 'STEP 04',
-                  title: 'WIN PRIZES & QUALIFY',
+                  title: 'EARN REWARDS & QUALIFY',
                   desc: 'UPI payout after slot completion. Top 16 overall teams advance to FREE Grand Finals.',
                   Icon: Trophy,
                 },
@@ -245,13 +245,13 @@ export default async function LandingPage() {
           <div className="container">
             <div className={styles.ctaBox}>
               <h2 className={styles.ctaTitle}>
-                READY TO <span className={styles.goldText}>CLAIM YOUR SLOT?</span>
+                READY TO <span className={styles.goldText}>REGISTER YOUR SQUAD?</span>
               </h2>
               <p className={styles.ctaDesc}>
-                Limited 18 teams per slot. Secure your spot now and start grinding toward the Grand Finals.
+                Limited 20 teams per slot. Secure your spot now and start grinding toward the Grand Finals.
               </p>
               <Link href="/slots" className={styles.primaryCta}>
-                BOOK YOUR SLOT
+                REGISTER FOR A SLOT
               </Link>
             </div>
           </div>

@@ -201,7 +201,7 @@ export default function SlotsClient({
           </div>
           {!isLoggedIn && (
             <Link href="/login?redirectTo=/slots" className="btn btn-primary" style={{ background: '#fbbf24', color: '#111' }}>
-              SIGN IN TO BOOK →
+              SIGN IN TO REGISTER →
             </Link>
           )}
         </div>
@@ -244,7 +244,7 @@ export default function SlotsClient({
                     <div className={styles.cardTopRow}>
                       {isAlreadyBooked ? (
                         <span className={styles.spotsBooked}>
-                          <Check size={11} /> BOOKED ✓
+                          <Check size={11} /> REGISTERED ✓
                         </span>
                       ) : (
                         <span className={`
@@ -285,7 +285,7 @@ export default function SlotsClient({
                     {/* Price / Reward Available Line */}
                     <div className={styles.cardPriceRow}>
                       {isAlreadyBooked ? (
-                        <div className={styles.bookedText}>SLOT RESERVED ✓</div>
+                        <div className={styles.bookedText}>SLOT REGISTERED ✓</div>
                       ) : showFreeOption ? (
                         <div className={styles.rewardAvailableText}>
                           <Check size={13} color="#22c55e" /> Reward available
@@ -323,9 +323,9 @@ export default function SlotsClient({
                           disabled={isBookingThis}
                         >
                           {isBookingThis ? (
-                            <><span className="spinner" /> BOOKING...</>
+                            <><span className="spinner" /> REGISTERING...</>
                           ) : (
-                            <><Sparkles size={13} /> Book free</>
+                            <><Sparkles size={13} /> Register Free</>
                           )}
                         </button>
                       ) : (
@@ -335,9 +335,9 @@ export default function SlotsClient({
                           disabled={isBookingThis}
                         >
                           {isBookingThis ? (
-                            <><span className="spinner" /> BOOKING...</>
+                            <><span className="spinner" /> REGISTERING...</>
                           ) : (
-                            'Book slot'
+                            'Register'
                           )}
                         </button>
                       )}
@@ -362,9 +362,9 @@ export default function SlotsClient({
               <Sparkles size={28} color="#fbbf24" />
             </div>
 
-            <h2 className={styles.modalTitle}>Redeem Free Slot?</h2>
+            <h2 className={styles.modalTitle}>Redeem Next Slot Pass?</h2>
             <p className={styles.modalBody}>
-              You are claiming your 3rd-place Free Slot Reward for:
+              You are claiming your 3rd-place Next Slot Pass Reward for:
             </p>
 
             <div className={styles.modalSlotPreview}>
@@ -377,7 +377,7 @@ export default function SlotsClient({
             </div>
 
             <p className={styles.modalWarningText}>
-              Confirming will mark your 3rd-place reward as redeemed and immediately book your team into this slot.
+              Confirming will mark your 3rd-place reward as redeemed and immediately register your team into this slot.
             </p>
 
             <div className={styles.modalActionColumn}>
@@ -389,7 +389,7 @@ export default function SlotsClient({
                   handleDirectBookSlot(slotToBook, true)
                 }}
               >
-                ✓ CONFIRM & CLAIM FREE SLOT
+                ✓ CONFIRM &amp; REGISTER SLOT PASS
               </button>
               <button
                 className={styles.cancelBtn}

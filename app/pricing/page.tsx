@@ -14,14 +14,14 @@ export default function PricingPage() {
     'Access to that slot\'s in-game room credentials via WhatsApp',
     'Scores recorded and reflected on the public leaderboard',
     'Qualifies toward your Best-16 seasonal score',
-    'Eligible for slot rewards (₹170 / ₹100 / free next slot)',
+    'Eligible for slot rewards (₹170 / ₹100 / Next Slot Pass)',
     'Grand Finals qualification tracking (top 16 overall teams)',
   ]
 
   const faqs = [
     {
-      q: 'Can a team buy more than one slot?',
-      a: 'Yes — there is no cap on how many slots a team can purchase across the season. The more slots you play, the more chances your best scores have to count toward your Best-16 ranking.',
+      q: 'Can a team register for more than one slot?',
+      a: 'Yes — there is no cap on how many slots a team can register for across the season. The more slots you play, the more chances your best scores have to count toward your Best-16 ranking.',
     },
     {
       q: 'Is there an entry fee for the Grand Finals?',
@@ -33,7 +33,7 @@ export default function PricingPage() {
     },
     {
       q: 'Are refunds available?',
-      a: 'Slot fees are non-refundable once booked and confirmed, except in the case of a tournament cancellation by BGFS. See our Refund Policy for full details.',
+      a: 'Slot fees are non-refundable once registered and confirmed, except in the case of a tournament cancellation by BGFS. See our Refund Policy for full details.',
     },
   ]
 
@@ -85,7 +85,7 @@ export default function PricingPage() {
                 justifyContent: 'center',
               }}
             >
-              BOOK A SLOT NOW
+              REGISTER FOR A SLOT NOW
             </Link>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function PricingPage() {
               {
                 Icon: Repeat,
                 title: 'No Slot Cap',
-                desc: 'Book as many slots as you want across the 2-week season. Only your best 16 match scores count.',
+                desc: 'Register for as many slots as you want across the season. Only your best 16 match scores count.',
               },
               {
                 Icon: Zap,

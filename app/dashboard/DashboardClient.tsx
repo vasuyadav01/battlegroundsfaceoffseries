@@ -226,9 +226,9 @@ export default function DashboardClient({
             <div className={styles.cardBody}>
               {upcomingBookings.length === 0 ? (
                 <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>No slots booked yet</p>
+                  <p className={styles.emptyText}>No slots registered yet</p>
                   <Link href="/slots" className={styles.primaryBtn}>
-                    BOOK A SLOT →
+                    REGISTER FOR A SLOT →
                   </Link>
                 </div>
               ) : (
@@ -258,7 +258,7 @@ export default function DashboardClient({
                   </div>
 
                   <Link href="/slots" className={styles.secondaryBtn}>
-                    BOOK ANOTHER SLOT →
+                    REGISTER ANOTHER SLOT →
                   </Link>
                 </div>
               )}

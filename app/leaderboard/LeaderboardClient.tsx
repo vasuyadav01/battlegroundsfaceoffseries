@@ -454,17 +454,17 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                         <td style={{ textAlign: 'center' }}>
                           {row.rank === 1 && (
                             <span className={styles.prizeTagGold}>
-                              <Trophy size={12} /> ₹170 CASH
+                              <Trophy size={12} /> ₹170 REWARD
                             </span>
                           )}
                           {row.rank === 2 && (
                             <span className={styles.prizeTagSilver}>
-                              <Medal size={12} /> ₹100 CASH
+                              <Medal size={12} /> ₹100 REWARD
                             </span>
                           )}
                           {row.rank === 3 && (
                             <span className={styles.prizeTagBronze}>
-                              <Award size={12} /> FREE SLOT
+                              <Award size={12} /> NEXT SLOT PASS
                             </span>
                           )}
                           {row.rank > 3 && (
@@ -509,9 +509,9 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
 
                   {row.rank <= 3 && (
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-                      {row.rank === 1 && <span className={styles.prizeTagGold}><Trophy size={12} /> ₹170 CASH</span>}
-                      {row.rank === 2 && <span className={styles.prizeTagSilver}><Medal size={12} /> ₹100 CASH</span>}
-                      {row.rank === 3 && <span className={styles.prizeTagBronze}><Award size={12} /> FREE SLOT</span>}
+                      {row.rank === 1 && <span className={styles.prizeTagGold}><Trophy size={12} /> ₹170 REWARD</span>}
+                      {row.rank === 2 && <span className={styles.prizeTagSilver}><Medal size={12} /> ₹100 REWARD</span>}
+                      {row.rank === 3 && <span className={styles.prizeTagBronze}><Award size={12} /> NEXT SLOT PASS</span>}
                     </div>
                   )}
                 </div>

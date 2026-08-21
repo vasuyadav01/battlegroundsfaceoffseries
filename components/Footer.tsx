@@ -33,7 +33,7 @@ export default function Footer() {
             <p className={styles.groupTitle}>Platform</p>
             <Link href="/" className={styles.footerLink}>Home</Link>
             <Link href="/leaderboard" className={styles.footerLink}>Leaderboard</Link>
-            <Link href="/slots" className={styles.footerLink}>Book a Slot</Link>
+            <Link href="/slots" className={styles.footerLink}>Register for Slot</Link>
             <Link href="/pricing" className={styles.footerLink}>Pricing</Link>
           </div>
 

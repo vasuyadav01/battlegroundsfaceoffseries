@@ -199,7 +199,7 @@
 
 /* ── HOW IT WORKS ── */
 .howItWorks {
-  background: #0a0a0a;
+  background: #0d0d0d;
   padding: 5rem 0;
   border-top: 1px solid #212121;
 }
@@ -232,8 +232,8 @@
 }
 
 .stepCard {
-  background: #1c1c1c;
-  border: 1px solid #3a3a3a;
+  background: #181818;
+  border: 1px solid #282828;
   border-radius: 12px;
   padding: 2rem 1.5rem;
   position: relative;
@@ -307,15 +307,15 @@
 
 /* ── GRAND FINALS PRIZE POOL ── */
 .prizesSection {
-  background: #0d0d0d;
+  background: #161616;
   padding: 5rem 0;
-  border-top: 1px solid #1f1f1f;
-  border-bottom: 1px solid #1f1f1f;
+  border-top: 1px solid #242424;
+  border-bottom: 1px solid #242424;
 }
 
 .gfContainer {
-  background: #141414;
-  border: 1px solid #282828;
+  background: #111111;
+  border: 1px solid #262626;
   border-left: 4px solid #fbbf24;
   border-radius: 4px;
   padding: 2.5rem 2.5rem;
@@ -484,7 +484,7 @@
 
 /* ── SCORING ── */
 .scoringSection {
-  background: #151515;
+  background: #0d0d0d;
   padding: 5rem 0;
   border-top: 1px solid #212121;
 }
@@ -521,8 +521,8 @@
 }
 
 .scoringTable {
-  background: #1d1d1d;
-  border: 1px solid #272727;
+  background: #181818;
+  border: 1px solid #282828;
   border-radius: 12px;
   overflow: hidden;
   min-width: 280px;
@@ -540,14 +540,14 @@
 
 /* ── CTA ── */
 .ctaSection {
-  background: #111111;
+  background: #161616;
   padding: 5rem 0;
-  border-top: 1px solid #212121;
+  border-top: 1px solid #242424;
 }
 
 .ctaBox {
   text-align: center;
-  background: #1d1d1d;
+  background: #111111;
   border: 1px solid #fbbf24;
   border-radius: 16px;
   padding: 4rem 2rem;
@@ -573,7 +573,7 @@
 
 /* ── FOOTER ── */
 .footer {
-  background: #111111;
+  background: #0d0d0d;
   border-top: 1px solid #212121;
   padding: 2.5rem 0;
 }
@@ -653,92 +653,85 @@
   }
 }
 
-/* ── SKILL DISCLAIMER BANNER ── */
+/* ── SKILL DISCLAIMER COMPACT BANNER ── */
 .skillSection {
-  background: #0b0b0b;
-  padding: 3rem 0 1.5rem;
+  background: #161616;
+  border-top: 1px solid #242424;
+  border-bottom: 1px solid #242424;
+  padding: 1.1rem 0;
 }
 
-.skillCard {
-  background: #141414;
-  border: 1px solid #262626;
-  border-left: 4px solid #fbbf24;
-  border-radius: 4px;
-  padding: 2.25rem 2.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.skillHeader {
+.skillBar {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.skillContent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .skillIcon {
   flex-shrink: 0;
 }
 
-.skillTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #ffffff;
-  margin: 0;
-}
-
 .skillText {
   font-family: 'Inter', sans-serif;
-  font-size: 0.925rem;
-  color: #a3a3a3;
-  line-height: 1.65;
+  font-size: 0.875rem;
+  color: #cccccc;
   margin: 0;
-  max-width: 840px;
+  line-height: 1.4;
+}
+
+.skillHighlight {
+  color: #ffffff;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin-right: 0.35rem;
 }
 
 .fairPlayBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  width: fit-content;
-  padding: 0.65rem 1.25rem;
-  background: #1c1c1c;
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 2px;
+  gap: 0.35rem;
+  padding: 0.45rem 0.9rem;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 4px;
   color: #fbbf24;
   font-family: 'Inter', sans-serif;
-  font-size: 0.825rem;
+  font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-decoration: none;
-  margin-top: 0.5rem;
+  flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
 .fairPlayBtn:hover {
-  background: rgba(251, 191, 36, 0.12);
+  background: rgba(251, 191, 36, 0.16);
   border-color: #fbbf24;
   color: #ffffff;
 }
 
 @media (max-width: 768px) {
-  .skillCard {
-    padding: 1.5rem 1.25rem;
-  }
-
-  .skillHeader {
+  .skillBar {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 0.75rem;
   }
 
-  .skillTitle {
-    font-size: 1.05rem;
+  .skillText {
+    font-size: 0.825rem;
   }
 
-  .skillText {
-    font-size: 0.875rem;
+  .fairPlayBtn {
+    align-self: flex-start;
   }
 }

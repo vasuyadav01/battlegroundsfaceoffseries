@@ -67,16 +67,15 @@ export default async function LandingPage() {
         {/* ── SKILL-BASED GAMING DISCLAIMER BANNER ── */}
         <section className={styles.skillSection}>
           <div className="container">
-            <div className={styles.skillCard}>
-              <div className={styles.skillHeader}>
-                <ShieldCheck size={36} color="#fbbf24" className={styles.skillIcon} />
-                <h3 className={styles.skillTitle}>Skill-Based Esports Tournament Platform</h3>
+            <div className={styles.skillBar}>
+              <div className={styles.skillContent}>
+                <ShieldCheck size={20} color="#fbbf24" className={styles.skillIcon} />
+                <p className={styles.skillText}>
+                  <strong className={styles.skillHighlight}>Skill-Based Esports:</strong> Match results &amp; rankings are 100% determined by player performance, kills &amp; placement — strictly not chance.
+                </p>
               </div>
-              <p className={styles.skillText}>
-                BGFS is a skill-based competitive gaming platform. Match results and rankings are determined entirely by player skill, in-game performance, tactical strategy, kills, and placement points — strictly not chance.
-              </p>
               <Link href="/fair-play" className={styles.fairPlayBtn}>
-                Read Fair Play Policy →
+                Fair Play Policy →
               </Link>
             </div>
           </div>

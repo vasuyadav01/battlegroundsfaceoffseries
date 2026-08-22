@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
     setLoading(true)
 
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     })
 
@@ -66,7 +66,7 @@ export default function LoginPage() {
     setLoading(true)
 
     const { error } = await supabase.auth.signInWithOtp({
-      email,
+      email: email.trim(),
       options: { shouldCreateUser: true },
     })
 
@@ -94,7 +94,7 @@ export default function LoginPage() {
     setLoading(true)
 
     const { data, error } = await supabase.auth.verifyOtp({
-      email,
+      email: email.trim(),
       token: otp,
       type: 'email',
     })
@@ -126,25 +126,22 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bgGlow} />
-      <div className={styles.card}>
-        {/* Logo Placement */}
-        <div className={styles.logoWrapper}>
-          <Image
-            src="/images/faceofflogo.png"
-            alt="BGFS Faceoff Series"
-            width={600}
-            height={200}
-            style={{ width: 'auto', height: '200px', maxWidth: '100%', objectFit: 'contain' }}
-            className={styles.logoImg}
-            priority
-          />
-        </div>
+      {/* Top Left Back Button */}
+      <div className={styles.topBar}>
+        <Link href="/" className={styles.backLink}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </Link>
+      </div>
 
-        <h1 className={styles.title}>SIGN IN</h1>
-        <p className={styles.subtitle}>
-          Access your BGFS player portal, slot bookings, and tournament standings.
-        </p>
+      <div className={styles.card}>
+        <div className={styles.headerArea}>
+          <span className={styles.brandTag}>BGMI FACEOFF SERIES</span>
+          <h1 className={styles.title}>SIGN IN</h1>
+          <p className={styles.subtitle}>
+            Access your BGFS portal, slot bookings, &amp; standings.
+          </p>
+        </div>
 
         {/* Segmented Tab Switcher */}
         <div className={styles.modeTabs}>
@@ -167,12 +164,12 @@ export default function LoginPage() {
         {/* ── FORM 1: STANDARD ID & PASSWORD ── */}
         {loginMode === 'password' && (
           <form onSubmit={handlePasswordSignIn} className={styles.form}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="login-email">EMAIL ADDRESS</label>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label} htmlFor="login-email">EMAIL ADDRESS</label>
               <input
                 id="login-email"
                 type="email"
-                className="form-input"
+                className={styles.input}
                 placeholder="player@bgfsesports.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -181,12 +178,12 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="login-password">PASSWORD</label>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label} htmlFor="login-password">PASSWORD</label>
               <input
                 id="login-password"
                 type="password"
-                className="form-input"
+                className={styles.input}
                 placeholder="••••••••"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -199,8 +196,7 @@ export default function LoginPage() {
             <button
               id="password-signin-btn"
               type="submit"
-              className="btn btn-primary"
-              style={{ width: '100%', background: '#facc15', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px', marginTop: '0.5rem' }}
+              className={styles.submitBtn}
               disabled={loading}
             >
               {loading ? <><span className="spinner" /> SIGNING IN...</> : 'SIGN IN →'}
@@ -213,12 +209,12 @@ export default function LoginPage() {
           <>
             {otpStep === 'email' && (
               <form onSubmit={handleSendOtp} className={styles.form}>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="otp-email">EMAIL ADDRESS</label>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="otp-email">EMAIL ADDRESS</label>
                   <input
                     id="otp-email"
                     type="email"
-                    className="form-input"
+                    className={styles.input}
                     placeholder="player@bgfsesports.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -230,8 +226,7 @@ export default function LoginPage() {
                 <button
                   id="send-otp-btn"
                   type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%', background: '#facc15', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px', marginTop: '0.5rem' }}
+                  className={styles.submitBtn}
                   disabled={loading}
                 >
                   {loading ? <><span className="spinner" /> SENDING CODE...</> : 'SEND OTP CODE →'}
@@ -241,12 +236,12 @@ export default function LoginPage() {
 
             {otpStep === 'otp' && (
               <form onSubmit={handleVerifyOtp} className={styles.form}>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="otp-input">6-DIGIT VERIFICATION CODE</label>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="otp-input">6-DIGIT VERIFICATION CODE</label>
                   <input
                     id="otp-input"
                     type="text"
-                    className={`form-input ${styles.otpInput}`}
+                    className={`${styles.input} ${styles.otpInput}`}
                     placeholder="000000"
                     value={otp}
                     onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -260,8 +255,7 @@ export default function LoginPage() {
                 <button
                   id="verify-otp-btn"
                   type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%', background: '#facc15', color: '#111111', fontWeight: '800', textTransform: 'uppercase', padding: '12px', marginTop: '0.5rem' }}
+                  className={styles.submitBtn}
                   disabled={loading || otp.length < 6}
                 >
                   {loading ? <><span className="spinner" /> VERIFYING...</> : 'VERIFY & SIGN IN'}
@@ -270,18 +264,16 @@ export default function LoginPage() {
                 <div className={styles.resendRow}>
                   <button
                     type="button"
-                    className="btn btn-ghost btn-sm"
+                    className={styles.resendBtn}
                     onClick={() => { setOtpStep('email'); setOtp(''); setError('') }}
-                    style={{ color: '#b8b8b8', fontSize: '0.8rem', textTransform: 'uppercase' }}
                   >
                     ← CHANGE EMAIL
                   </button>
                   <button
                     type="button"
-                    className="btn btn-ghost btn-sm"
+                    className={`${styles.resendBtn} ${styles.resendBtnGold}`}
                     disabled={resendCooldown > 0}
                     onClick={handleSendOtp as any}
-                    style={{ color: '#facc15', fontSize: '0.8rem', textTransform: 'uppercase' }}
                   >
                     {resendCooldown > 0 ? `RESEND IN ${resendCooldown}S` : 'RESEND OTP'}
                   </button>
@@ -294,19 +286,9 @@ export default function LoginPage() {
         {/* New User Option Section */}
         <div className={styles.signupFooter}>
           <p className={styles.signupText}>Don't have an account yet?</p>
-          <div>
-            <Link href="/register" className={styles.signupLink}>
-              CREATE ACCOUNT / REGISTER NOW →
-            </Link>
-          </div>
-          <p className={styles.disclaimerText}>
-            By signing in, you agree to the tournament rules and guidelines.
-          </p>
-          <div className={styles.homeLinkWrapper}>
-            <Link href="/" className={styles.homeLink}>
-              ← BACK TO HOME
-            </Link>
-          </div>
+          <Link href="/register" className={styles.signupLink}>
+            CREATE ACCOUNT / REGISTER NOW →
+          </Link>
         </div>
       </div>
     </div>

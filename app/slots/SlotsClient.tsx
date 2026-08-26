@@ -434,14 +434,21 @@ function loadRazorpayScript(): Promise<boolean> {
                         </div>
                       </div>
 
-                      {/* Light Match Schedule (No individual box chips) */}
+                      {/* Light Match Schedule (Explicit dash separator & responsive grid) */}
                       <div className={styles.matchScheduleLight}>
-                        {getMatchTimes(slot.time_label).map((m, idx) => (
-                          <div key={idx} className={styles.matchTimeCol}>
-                            <span className={styles.matchLabel}>{m.name}</span>
-                            <span className={styles.matchTimeVal}>{m.time}</span>
-                          </div>
-                        ))}
+                        <div className={styles.scheduleHeaderRow}>
+                          <Clock size={11} color="#22c55e" />
+                          <span className={styles.scheduleTitleText}>MATCH SCHEDULE</span>
+                        </div>
+                        <div className={styles.matchScheduleGrid}>
+                          {getMatchTimes(slot.time_label).map((m, idx) => (
+                            <div key={idx} className={styles.matchTimeRowItem}>
+                              <span className={styles.matchLabel}>{m.name}</span>
+                              <span className={styles.matchDash}>—</span>
+                              <span className={styles.matchTimeVal}>{m.time}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Room Info Line */}
@@ -457,7 +464,7 @@ function loadRazorpayScript(): Promise<boolean> {
                         rel="noopener noreferrer"
                         className={styles.cardBtnWhatsapp}
                       >
-                        <MessageCircle size={14} /> Join WhatsApp Group
+                        <MessageCircle size={15} /> Join WhatsApp Group
                       </a>
 
                       {/* Secondary Actions: Add to Calendar & View Receipt */}
@@ -467,14 +474,14 @@ function loadRazorpayScript(): Promise<boolean> {
                           className={styles.secondaryActionBtn}
                           onClick={() => handleAddToCalendar(slot)}
                         >
-                          <Calendar size={12} /> Add to Calendar
+                          <Calendar size={13} /> Add to Calendar
                         </button>
                         <button
                           type="button"
                           className={styles.secondaryActionBtn}
                           onClick={() => setReceiptModalSlot(slot)}
                         >
-                          <FileText size={12} /> View Receipt
+                          <FileText size={13} /> View Receipt
                         </button>
                       </div>
                     </div>

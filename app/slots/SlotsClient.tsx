@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Check, Sparkles, X, Lock, MessageCircle, Flame } from 'lucide-react'
+import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
 import styles from './page.module.css'
 
 interface Slot {
@@ -33,6 +34,8 @@ interface Props {
   isLoggedIn: boolean
 }
 
+type FilterTab = 'upcoming' | 'past' | 'all'
+
 export default function SlotsClient({
   slots,
   userTeam,
@@ -49,19 +52,45 @@ export default function SlotsClient({
   const [confirmFreeSlot, setConfirmFreeSlot] = useState<Slot | null>(null)
   const [couponUsedInSession, setCouponUsedInSession] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
+  const [filterTab, setFilterTab] = useState<FilterTab>('upcoming')
 
   // Auto free slot detection
   const activeFreeCoupon = couponUsedInSession ? null : freeCoupon
 
-  // Group slots by date
+  // Filter slots based on date/time expiration
+  const filteredSlots = useMemo(() => {
+    return slots.filter(slot => {
+      const isPast = isSlotPastOrEnded(slot.date, slot.time_label, slot.status)
+      if (filterTab === 'upcoming') return !isPast
+      if (filterTab === 'past') return isPast
+      return true
+    })
+  }, [slots, filterTab])
+
+  // Group filtered slots by date
   const slotsByDate = useMemo(() => {
     const groups: Record<string, Slot[]> = {}
-    slots.forEach(slot => {
+    filteredSlots.forEach(slot => {
       if (!groups[slot.date]) groups[slot.date] = []
       groups[slot.date].push(slot)
     })
     return groups
-  }, [slots])
+  }, [filteredSlots])
+
+// Helper to load Razorpay Checkout JS script dynamically
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && (window as any).Razorpay) {
+      resolve(true)
+      return
+    }
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
 
   // Handle Free Slot button click -> opens confirm dialog
   function handleFreeButtonClick(slot: Slot) {
@@ -103,7 +132,7 @@ export default function SlotsClient({
 
         setCouponUsedInSession(true)
       } else {
-        // Paid booking (bypassed for dev testing)
+        // Create booking record first
         const createRes = await fetch('/api/booking/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -120,6 +149,62 @@ export default function SlotsClient({
           return
         }
 
+        // Check if live Razorpay keys are configured on the server
+        const orderRes = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId: createData.booking_id,
+            amount: slot.entry_fee || 50,
+          }),
+        })
+
+        if (orderRes.ok) {
+          const orderData = await orderRes.json()
+          const loaded = await loadRazorpayScript()
+
+          if (loaded && (window as any).Razorpay) {
+            const rzp = new (window as any).Razorpay({
+              key: orderData.keyId,
+              amount: orderData.amount,
+              currency: orderData.currency,
+              name: 'Battlegrounds Faceoff Series',
+              description: `Slot Registration: ${slot.time_label}`,
+              order_id: orderData.orderId,
+              handler: async function (response: any) {
+                const verifyRes = await fetch('/api/payment/verify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    bookingId: createData.booking_id,
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpaySignature: response.razorpay_signature,
+                  }),
+                })
+                const verifyData = await verifyRes.json()
+                if (verifyRes.ok && verifyData.success) {
+                  setBookedSlotIds(prev => [...prev, slot.slot_id])
+                  setSuccessToast(`Slot for ${slot.time_label} booked! Join WhatsApp group below.`)
+                } else {
+                  alert(verifyData.error || 'Payment verification failed. Please contact support.')
+                }
+                setBookingSlotId(null)
+              },
+              modal: {
+                ondismiss: function () {
+                  setBookingSlotId(null)
+                },
+              },
+              prefill: {},
+              theme: { color: '#fbbf24' },
+            })
+            rzp.open()
+            return
+          }
+        }
+
+        // Fallback confirmation if Razorpay keys are not configured yet
         const confirmRes = await fetch('/api/booking/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -206,10 +291,34 @@ export default function SlotsClient({
           )}
         </div>
 
+        {/* Filter Tabs */}
+        <div className={styles.filterRow}>
+          <button
+            className={`${styles.filterBtn} ${filterTab === 'upcoming' ? styles.filterBtnActive : ''}`}
+            onClick={() => setFilterTab('upcoming')}
+          >
+            🔥 OPEN / UPCOMING SLOTS
+          </button>
+          <button
+            className={`${styles.filterBtn} ${filterTab === 'past' ? styles.filterBtnActive : ''}`}
+            onClick={() => setFilterTab('past')}
+          >
+            ⏳ PAST SLOTS
+          </button>
+          <button
+            className={`${styles.filterBtn} ${filterTab === 'all' ? styles.filterBtnActive : ''}`}
+            onClick={() => setFilterTab('all')}
+          >
+            ALL SLOTS
+          </button>
+        </div>
+
         {/* Empty state */}
         {Object.keys(slotsByDate).length === 0 && (
           <div className={styles.emptyState}>
-            No active tournament slots available right now. Check back soon!
+            {filterTab === 'upcoming'
+              ? 'No upcoming tournament slots available right now. Check back soon or view past slots!'
+              : 'No tournament slots found.'}
           </div>
         )}
 
@@ -223,8 +332,11 @@ export default function SlotsClient({
                 const isAlreadyBooked = bookedSlotIds.includes(slot.slot_id)
                 const isBookingThis = bookingSlotId === slot.slot_id
                 const spotsLeft = Math.max(0, slot.capacity - slot.teams_booked_count)
-                const isFull = spotsLeft <= 0 || slot.status === 'full'
-                const isCompleted = slot.status === 'completed'
+                
+                // Strict expiration check
+                const isEnded = isSlotPastOrEnded(slot.date, slot.time_label, slot.status)
+                const isCompleted = isEnded || slot.status === 'completed'
+                const isFull = !isCompleted && (spotsLeft <= 0 || slot.status === 'full')
                 const isUrgent = !isFull && !isCompleted && !isAlreadyBooked && spotsLeft < 5
 
                 const showFreeOption = Boolean(activeFreeCoupon && !isFull && !isCompleted && !isAlreadyBooked)
@@ -249,7 +361,7 @@ export default function SlotsClient({
                       ) : (
                         <span className={`
                           ${styles.spotsBadge}
-                          ${isFull ? styles.spotsFull : ''}
+                          ${isFull || isCompleted ? styles.spotsFull : ''}
                           ${isUrgent ? styles.spotsUrgent : ''}
                         `}>
                           {isCompleted ? (
@@ -286,6 +398,8 @@ export default function SlotsClient({
                     <div className={styles.cardPriceRow}>
                       {isAlreadyBooked ? (
                         <div className={styles.bookedText}>SLOT REGISTERED ✓</div>
+                      ) : isCompleted ? (
+                        <div className={styles.priceMeta}>MATCH ENDED</div>
                       ) : showFreeOption ? (
                         <div className={styles.rewardAvailableText}>
                           <Check size={13} color="#22c55e" /> Reward available
@@ -310,7 +424,7 @@ export default function SlotsClient({
                         </a>
                       ) : isCompleted ? (
                         <button disabled className={styles.cardBtnDisabled}>
-                          ENDED
+                          SLOT ENDED
                         </button>
                       ) : isFull ? (
                         <button disabled className={styles.cardBtnDisabled}>

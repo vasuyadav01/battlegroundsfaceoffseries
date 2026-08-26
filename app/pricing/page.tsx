@@ -4,8 +4,8 @@ import { Check, Zap, Shield, Repeat } from 'lucide-react'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Pricing — BGFS',
-  description: 'BGFS tournament entry fee — ₹50 per slot, 3 matches per slot, no cap on slots per team.',
+  title: 'Pricing | BGFS',
+  description: 'BGFS tournament entry fee: ₹50 per slot, 3 matches per slot, no cap on slots per team.',
 }
 
 export default function PricingPage() {
@@ -21,7 +21,7 @@ export default function PricingPage() {
   const faqs = [
     {
       q: 'Can a team register for more than one slot?',
-      a: 'Yes — there is no cap on how many slots a team can register for across the season. The more slots you play, the more chances your best scores have to count toward your Best-16 ranking.',
+      a: 'Yes, there is no cap on how many slots a team can register for across the season. The more slots you play, the more chances your best scores have to count toward your Best-16 ranking.',
     },
     {
       q: 'Is there an entry fee for the Grand Finals?',
@@ -109,7 +109,7 @@ export default function PricingPage() {
               {
                 Icon: Zap,
                 title: 'Payouts After Slot Completion',
-                desc: 'Slot prize money is paid directly to winners via UPI after slot completion — no waiting.',
+                desc: 'Slot prize money is paid directly to winners via UPI after slot completion: no waiting.',
               },
               {
                 Icon: Shield,

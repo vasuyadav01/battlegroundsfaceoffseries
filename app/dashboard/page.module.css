@@ -191,10 +191,10 @@
   border-radius: 4px;
 }
 
-/* 3-Column Grid */
+/* 2-Column Grid */
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.25rem;
   align-items: stretch;
 }

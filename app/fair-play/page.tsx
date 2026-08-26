@@ -3,8 +3,8 @@ import { ShieldCheck, Award, Zap, Crosshair, AlertTriangle } from 'lucide-react'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Fair Play & Skill-Based Gaming Policy — BGFS',
-  description: 'Battlegrounds Faceoff Series Fair Play Policy — explicit disclosures regarding skill-based esports competition, anti-cheat, and compliance.',
+  title: 'Fair Play & Skill-Based Gaming Policy | BGFS',
+  description: 'Battlegrounds Faceoff Series Fair Play Policy: explicit disclosures regarding skill-based esports competition, anti-cheat, and compliance.',
 }
 
 export default function FairPlayPage() {
@@ -87,7 +87,7 @@ export default function FairPlayPage() {
               </p>
               <ul className={styles.legalList}>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Placement Points:</strong> 1st Place (10 pts), 2nd Place (6 pts), 3rd Place (5 pts), 4th Place (4 pts), 5th Place (3 pts), 6th–10th (2 pts), 11th–15th (1 pt).</span></li>
-                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Finish Points:</strong> 1 Point per verified in-game kill.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Elimination Points:</strong> 1 Point per verified in-game elimination.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Best-16 Aggregate:</strong> Leaderboard rankings automatically calculate a team&apos;s best 16 match performances across the cycle.</span></li>
               </ul>
             </div>
@@ -106,7 +106,7 @@ export default function FairPlayPage() {
               <ul className={styles.legalList}>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Email Support:</strong> <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a></span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Phone / WhatsApp:</strong> <a href="tel:+918303974916" style={{ color: '#fbbf24' }}>+91 83039 74916</a></span></li>
-                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Hours:</strong> 10:00 AM – 8:00 PM IST (All Days)</span></li>
+                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Hours:</strong> 10:00 AM to 8:00 PM IST (All Days)</span></li>
               </ul>
             </div>
 

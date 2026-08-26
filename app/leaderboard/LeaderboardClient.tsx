@@ -225,7 +225,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a' }}>TEAM NAME</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCHES PLAYED</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>BEST-16 TOTAL</th>
-                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>TOTAL FINISHES</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>ELIMINATIONS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', width: '60px' }}></th>
                     </tr>
                   </thead>
@@ -337,7 +337,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                         <div className={styles.mobileStats}>
                           <div>
                             <div className={styles.mobileStatVal}>{row.total_kills}</div>
-                            <div className={styles.mobileStatLabel}>TOTAL FINISHES</div>
+                            <div className={styles.mobileStatLabel}>ELIMINATIONS</div>
                           </div>
                           {row.rank <= 16 && (
                             <span className="badge badge-gold">✓ QUALIFIES FOR FINALS</span>
@@ -400,7 +400,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 1</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 2</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 3</th>
-                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>TOTAL KILLS</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>ELIMINATIONS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>SLOT POINTS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>SLOT PRIZE</th>
                     </tr>
@@ -504,7 +504,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                     <span>M1: {row.m1 ? `#${row.m1.placement} (${row.m1.total_points}p)` : '—'}</span>
                     <span>M2: {row.m2 ? `#${row.m2.placement} (${row.m2.total_points}p)` : '—'}</span>
                     <span>M3: {row.m3 ? `#${row.m3.placement} (${row.m3.total_points}p)` : '—'}</span>
-                    <span>Kills: {row.total_kills}</span>
+                    <span>Elims: {row.total_kills}</span>
                   </div>
 
                   {row.rank <= 3 && (
@@ -648,7 +648,7 @@ function MatchBreakdown({ matches }: { matches: MatchEntry[] }) {
           return (
             <div
               key={i}
-              title={`Placement: #${m.placement} | Kills: ${m.kills} | Points: ${m.total_points}`}
+              title={`Placement: #${m.placement} | Eliminations: ${m.kills} | Points: ${m.total_points}`}
               style={{
                 background: isTop16 ? '#272727' : '#1d1d1d',
                 border: `1px solid ${isTop16 ? '#facc15' : '#323232'}`,

@@ -1,6 +1,6 @@
 /**
  * BGFS Scoring Logic
- * Standard BGIS-style placement points + kill points
+ * Standard BGIS-style placement points + elimination points
  */
 
 // Placement points lookup
@@ -16,7 +16,7 @@ export function getPlacementPoints(placement: number): number {
 }
 
 export function getKillPoints(kills: number): number {
-  return kills // 1 point per kill
+  return kills // 1 point per elimination
 }
 
 export function getTotalPoints(placement: number, kills: number): number {

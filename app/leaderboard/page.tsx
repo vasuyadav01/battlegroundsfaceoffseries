@@ -3,8 +3,8 @@ import LeaderboardClient from './LeaderboardClient'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Leaderboard — BGFS',
-  description: 'Live BGFS Battlegrounds Faceoff Series standings. Best-16 match system — updated after every slot.',
+  title: 'Leaderboard | BGFS',
+  description: 'Live BGFS Battlegrounds Faceoff Series standings. Best-16 match system, updated after every slot.',
 }
 
 export const revalidate = 60

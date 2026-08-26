@@ -12,11 +12,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://battlegroundsfaceoffseries.com'),
-  title: 'BGFS — Battlegrounds Faceoff Series',
+  title: 'BGFS | Battlegrounds Faceoff Series',
   description: 'India\'s premier BGMI mobile tournament. Compete in weekly league slots, climb the leaderboard, and fight for glory in the Grand Finals.',
   keywords: 'BGMI tournament, BGFS, Battlegrounds Faceoff Series, mobile gaming tournament India',
   openGraph: {
-    title: 'BGFS — Battlegrounds Faceoff Series',
+    title: 'BGFS | Battlegrounds Faceoff Series',
     description: 'India\'s premier BGMI mobile tournament. Weekly league slots, ₹50 entry, cash prizes every slot.',
     url: 'https://battlegroundsfaceoffseries.com',
     type: 'website',

@@ -145,7 +145,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     if (error) {
       setMsg('❌ Error: ' + error.message)
     } else {
-      setMsg(`✅ Saved! Match ${matchNum}: #${p} + ${k} kills = ${pp + kp} pts`)
+      setMsg(`✅ Saved! Match ${matchNum}: #${p} + ${k} elims = ${pp + kp} pts`)
       setPlacement('')
       setKills('')
       if (matchNum < 3) setMatchNum(matchNum + 1)
@@ -155,7 +155,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   return (
     <div>
       <h2 className={styles.tabTitle}>Score Entry</h2>
-      <p className={styles.tabDesc}>Enter placement and kills for each team after each match.</p>
+      <p className={styles.tabDesc}>Enter placement and eliminations for each team after each match.</p>
 
       <form onSubmit={handleSave} className={styles.scoreForm}>
         <div className={styles.formRow}>
@@ -165,7 +165,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
               <option value="">Select slot...</option>
               {slots.map((s: any) => (
                 <option key={s.slot_id} value={s.slot_id}>
-                  {new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} — {s.time_label}
+                  {new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} • {s.time_label}
                 </option>
               ))}
             </select>
@@ -214,7 +214,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Kills</label>
+            <label className="form-label">Eliminations</label>
             <input
               type="number"
               className="form-input"
@@ -233,7 +233,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                     {getPlacementPoints(parseInt(placement)) + getKillPoints(parseInt(kills) || 0)} pts
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    ({getPlacementPoints(parseInt(placement))} place + {getKillPoints(parseInt(kills) || 0)} kills)
+                    ({getPlacementPoints(parseInt(placement))} place + {getKillPoints(parseInt(kills) || 0)} elims)
                   </span>
                 </>
               ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}

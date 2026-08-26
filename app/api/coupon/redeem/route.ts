@@ -1,5 +1,6 @@
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
 
 // POST /api/coupon/redeem
 export async function POST(request: Request) {
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This coupon has already been used' }, { status: 409 })
     }
 
-    // Check slot capacity
+    // Check slot capacity & date-time expiration
     const { data: slot, error: slotErr } = await admin
       .from('slots')
       .select('slot_id, capacity, teams_booked_count, status, whatsapp_link, date, time_label')
@@ -82,6 +83,10 @@ export async function POST(request: Request) {
 
     if (slotErr || !slot) {
       return NextResponse.json({ error: 'Slot not found' }, { status: 404 })
+    }
+
+    if (isSlotPastOrEnded(slot.date, slot.time_label, slot.status)) {
+      return NextResponse.json({ error: 'This match slot has already ended and is closed for registration.' }, { status: 400 })
     }
     if (slot.status === 'full' || slot.teams_booked_count >= slot.capacity) {
       return NextResponse.json({ error: 'This slot is full. Please choose another slot.' }, { status: 409 })

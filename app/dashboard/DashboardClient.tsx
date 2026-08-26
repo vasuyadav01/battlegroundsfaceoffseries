@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Calendar, TrendingUp, Wallet, Edit3, Lock, Check, X } from 'lucide-react'
+import { Calendar, TrendingUp, Edit3, Lock, Check, X } from 'lucide-react'
 import styles from './page.module.css'
 
 interface SlotInfo {
@@ -315,49 +315,6 @@ export default function DashboardClient({
               <Link href="/leaderboard" className={styles.footerLink}>
                 VIEW FULL LEADERBOARD →
               </Link>
-            </div>
-          </div>
-
-          {/* ── CARD 3: WALLET ── */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div className={styles.iconWrapper}>
-                <Wallet size={18} color="#facc15" />
-              </div>
-              <h2 className={styles.cardTitle}>WALLET</h2>
-            </div>
-
-            <div className={styles.cardBody}>
-              <div className={styles.walletMetrics}>
-                <div className={styles.walletRow}>
-                  <span className={styles.walletLabel}>ENTRY FEES PAID</span>
-                  <span className={styles.walletValue}>₹{totalEntryFees}</span>
-                </div>
-
-                <div className={styles.walletRowDivider} />
-
-                <div className={styles.walletRow}>
-                  <span className={styles.walletLabel}>PRIZE MONEY EARNED</span>
-                  <span className={styles.walletValueHighlight}>
-                    ₹{totalPrizeEarned}
-                  </span>
-
-                  {(paidPrize > 0 || pendingPrize > 0) && (
-                    <div className={styles.payoutStatusTags}>
-                      {paidPrize > 0 && (
-                        <span className={styles.payoutPaidTag}>
-                          ₹{paidPrize} Paid
-                        </span>
-                      )}
-                      {pendingPrize > 0 && (
-                        <span className={styles.payoutPendingTag}>
-                          ₹{pendingPrize} Pending
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>

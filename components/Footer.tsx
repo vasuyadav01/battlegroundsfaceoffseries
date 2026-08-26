@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Lock, Zap } from 'lucide-react'
 import styles from './Footer.module.css'
 
 export default function Footer() {
@@ -7,30 +8,25 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className="container">
         <div className={styles.footerTop}>
-          {/* Brand & Organizer Info */}
+          {/* Brand Column */}
           <div className={styles.brand}>
             <Image
               src="/images/faceofflogo.png"
               alt="BGFS Faceoff Series"
-              width={320}
-              height={74}
+              width={260}
+              height={56}
               className={styles.brandLogo}
-              style={{ height: '56px', width: 'auto' }}
+              style={{ height: '48px', width: 'auto' }}
             />
             <p className={styles.brandSub}>Battlegrounds Faceoff Series (BGFS) • Season 1</p>
             <p className={styles.brandTagline}>
               Skill-based esports tournament platform for competitive BGMI players.
             </p>
-            <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888888', lineHeight: '1.5' }}>
-              <p>📍 Operator: Battlegrounds Faceoff Series (BGFS)</p>
-              <p>📧 Email: <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a></p>
-              <p>📞 Phone: <a href="tel:+918303974916" style={{ color: '#fbbf24' }}>+91 83039 74916</a></p>
-            </div>
           </div>
 
           {/* Quick Links */}
           <div className={styles.linkGroup}>
-            <p className={styles.groupTitle}>Platform</p>
+            <p className={styles.groupTitle}>PLATFORM</p>
             <Link href="/" className={styles.footerLink}>Home</Link>
             <Link href="/leaderboard" className={styles.footerLink}>Leaderboard</Link>
             <Link href="/slots" className={styles.footerLink}>Register for Slot</Link>
@@ -39,25 +35,35 @@ export default function Footer() {
 
           {/* Info Links */}
           <div className={styles.linkGroup}>
-            <p className={styles.groupTitle}>Company</p>
+            <p className={styles.groupTitle}>COMPANY</p>
             <Link href="/about" className={styles.footerLink}>About Us</Link>
             <Link href="/contact" className={styles.footerLink}>Contact Support</Link>
             <Link href="/fair-play" className={styles.footerLink}>Fair Play Policy</Link>
           </div>
 
-          {/* Legal Links */}
+          {/* Legal Links & Trust Badges */}
           <div className={styles.linkGroup}>
-            <p className={styles.groupTitle}>Legal &amp; Trust</p>
+            <p className={styles.groupTitle}>LEGAL &amp; TRUST</p>
             <Link href="/terms" className={styles.footerLink}>Terms &amp; Conditions</Link>
             <Link href="/privacy-policy" className={styles.footerLink}>Privacy Policy</Link>
             <Link href="/refund-policy" className={styles.footerLink}>Cancellation &amp; Refund Policy</Link>
             <Link href="/fair-play" className={styles.footerLink}>Skill-Based Gaming</Link>
+
+            <div className={styles.trustBadges}>
+              <span className={styles.trustChip}>
+                <Lock size={11} color="#fbbf24" /> SSL SECURED
+              </span>
+              <span className={styles.trustChip}>
+                <Zap size={11} color="#fbbf24" /> RAZORPAY
+              </span>
+            </div>
           </div>
         </div>
 
+        {/* Bottom Bar */}
         <div className={styles.footerBottom}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} Battlegrounds Faceoff Series (BGFS). Skill-based esports tournament platform. Match outcomes are determined entirely by in-game performance, not chance. All game graphics and trademarks belong to Krafton Inc.
+            © {new Date().getFullYear()} Battlegrounds Faceoff Series (BGFS). Skill-based esports tournament platform. Match outcomes are determined entirely by in-game performance, not chance.
           </p>
           <div className={styles.legalLinks}>
             <Link href="/terms" className={styles.legalLink}>Terms</Link>

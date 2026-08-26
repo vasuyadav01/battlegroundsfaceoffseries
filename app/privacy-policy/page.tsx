@@ -36,7 +36,7 @@ export default function PrivacyPolicyPage() {
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Team Information:</strong> Team name, captain designation, and roster details you enter during registration.</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Booking Records:</strong> Slots booked, timestamps, and payment status (paid / pending).</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Payment Confirmation:</strong> Transaction Reference ID and Payment ID only. We do NOT store card numbers, UPI IDs, or any raw payment credentials.</span></li>
-                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Match Scores:</strong> Placement and kill data entered by BGFS admins for leaderboard computation.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Match Scores:</strong> Placement and elimination data entered by BGFS admins for leaderboard computation.</span></li>
               </ul>
             </div>
             <hr className={styles.legalDivider} />

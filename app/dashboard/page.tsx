@@ -6,8 +6,8 @@ import DashboardClient from './DashboardClient'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dashboard — BGFS',
-  description: 'Player dashboard — slots, standings, and wallet overview.',
+  title: 'Dashboard | BGFS',
+  description: 'Player dashboard: slots, standings, and wallet overview.',
 }
 
 export default async function DashboardPage() {

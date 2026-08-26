@@ -45,7 +45,7 @@ export default async function LandingPage() {
                 <span className={styles.goldText}>FACEOFF SERIES</span>
               </h1>
               <p className={styles.heroDesc}>
-                India's 100% skill-based competitive esports league for BGMI mobile players. Match outcomes and rankings are determined strictly by in-game performance, kills, and placement points — not chance. Compete from home, grind the Season 1 leaderboard, and qualify for the Grand Finals.
+                India's 100% skill-based competitive esports league for BGMI mobile players. Match outcomes and rankings are determined strictly by in-game performance, eliminations, and placement points, not chance. Compete from home, grind the Season 1 leaderboard, and qualify for the Grand Finals.
               </p>
 
               {/* Countdown timer block */}
@@ -71,7 +71,7 @@ export default async function LandingPage() {
               <div className={styles.skillContent}>
                 <ShieldCheck size={20} color="#fbbf24" className={styles.skillIcon} />
                 <p className={styles.skillText}>
-                  <strong className={styles.skillHighlight}>Skill-Based Esports:</strong> Match results &amp; rankings are 100% determined by player performance, kills &amp; placement — strictly not chance.
+                  <strong className={styles.skillHighlight}>Skill-Based Esports:</strong> Match results &amp; rankings are 100% determined by player performance, eliminations &amp; placement: strictly not chance.
                 </p>
               </div>
               <Link href="/fair-play" className={styles.fairPlayBtn}>
@@ -113,14 +113,14 @@ export default async function LandingPage() {
                   num: '03',
                   step: 'STEP 03',
                   title: 'GRIND & DOMINATE',
-                  desc: '3 matches per slot. Play as many slots as you want — only your top 16 match scores count.',
+                  desc: '3 matches per slot. Play as many slots as you want: only your top 16 match scores count.',
                   Icon: Crosshair,
                 },
                 {
                   num: '04',
                   step: 'STEP 04',
                   title: 'EARN REWARDS & QUALIFY',
-                  desc: 'UPI payout after slot completion. Top 16 overall teams advance to FREE Grand Finals.',
+                  desc: 'Prize pool rewards distributed after slot completion. Top 16 overall teams advance to FREE Grand Finals.',
                   Icon: Trophy,
                 },
               ].map((s) => (
@@ -204,12 +204,12 @@ export default async function LandingPage() {
               <div>
                 <h2 className={styles.sectionTitle}>BGIS SCORING SYSTEM</h2>
                 <p className={styles.scoringDesc}>
-                  Official esports placement point system + 1 finish point per kill. Play unlimited slots without punishment — our system automatically aggregates your <strong>Best 16 match performances</strong>.
+                  Official esports placement point system + 1 point per elimination. Play unlimited slots without penalty: our system automatically aggregates your <strong>Best 16 match performances</strong>.
                 </p>
                 <div className={styles.scoringFeatures}>
                   {[
                     '1st Place = 10 Placement Points',
-                    '1 Finish = 1 Point',
+                    '1 Elimination = 1 Point',
                     'Unlimited Slot Re-entry allowed',
                     'Best 16 match score auto-calculation',
                     'Off-days do not hurt your overall rank',

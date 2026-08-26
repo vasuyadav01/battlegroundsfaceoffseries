@@ -3,8 +3,8 @@ import { Shield, Calendar, Crosshair, Trophy } from 'lucide-react'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'About Us — BGFS',
-  description: "Learn about Battlegrounds Faceoff Series — India's premier BGMI competitive tournament platform.",
+  title: 'About Us | BGFS',
+  description: "Learn about Battlegrounds Faceoff Series: India's premier BGMI competitive tournament platform.",
 }
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
     {
       icon: Crosshair,
       title: 'BGIS Scoring Engine',
-      desc: 'Official BGIS placement points + 1 point per kill. Our Best-16 auto-calculator picks your top 16 match scores — off-days never hurt your rank.',
+      desc: 'Official BGIS placement points + 1 point per elimination. Our Best-16 auto-calculator picks your top 16 match scores: off-days never hurt your rank.',
     },
     {
       icon: Trophy,
@@ -27,7 +27,7 @@ export default function AboutPage() {
     {
       icon: Shield,
       title: 'Secure Payments',
-      desc: "Entry fees processed via secure UPI payment gateway. Instant UPI payouts to slot prize winners.",
+      desc: "Entry fees processed via secure UPI payment gateway. Payouts transferred after slot completion.",
     },
   ]
 
@@ -48,7 +48,7 @@ export default function AboutPage() {
             Battlegrounds <span className={styles.gold}>Faceoff Series</span>
           </h1>
           <p className={styles.heroDesc}>
-            India&rsquo;s premier unofficial BGMI competitive league — built by players, for players.
+            India&rsquo;s premier unofficial BGMI competitive league: built by players, for players.
           </p>
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function AboutPage() {
                 without requiring massive budgets or professional infrastructure.
               </p>
               <p className={styles.body}>
-                Our platform runs on a <strong className={styles.accent}>2-week competitive cycle</strong> — daily paid league
+                Our platform runs on a <strong className={styles.accent}>2-week competitive cycle</strong>: daily paid league
                 slots Monday through Friday across two weeks, culminating in a free Grand Finals event
                 for the top 16 qualifying teams. Every team plays on equal footing: your ranking is
                 determined purely by your best 16 match performances across the entire season.
@@ -93,7 +93,7 @@ export default function AboutPage() {
             <p className={styles.sectionEyebrow}>What We Do</p>
             <h2 className={styles.sectionTitle}>Tournament Infrastructure, End-to-End</h2>
             <p className={styles.sectionSubtitleText}>
-              From slot booking to score tracking to prize payouts — we handle it all.
+              From slot booking to score tracking to prize payouts: we handle it all.
             </p>
           </div>
 
@@ -125,8 +125,8 @@ export default function AboutPage() {
             professional leagues.
           </p>
           <p className={styles.body}>
-            Every feature on the platform — from the slot booking system to the Best-16 scoring
-            engine — has been designed with the needs of competitive BGMI players in mind. We are
+            Every feature on the platform, from the slot booking system to the Best-16 scoring
+            engine, has been designed with the needs of competitive BGMI players in mind. We are
             not affiliated with Krafton or BGMI officially; we are a community-first, player-first
             initiative.
           </p>

@@ -39,6 +39,7 @@ type FilterTab = 'upcoming' | 'past' | 'all'
 interface MatchTimeItem {
   name: string
   time: string
+  map: string
 }
 
 function parseStartTimeToMinutes(timeLabel: string): number {
@@ -79,9 +80,9 @@ function getMatchTimes(timeLabel: string): MatchTimeItem[] {
   const startMinutes = parseStartTimeToMinutes(timeLabel)
 
   return [
-    { name: 'MATCH 1', time: formatMinutesToTimeString(startMinutes) },
-    { name: 'MATCH 2', time: formatMinutesToTimeString(startMinutes + 42) },
-    { name: 'MATCH 3', time: formatMinutesToTimeString(startMinutes + 78) },
+    { name: 'MATCH 1', time: formatMinutesToTimeString(startMinutes), map: 'Erangel' },
+    { name: 'MATCH 2', time: formatMinutesToTimeString(startMinutes + 42), map: 'Rondo' },
+    { name: 'MATCH 3', time: formatMinutesToTimeString(startMinutes + 78), map: 'Miramar' },
   ]
 }
 
@@ -461,6 +462,20 @@ function loadRazorpayScript(): Promise<boolean> {
                               >
                                 {m.time}
                               </div>
+                              <div
+                                className={styles.matchCellMap}
+                                style={{
+                                  display: 'block',
+                                  color: '#fbbf24',
+                                  fontSize: '0.58rem',
+                                  fontWeight: 700,
+                                  lineHeight: 1,
+                                  letterSpacing: '0.02em',
+                                  marginTop: '2px',
+                                }}
+                              >
+                                {m.map}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -597,6 +612,20 @@ function loadRazorpayScript(): Promise<boolean> {
                             }}
                           >
                             {m.time}
+                          </div>
+                          <div
+                            className={styles.matchCellMap}
+                            style={{
+                              display: 'block',
+                              color: '#fbbf24',
+                              fontSize: '0.58rem',
+                              fontWeight: 700,
+                              lineHeight: 1,
+                              letterSpacing: '0.02em',
+                              marginTop: '2px',
+                            }}
+                          >
+                            {m.map}
                           </div>
                         </div>
                       ))}

@@ -356,6 +356,17 @@
   white-space: nowrap;
 }
 
+.matchCellMap {
+  display: block !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #fbbf24;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
 .bookedNote {
   font-family: 'Inter', sans-serif;
   font-size: 0.58rem;

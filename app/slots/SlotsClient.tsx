@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, X, Lock, MessageCircle, Flame } from 'lucide-react'
+import { Check, Sparkles, X, Lock, MessageCircle, Flame, Clock, Info, Calendar, FileText } from 'lucide-react'
 import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
 import styles from './page.module.css'
 
@@ -36,6 +36,49 @@ interface Props {
 
 type FilterTab = 'upcoming' | 'past' | 'all'
 
+interface MatchTimeItem {
+  name: string
+  time: string
+}
+
+function getMatchTimes(timeLabel: string): MatchTimeItem[] {
+  if (timeLabel.includes('9:00 PM')) {
+    return [
+      { name: 'Match 1', time: '9:00 PM' },
+      { name: 'Match 2', time: '9:42 PM' },
+      { name: 'Match 3', time: '10:18 PM' },
+    ]
+  }
+  if (timeLabel.includes('7:00 PM')) {
+    return [
+      { name: 'Match 1', time: '7:00 PM' },
+      { name: 'Match 2', time: '7:42 PM' },
+      { name: 'Match 3', time: '8:18 PM' },
+    ]
+  }
+  if (timeLabel.includes('5:00 PM')) {
+    return [
+      { name: 'Match 1', time: '5:00 PM' },
+      { name: 'Match 2', time: '5:42 PM' },
+      { name: 'Match 3', time: '6:18 PM' },
+    ]
+  }
+  if (timeLabel.includes('3:00 PM')) {
+    return [
+      { name: 'Match 1', time: '3:00 PM' },
+      { name: 'Match 2', time: '3:42 PM' },
+      { name: 'Match 3', time: '4:18 PM' },
+    ]
+  }
+
+  const startPart = timeLabel.split('-')[0]?.trim() || timeLabel.split('–')[0]?.trim() || 'Start'
+  return [
+    { name: 'Match 1', time: startPart },
+    { name: 'Match 2', time: '+42 min' },
+    { name: 'Match 3', time: '+78 min' },
+  ]
+}
+
 export default function SlotsClient({
   slots,
   userTeam,
@@ -50,6 +93,7 @@ export default function SlotsClient({
   const [bookedSlotIds, setBookedSlotIds] = useState<string[]>(userBookedSlotIds)
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
   const [confirmFreeSlot, setConfirmFreeSlot] = useState<Slot | null>(null)
+  const [receiptModalSlot, setReceiptModalSlot] = useState<Slot | null>(null)
   const [couponUsedInSession, setCouponUsedInSession] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
   const [filterTab, setFilterTab] = useState<FilterTab>('upcoming')
@@ -91,6 +135,33 @@ function loadRazorpayScript(): Promise<boolean> {
     document.body.appendChild(script)
   })
 }
+
+  // Add to Calendar helper
+  function handleAddToCalendar(slot: Slot) {
+    const title = encodeURIComponent(`BGFS Match Slot - ${slot.time_label}`)
+    const details = encodeURIComponent(
+      `BGFS BGMI Tournament Slot.\nTeam: ${userTeam?.team_name || 'My Squad'}\nDate: ${slot.date}\nTime: ${slot.time_label}\nRoom ID & Password posted in official WhatsApp group 10 minutes before each match.`
+    )
+    const location = encodeURIComponent('BGFS Platform / Official WhatsApp Group')
+
+    const cleanDate = (slot.date || '').replace(/-/g, '')
+    let startTimeStr = '153000Z'
+    let endTimeStr = '173000Z'
+
+    if (slot.time_label.includes('7:00 PM')) {
+      startTimeStr = '133000Z'
+      endTimeStr = '153000Z'
+    } else if (slot.time_label.includes('5:00 PM')) {
+      startTimeStr = '113000Z'
+      endTimeStr = '133000Z'
+    } else if (slot.time_label.includes('3:00 PM')) {
+      startTimeStr = '093000Z'
+      endTimeStr = '113000Z'
+    }
+
+    const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${cleanDate}T${startTimeStr}/${cleanDate}T${endTimeStr}`
+    window.open(googleCalUrl, '_blank')
+  }
 
   // Handle Free Slot button click -> opens confirm dialog
   function handleFreeButtonClick(slot: Slot) {
@@ -342,39 +413,110 @@ function loadRazorpayScript(): Promise<boolean> {
                 const showFreeOption = Boolean(activeFreeCoupon && !isFull && !isCompleted && !isAlreadyBooked)
                 const currentFee = slot.entry_fee || entryFee
 
+                if (isAlreadyBooked) {
+                  return (
+                    <div
+                      key={slot.slot_id}
+                      className={`${styles.slotCard} ${styles.slotCardBooked}`}
+                    >
+                      {/* Top Row: Registered Badge & Fee Tag */}
+                      <div className={styles.cardTopRow}>
+                        <span className={styles.spotsBooked}>
+                          <Check size={12} /> REGISTERED CONFIRMED
+                        </span>
+                        <span className={styles.bookingFeeTag}>
+                          PAID • 3 MATCHES
+                        </span>
+                      </div>
+
+                      {/* Header Block: Time + Team Name + Date */}
+                      <div className={styles.bookedHeaderBlock}>
+                        <div className={styles.cardTimeBooked}>{slot.time_label}</div>
+                        <div className={styles.bookedSubMeta}>
+                          <span>Team: <strong>{userTeam?.team_name || 'My Squad'}</strong></span>
+                          <span className={styles.metaDot}>•</span>
+                          <span>Date: <strong>{fmtDateHeader(slot.date)}</strong></span>
+                        </div>
+                      </div>
+
+                      {/* Match Schedule Block */}
+                      <div className={styles.matchScheduleBlock}>
+                        <div className={styles.scheduleTitle}>
+                          <Clock size={12} color="#22c55e" /> MATCH SCHEDULE
+                        </div>
+                        <div className={styles.matchTimesRow}>
+                          {getMatchTimes(slot.time_label).map((m, idx) => (
+                            <div key={idx} className={styles.matchTimeChip}>
+                              <span className={styles.matchNumLabel}>{m.name}</span>
+                              <span className={styles.matchTimeVal}>{m.time}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Room Info Line */}
+                      <div className={styles.roomInfoLine}>
+                        <Info size={13} color="#a0a0a0" className={styles.infoIconFlex} />
+                        <span>Room ID &amp; password are posted in the WhatsApp group 10 minutes before each match.</span>
+                      </div>
+
+                      {/* Primary Action: Join WhatsApp Group (Green) */}
+                      <a
+                        href={slot.whatsapp_link || whatsappLink || 'https://chat.whatsapp.com'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.cardBtnWhatsapp}
+                      >
+                        <MessageCircle size={15} /> Join WhatsApp Group
+                      </a>
+
+                      {/* Secondary Actions: Add to Calendar & View Receipt */}
+                      <div className={styles.secondaryActionsRow}>
+                        <button
+                          type="button"
+                          className={styles.secondaryActionBtn}
+                          onClick={() => handleAddToCalendar(slot)}
+                        >
+                          <Calendar size={13} /> Add to Calendar
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.secondaryActionBtn}
+                          onClick={() => setReceiptModalSlot(slot)}
+                        >
+                          <FileText size={13} /> View Receipt
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }
+
                 return (
                   <div
                     key={slot.slot_id}
                     className={`
                       ${styles.slotCard}
-                      ${isAlreadyBooked ? styles.slotCardBooked : ''}
                       ${isFull || isCompleted ? styles.slotCardFull : ''}
                       ${showFreeOption ? styles.slotCardFree : ''}
                     `}
                   >
                     {/* Top Row: Spots Left Pill (Top-Left) & FREE Ribbon (Top-Right) */}
                     <div className={styles.cardTopRow}>
-                      {isAlreadyBooked ? (
-                        <span className={styles.spotsBooked}>
-                          <Check size={11} /> REGISTERED ✓
-                        </span>
-                      ) : (
-                        <span className={`
-                          ${styles.spotsBadge}
-                          ${isFull || isCompleted ? styles.spotsFull : ''}
-                          ${isUrgent ? styles.spotsUrgent : ''}
-                        `}>
-                          {isCompleted ? (
-                            'ENDED'
-                          ) : isFull ? (
-                            'FULL (20/20)'
-                          ) : isUrgent ? (
-                            <><Flame size={11} className={styles.flameIcon} /> {spotsLeft} SPOTS LEFT</>
-                          ) : (
-                            `${spotsLeft}/${slot.capacity} SPOTS`
-                          )}
-                        </span>
-                      )}
+                      <span className={`
+                        ${styles.spotsBadge}
+                        ${isFull || isCompleted ? styles.spotsFull : ''}
+                        ${isUrgent ? styles.spotsUrgent : ''}
+                      `}>
+                        {isCompleted ? (
+                          'ENDED'
+                        ) : isFull ? (
+                          'FULL (20/20)'
+                        ) : isUrgent ? (
+                          <><Flame size={11} className={styles.flameIcon} /> {spotsLeft} SPOTS LEFT</>
+                        ) : (
+                          `${spotsLeft}/${slot.capacity} SPOTS`
+                        )}
+                      </span>
 
                       {showFreeOption && (
                         <span className={styles.freeRibbon}>
@@ -396,9 +538,7 @@ function loadRazorpayScript(): Promise<boolean> {
 
                     {/* Price / Reward Available Line */}
                     <div className={styles.cardPriceRow}>
-                      {isAlreadyBooked ? (
-                        <div className={styles.bookedText}>SLOT REGISTERED ✓</div>
-                      ) : isCompleted ? (
+                      {isCompleted ? (
                         <div className={styles.priceMeta}>MATCH ENDED</div>
                       ) : showFreeOption ? (
                         <div className={styles.rewardAvailableText}>
@@ -413,16 +553,7 @@ function loadRazorpayScript(): Promise<boolean> {
 
                     {/* Bottom Action Button (Pinned) */}
                     <div className={styles.cardBottomAction}>
-                      {isAlreadyBooked ? (
-                        <a
-                          href={slot.whatsapp_link || whatsappLink || 'https://chat.whatsapp.com'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.cardBtnWhatsapp}
-                        >
-                          <MessageCircle size={14} /> JOIN GROUP 💬
-                        </a>
-                      ) : isCompleted ? (
+                      {isCompleted ? (
                         <button disabled className={styles.cardBtnDisabled}>
                           SLOT ENDED
                         </button>
@@ -510,6 +641,76 @@ function loadRazorpayScript(): Promise<boolean> {
                 onClick={() => setConfirmFreeSlot(null)}
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── RECEIPT MODAL ── */}
+      {receiptModalSlot && (
+        <div className={styles.modalOverlay} onClick={() => setReceiptModalSlot(null)}>
+          <div className={styles.receiptModal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitleRow}>
+                <FileText size={18} color="#22c55e" />
+                <h3 className={styles.modalTitle}>BOOKING RECEIPT</h3>
+              </div>
+              <button
+                className={styles.closeModalBtn}
+                onClick={() => setReceiptModalSlot(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className={styles.receiptBody}>
+              <div className={styles.receiptRefBadge}>
+                TRANSACTION CONFIRMED • RECEIPT #{receiptModalSlot.slot_id.slice(0, 8).toUpperCase()}
+              </div>
+
+              <div className={styles.receiptGrid}>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Tournament</span>
+                  <span className={styles.receiptValue}>Battlegrounds Faceoff Series</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Registered Team</span>
+                  <span className={styles.receiptValueGold}>{userTeam?.team_name || 'My Squad'}</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Match Date</span>
+                  <span className={styles.receiptValue}>{fmtDateHeader(receiptModalSlot.date)}</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Time Window</span>
+                  <span className={styles.receiptValue}>{receiptModalSlot.time_label}</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Matches Included</span>
+                  <span className={styles.receiptValue}>3 Custom Matches</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Entry Fee Paid</span>
+                  <span className={styles.receiptValueHighlight}>₹{receiptModalSlot.entry_fee || entryFee}</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span className={styles.receiptLabel}>Payment Status</span>
+                  <span className={styles.receiptStatusGreen}>PAID &amp; VERIFIED</span>
+                </div>
+              </div>
+
+              <p className={styles.receiptFooterNote}>
+                Room ID &amp; password are posted in the official WhatsApp match group 10 minutes before each match start time.
+              </p>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.closeReceiptBtn}
+                onClick={() => setReceiptModalSlot(null)}
+              >
+                Close Receipt
               </button>
             </div>
           </div>

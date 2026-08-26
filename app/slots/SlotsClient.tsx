@@ -419,42 +419,33 @@ function loadRazorpayScript(): Promise<boolean> {
                       key={slot.slot_id}
                       className={`${styles.slotCard} ${styles.slotCardBooked}`}
                     >
-                      {/* Top Row: Simple Registered Badge */}
-                      <div className={styles.cardTopRow}>
+                      {/* Top Bar: Registered Badge on Left, Team Name Pill on Right */}
+                      <div className={styles.bookedTopRow}>
                         <span className={styles.spotsBooked}>
                           <Check size={11} /> REGISTERED
                         </span>
+                        <span className={styles.bookedTeamPill}>
+                          {userTeam?.team_name || 'My Squad'}
+                        </span>
                       </div>
 
-                      {/* Header Block: Time + Inline Team Name */}
-                      <div className={styles.bookedHeaderBlock}>
-                        <div className={styles.cardTimeBooked}>{slot.time_label}</div>
-                        <div className={styles.bookedSubMeta}>
-                          Team: <strong>{userTeam?.team_name || 'My Squad'}</strong>
-                        </div>
+                      {/* Main Time Label */}
+                      <div className={styles.bookedTimeLabel}>{slot.time_label}</div>
+
+                      {/* Sleek Match Schedule Pills */}
+                      <div className={styles.matchPillsRow}>
+                        {getMatchTimes(slot.time_label).map((m, idx) => (
+                          <div key={idx} className={styles.matchPillItem}>
+                            <span className={styles.pillLabel}>{m.name.replace('Match ', 'M')}</span>
+                            <span className={styles.pillTime}>{m.time}</span>
+                          </div>
+                        ))}
                       </div>
 
-                      {/* Light Match Schedule (Explicit dash separator & responsive grid) */}
-                      <div className={styles.matchScheduleLight}>
-                        <div className={styles.scheduleHeaderRow}>
-                          <Clock size={11} color="#22c55e" />
-                          <span className={styles.scheduleTitleText}>MATCH SCHEDULE</span>
-                        </div>
-                        <div className={styles.matchScheduleGrid}>
-                          {getMatchTimes(slot.time_label).map((m, idx) => (
-                            <div key={idx} className={styles.matchTimeRowItem}>
-                              <span className={styles.matchLabel}>{m.name}</span>
-                              <span className={styles.matchDash}>—</span>
-                              <span className={styles.matchTimeVal}>{m.time}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Room Info Line */}
-                      <div className={styles.roomInfoLine}>
-                        <Info size={12} color="#9e9e9e" className={styles.infoIconFlex} />
-                        <span>Room ID &amp; password posted in WhatsApp group 10m before matches.</span>
+                      {/* Compact Room Info Line */}
+                      <div className={styles.roomInfoCompact}>
+                        <Info size={11} color="#22c55e" className={styles.infoIconFlex} />
+                        <span>Room ID/Pass posted in WhatsApp 10m before matches.</span>
                       </div>
 
                       {/* Primary Action: Join WhatsApp Group */}
@@ -464,24 +455,24 @@ function loadRazorpayScript(): Promise<boolean> {
                         rel="noopener noreferrer"
                         className={styles.cardBtnWhatsapp}
                       >
-                        <MessageCircle size={15} /> Join WhatsApp Group
+                        <MessageCircle size={13} /> Join WhatsApp Group
                       </a>
 
-                      {/* Secondary Actions: Add to Calendar & View Receipt */}
+                      {/* Secondary Actions: Calendar & Receipt */}
                       <div className={styles.secondaryActionsRow}>
                         <button
                           type="button"
                           className={styles.secondaryActionBtn}
                           onClick={() => handleAddToCalendar(slot)}
                         >
-                          <Calendar size={13} /> Add to Calendar
+                          <Calendar size={11} /> Calendar
                         </button>
                         <button
                           type="button"
                           className={styles.secondaryActionBtn}
                           onClick={() => setReceiptModalSlot(slot)}
                         >
-                          <FileText size={13} /> View Receipt
+                          <FileText size={11} /> Receipt
                         </button>
                       </div>
                     </div>

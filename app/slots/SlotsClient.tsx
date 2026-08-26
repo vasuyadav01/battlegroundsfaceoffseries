@@ -368,13 +368,13 @@ function loadRazorpayScript(): Promise<boolean> {
             className={`${styles.filterBtn} ${filterTab === 'upcoming' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilterTab('upcoming')}
           >
-            🔥 OPEN / UPCOMING SLOTS
+            OPEN / UPCOMING SLOTS
           </button>
           <button
             className={`${styles.filterBtn} ${filterTab === 'past' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilterTab('past')}
           >
-            ⏳ PAST SLOTS
+            PAST SLOTS
           </button>
           <button
             className={`${styles.filterBtn} ${filterTab === 'all' ? styles.filterBtnActive : ''}`}
@@ -419,55 +419,45 @@ function loadRazorpayScript(): Promise<boolean> {
                       key={slot.slot_id}
                       className={`${styles.slotCard} ${styles.slotCardBooked}`}
                     >
-                      {/* Top Row: Registered Badge & Fee Tag */}
+                      {/* Top Row: Simple Registered Badge */}
                       <div className={styles.cardTopRow}>
                         <span className={styles.spotsBooked}>
-                          <Check size={12} /> REGISTERED CONFIRMED
-                        </span>
-                        <span className={styles.bookingFeeTag}>
-                          PAID • 3 MATCHES
+                          <Check size={11} /> REGISTERED
                         </span>
                       </div>
 
-                      {/* Header Block: Time + Team Name + Date */}
+                      {/* Header Block: Time + Inline Team Name */}
                       <div className={styles.bookedHeaderBlock}>
                         <div className={styles.cardTimeBooked}>{slot.time_label}</div>
                         <div className={styles.bookedSubMeta}>
-                          <span>Team: <strong>{userTeam?.team_name || 'My Squad'}</strong></span>
-                          <span className={styles.metaDot}>•</span>
-                          <span>Date: <strong>{fmtDateHeader(slot.date)}</strong></span>
+                          Team: <strong>{userTeam?.team_name || 'My Squad'}</strong>
                         </div>
                       </div>
 
-                      {/* Match Schedule Block */}
-                      <div className={styles.matchScheduleBlock}>
-                        <div className={styles.scheduleTitle}>
-                          <Clock size={12} color="#22c55e" /> MATCH SCHEDULE
-                        </div>
-                        <div className={styles.matchTimesRow}>
-                          {getMatchTimes(slot.time_label).map((m, idx) => (
-                            <div key={idx} className={styles.matchTimeChip}>
-                              <span className={styles.matchNumLabel}>{m.name}</span>
-                              <span className={styles.matchTimeVal}>{m.time}</span>
-                            </div>
-                          ))}
-                        </div>
+                      {/* Light Match Schedule (No individual box chips) */}
+                      <div className={styles.matchScheduleLight}>
+                        {getMatchTimes(slot.time_label).map((m, idx) => (
+                          <div key={idx} className={styles.matchTimeCol}>
+                            <span className={styles.matchLabel}>{m.name}</span>
+                            <span className={styles.matchTimeVal}>{m.time}</span>
+                          </div>
+                        ))}
                       </div>
 
                       {/* Room Info Line */}
                       <div className={styles.roomInfoLine}>
-                        <Info size={13} color="#a0a0a0" className={styles.infoIconFlex} />
-                        <span>Room ID &amp; password are posted in the WhatsApp group 10 minutes before each match.</span>
+                        <Info size={12} color="#9e9e9e" className={styles.infoIconFlex} />
+                        <span>Room ID &amp; password posted in WhatsApp group 10m before matches.</span>
                       </div>
 
-                      {/* Primary Action: Join WhatsApp Group (Green) */}
+                      {/* Primary Action: Join WhatsApp Group */}
                       <a
                         href={slot.whatsapp_link || whatsappLink || 'https://chat.whatsapp.com'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.cardBtnWhatsapp}
                       >
-                        <MessageCircle size={15} /> Join WhatsApp Group
+                        <MessageCircle size={14} /> Join WhatsApp Group
                       </a>
 
                       {/* Secondary Actions: Add to Calendar & View Receipt */}
@@ -477,14 +467,14 @@ function loadRazorpayScript(): Promise<boolean> {
                           className={styles.secondaryActionBtn}
                           onClick={() => handleAddToCalendar(slot)}
                         >
-                          <Calendar size={13} /> Add to Calendar
+                          <Calendar size={12} /> Add to Calendar
                         </button>
                         <button
                           type="button"
                           className={styles.secondaryActionBtn}
                           onClick={() => setReceiptModalSlot(slot)}
                         >
-                          <FileText size={13} /> View Receipt
+                          <FileText size={12} /> View Receipt
                         </button>
                       </div>
                     </div>

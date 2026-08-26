@@ -213,12 +213,19 @@
   box-shadow: 0 8px 24px rgba(251, 191, 36, 0.3) !important;
 }
 
-/* Booked state */
+/* Booked state - Fixed aspect-ratio and overflow bug, tightened vertical spacing */
 .slotCardBooked {
-  border: 1px solid rgba(34, 197, 94, 0.45) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
   background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, #121614 100%) !important;
-  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.12);
-  gap: 0.65rem !important;
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.1);
+  aspect-ratio: unset !important;
+  height: auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+  padding: 0.85rem 0.85rem !important;
+  align-items: stretch !important;
+  text-align: left !important;
+  gap: 0.45rem !important;
 }
 
 .spotsBooked {
@@ -228,46 +235,33 @@
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.06em;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 2px 7px;
+  border-radius: 5px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   text-transform: uppercase;
 }
 
-.bookingFeeTag {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #888888;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
 .bookedHeaderBlock {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.15rem;
+  gap: 0.15rem;
 }
 
 .cardTimeBooked {
   font-family: 'Inter', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 900;
   color: #ffffff;
   letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
 .bookedSubMeta {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
   font-family: 'Inter', sans-serif;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: #a0a0a0;
-  flex-wrap: wrap;
 }
 
 .bookedSubMeta strong {
@@ -275,58 +269,29 @@
   font-weight: 700;
 }
 
-.metaDot {
-  color: #444444;
-  font-size: 0.7rem;
-}
-
-/* Match Schedule Block */
-.matchScheduleBlock {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 8px;
-  padding: 0.55rem 0.65rem;
-  margin-top: 0.15rem;
-}
-
-.scheduleTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #22c55e;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 0.4rem;
-}
-
-.matchTimesRow {
+/* Light Match Schedule Container */
+.matchScheduleLight {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
-}
-
-.matchTimeChip {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  padding: 0.3rem 0.2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  padding: 0.35rem 0.45rem;
+  gap: 0.2rem;
   text-align: center;
 }
 
-.matchNumLabel {
+.matchTimeCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.matchLabel {
   font-family: 'Inter', sans-serif;
   font-size: 0.6rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #777777;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .matchTimeVal {
@@ -334,48 +299,53 @@
   font-size: 0.72rem;
   font-weight: 800;
   color: #ffffff;
-  margin-top: 1px;
 }
 
 /* Room Info Line */
 .roomInfoLine {
   display: flex;
   align-items: flex-start;
-  gap: 0.4rem;
+  gap: 0.35rem;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed rgba(255, 255, 255, 0.09);
   border-radius: 6px;
-  padding: 0.45rem 0.55rem;
+  padding: 0.35rem 0.5rem;
   font-family: 'Inter', sans-serif;
-  font-size: 0.72rem;
-  color: #9e9e9e;
-  line-height: 1.4;
+  font-size: 0.68rem;
+  color: #999999;
+  line-height: 1.35;
 }
 
 .infoIconFlex {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .cardBtnWhatsapp {
   width: 100%;
-  padding: 0.65rem 0.4rem;
+  padding: 0.55rem 0.4rem;
   background: #22c55e;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.03em;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   text-decoration: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   white-space: nowrap;
   transition: all 0.18s ease;
-  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.25);
+}
+
+.cardBtnWhatsapp:hover {
+  background: #16a34a;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 .cardBtnWhatsapp:hover {

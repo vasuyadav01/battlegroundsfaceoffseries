@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, X, Lock, MessageCircle, Flame, Clock, Info, Calendar, FileText } from 'lucide-react'
+import { Check, Sparkles, X, Lock, MessageCircle, Flame } from 'lucide-react'
 import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
 import styles from './page.module.css'
 
@@ -41,41 +41,47 @@ interface MatchTimeItem {
   time: string
 }
 
-function getMatchTimes(timeLabel: string): MatchTimeItem[] {
-  if (timeLabel.includes('9:00 PM')) {
-    return [
-      { name: 'Match 1', time: '9:00 PM' },
-      { name: 'Match 2', time: '9:42 PM' },
-      { name: 'Match 3', time: '10:18 PM' },
-    ]
-  }
-  if (timeLabel.includes('7:00 PM')) {
-    return [
-      { name: 'Match 1', time: '7:00 PM' },
-      { name: 'Match 2', time: '7:42 PM' },
-      { name: 'Match 3', time: '8:18 PM' },
-    ]
-  }
-  if (timeLabel.includes('5:00 PM')) {
-    return [
-      { name: 'Match 1', time: '5:00 PM' },
-      { name: 'Match 2', time: '5:42 PM' },
-      { name: 'Match 3', time: '6:18 PM' },
-    ]
-  }
-  if (timeLabel.includes('3:00 PM')) {
-    return [
-      { name: 'Match 1', time: '3:00 PM' },
-      { name: 'Match 2', time: '3:42 PM' },
-      { name: 'Match 3', time: '4:18 PM' },
-    ]
+function parseStartTimeToMinutes(timeLabel: string): number {
+  if (!timeLabel) return 21 * 60 // Default 9:00 PM (1260 mins)
+
+  const match = timeLabel.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i)
+  if (!match) {
+    return 21 * 60 // Fallback 9:00 PM
   }
 
-  const startPart = timeLabel.split('-')[0]?.trim() || timeLabel.split('–')[0]?.trim() || 'Start'
+  let hours = parseInt(match[1], 10)
+  const minutes = match[2] ? parseInt(match[2], 10) : 0
+  const meridian = match[3].toUpperCase()
+
+  if (meridian === 'PM' && hours < 12) {
+    hours += 12
+  } else if (meridian === 'AM' && hours === 12) {
+    hours = 0
+  }
+
+  return hours * 60 + minutes
+}
+
+function formatMinutesToTimeString(totalMinutes: number): string {
+  const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440
+  let hours = Math.floor(normalizedMinutes / 60)
+  const minutes = normalizedMinutes % 60
+
+  const period = hours >= 12 ? 'PM' : 'AM'
+  hours = hours % 12
+  if (hours === 0) hours = 12
+
+  const minStr = String(minutes).padStart(2, '0')
+  return `${hours}:${minStr} ${period}`
+}
+
+function getMatchTimes(timeLabel: string): MatchTimeItem[] {
+  const startMinutes = parseStartTimeToMinutes(timeLabel)
+
   return [
-    { name: 'Match 1', time: startPart },
-    { name: 'Match 2', time: '+42 min' },
-    { name: 'Match 3', time: '+78 min' },
+    { name: 'MATCH 1', time: formatMinutesToTimeString(startMinutes) },
+    { name: 'MATCH 2', time: formatMinutesToTimeString(startMinutes + 42) },
+    { name: 'MATCH 3', time: formatMinutesToTimeString(startMinutes + 78) },
   ]
 }
 
@@ -93,7 +99,7 @@ export default function SlotsClient({
   const [bookedSlotIds, setBookedSlotIds] = useState<string[]>(userBookedSlotIds)
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
   const [confirmFreeSlot, setConfirmFreeSlot] = useState<Slot | null>(null)
-  const [receiptModalSlot, setReceiptModalSlot] = useState<Slot | null>(null)
+
   const [couponUsedInSession, setCouponUsedInSession] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
   const [filterTab, setFilterTab] = useState<FilterTab>('upcoming')
@@ -135,33 +141,6 @@ function loadRazorpayScript(): Promise<boolean> {
     document.body.appendChild(script)
   })
 }
-
-  // Add to Calendar helper
-  function handleAddToCalendar(slot: Slot) {
-    const title = encodeURIComponent(`BGFS Match Slot - ${slot.time_label}`)
-    const details = encodeURIComponent(
-      `BGFS BGMI Tournament Slot.\nTeam: ${userTeam?.team_name || 'My Squad'}\nDate: ${slot.date}\nTime: ${slot.time_label}\nRoom ID & Password posted in official WhatsApp group 10 minutes before each match.`
-    )
-    const location = encodeURIComponent('BGFS Platform / Official WhatsApp Group')
-
-    const cleanDate = (slot.date || '').replace(/-/g, '')
-    let startTimeStr = '153000Z'
-    let endTimeStr = '173000Z'
-
-    if (slot.time_label.includes('7:00 PM')) {
-      startTimeStr = '133000Z'
-      endTimeStr = '153000Z'
-    } else if (slot.time_label.includes('5:00 PM')) {
-      startTimeStr = '113000Z'
-      endTimeStr = '133000Z'
-    } else if (slot.time_label.includes('3:00 PM')) {
-      startTimeStr = '093000Z'
-      endTimeStr = '113000Z'
-    }
-
-    const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${cleanDate}T${startTimeStr}/${cleanDate}T${endTimeStr}`
-    window.open(googleCalUrl, '_blank')
-  }
 
   // Handle Free Slot button click -> opens confirm dialog
   function handleFreeButtonClick(slot: Slot) {
@@ -403,7 +382,7 @@ function loadRazorpayScript(): Promise<boolean> {
                 const isAlreadyBooked = bookedSlotIds.includes(slot.slot_id)
                 const isBookingThis = bookingSlotId === slot.slot_id
                 const spotsLeft = Math.max(0, slot.capacity - slot.teams_booked_count)
-                
+
                 // Strict expiration check
                 const isEnded = isSlotPastOrEnded(slot.date, slot.time_label, slot.status)
                 const isCompleted = isEnded || slot.status === 'completed'
@@ -414,70 +393,94 @@ function loadRazorpayScript(): Promise<boolean> {
                 const currentFee = slot.entry_fee || entryFee
 
                 if (isAlreadyBooked) {
+                  const matchTimes = getMatchTimes(slot.time_label)
+
                   return (
-                    <div
-                      key={slot.slot_id}
-                      className={`${styles.slotCard} ${styles.slotCardBooked}`}
-                    >
-                      {/* Top Bar: Registered Badge on Left, Team Name Pill on Right */}
-                      <div className={styles.bookedTopRow}>
-                        <span className={styles.spotsBooked}>
-                          <Check size={11} /> REGISTERED
-                        </span>
-                        <span className={styles.bookedTeamPill}>
-                          {userTeam?.team_name || 'My Squad'}
+                    <div key={slot.slot_id} className={styles.slotCardBooked}>
+                      <div className={styles.cardTopRow}>
+                        <span className={styles.bookedBadge}>
+                          <Check size={10} /> REGISTERED
                         </span>
                       </div>
 
-                      {/* Main Time Label */}
-                      <div className={styles.bookedTimeLabel}>{slot.time_label}</div>
+                      <div className={styles.bookedCenter}>
+                        <div className={styles.bookedTime}>{slot.time_label}</div>
 
-                      {/* Sleek Match Schedule Pills */}
-                      <div className={styles.matchPillsRow}>
-                        {getMatchTimes(slot.time_label).map((m, idx) => (
-                          <div key={idx} className={styles.matchPillItem}>
-                            <span className={styles.pillLabel}>{m.name.replace('Match ', 'M')}</span>
-                            <span className={styles.pillTime}>{m.time}</span>
-                          </div>
-                        ))}
+                        <div
+                          className={styles.matchCellsGrid}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '6px',
+                            width: '100%',
+                            margin: '0.35rem 0',
+                          }}
+                        >
+                          {matchTimes.map((m, idx) => (
+                            <div
+                              key={idx}
+                              className={styles.matchCellBooked}
+                              style={{
+                                border: '1.5px solid #22c55e',
+                                borderRadius: '8px',
+                                background: '#0e190f',
+                                padding: '0.4rem 0.2rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '2px',
+                                textAlign: 'center',
+                                boxShadow: '0 2px 8px rgba(34, 197, 94, 0.15)',
+                              }}
+                            >
+                              <div
+                                className={styles.matchCellLabelBooked}
+                                style={{
+                                  display: 'block',
+                                  color: '#4ade80',
+                                  fontSize: '0.55rem',
+                                  fontWeight: 800,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.06em',
+                                  lineHeight: 1,
+                                }}
+                              >
+                                MATCH {idx + 1}
+                              </div>
+                              <div
+                                className={styles.matchCellTime}
+                                style={{
+                                  display: 'block',
+                                  color: '#ffffff',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 800,
+                                  lineHeight: 1.1,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {m.time}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <p className={styles.bookedNote}>Room ID &amp; password posted 10 minutes before each match</p>
                       </div>
 
-                      {/* Compact Room Info Line */}
-                      <div className={styles.roomInfoCompact}>
-                        <Info size={11} color="#22c55e" className={styles.infoIconFlex} />
-                        <span>Room ID/Pass posted in WhatsApp 10m before matches.</span>
-                      </div>
-
-                      {/* Primary Action: Join WhatsApp Group */}
                       <a
                         href={slot.whatsapp_link || whatsappLink || 'https://chat.whatsapp.com'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.cardBtnWhatsapp}
+                        className={styles.bookedBtn}
                       >
                         <MessageCircle size={13} /> Join WhatsApp Group
                       </a>
-
-                      {/* Secondary Actions: Calendar & Receipt */}
-                      <div className={styles.secondaryActionsRow}>
-                        <button
-                          type="button"
-                          className={styles.secondaryActionBtn}
-                          onClick={() => handleAddToCalendar(slot)}
-                        >
-                          <Calendar size={11} /> Calendar
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.secondaryActionBtn}
-                          onClick={() => setReceiptModalSlot(slot)}
-                        >
-                          <FileText size={11} /> Receipt
-                        </button>
-                      </div>
                     </div>
                   )
                 }
+
+                const matchTimes = getMatchTimes(slot.time_label)
 
                 return (
                   <div
@@ -537,6 +540,66 @@ function loadRazorpayScript(): Promise<boolean> {
                           ₹{currentFee} <span className={styles.priceMeta}>/ 3 Matches</span>
                         </div>
                       )}
+                    </div>
+
+                    {/* 3-cell match timings grid */}
+                    <div
+                      className={styles.matchCellsGrid}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '6px',
+                        width: '100%',
+                        margin: '0.35rem 0',
+                      }}
+                    >
+                      {matchTimes.map((m, idx) => (
+                        <div
+                          key={idx}
+                          className={styles.matchCellOpen}
+                          style={{
+                            border: '1.5px solid #3f3f46',
+                            borderRadius: '8px',
+                            background: '#181818',
+                            padding: '0.4rem 0.2rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '2px',
+                            textAlign: 'center',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+                          }}
+                        >
+                          <div
+                            className={styles.matchCellLabelOpen}
+                            style={{
+                              display: 'block',
+                              color: '#a1a1aa',
+                              fontSize: '0.55rem',
+                              fontWeight: 800,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.06em',
+                              lineHeight: 1,
+                            }}
+                          >
+                            MATCH {idx + 1}
+                          </div>
+                          <div
+                            className={styles.matchCellTime}
+                            style={{
+                              display: 'block',
+                              color: '#ffffff',
+                              fontSize: '0.75rem',
+                              fontWeight: 800,
+                              lineHeight: 1.1,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {m.time}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Bottom Action Button (Pinned) */}
@@ -635,75 +698,7 @@ function loadRazorpayScript(): Promise<boolean> {
         </div>
       )}
 
-      {/* ── RECEIPT MODAL ── */}
-      {receiptModalSlot && (
-        <div className={styles.modalOverlay} onClick={() => setReceiptModalSlot(null)}>
-          <div className={styles.receiptModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <div className={styles.modalTitleRow}>
-                <FileText size={18} color="#22c55e" />
-                <h3 className={styles.modalTitle}>BOOKING RECEIPT</h3>
-              </div>
-              <button
-                className={styles.closeModalBtn}
-                onClick={() => setReceiptModalSlot(null)}
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            <div className={styles.receiptBody}>
-              <div className={styles.receiptRefBadge}>
-                TRANSACTION CONFIRMED • RECEIPT #{receiptModalSlot.slot_id.slice(0, 8).toUpperCase()}
-              </div>
-
-              <div className={styles.receiptGrid}>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Tournament</span>
-                  <span className={styles.receiptValue}>Battlegrounds Faceoff Series</span>
-                </div>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Registered Team</span>
-                  <span className={styles.receiptValueGold}>{userTeam?.team_name || 'My Squad'}</span>
-                </div>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Match Date</span>
-                  <span className={styles.receiptValue}>{fmtDateHeader(receiptModalSlot.date)}</span>
-                </div>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Time Window</span>
-                  <span className={styles.receiptValue}>{receiptModalSlot.time_label}</span>
-                </div>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Matches Included</span>
-                  <span className={styles.receiptValue}>3 Custom Matches</span>
-                </div>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Entry Fee Paid</span>
-                  <span className={styles.receiptValueHighlight}>₹{receiptModalSlot.entry_fee || entryFee}</span>
-                </div>
-                <div className={styles.receiptRow}>
-                  <span className={styles.receiptLabel}>Payment Status</span>
-                  <span className={styles.receiptStatusGreen}>PAID &amp; VERIFIED</span>
-                </div>
-              </div>
-
-              <p className={styles.receiptFooterNote}>
-                Room ID &amp; password are posted in the official WhatsApp match group 10 minutes before each match start time.
-              </p>
-            </div>
-
-            <div className={styles.modalFooter}>
-              <button
-                className={styles.closeReceiptBtn}
-                onClick={() => setReceiptModalSlot(null)}
-              >
-                Close Receipt
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }

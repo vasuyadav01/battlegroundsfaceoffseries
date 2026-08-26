@@ -5,16 +5,7 @@
   position: relative;
 }
 
-/* Subtle gold accent line embedded on top border */
-.footer::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.35) 50%, transparent 100%);
-}
+ 
 
 /* ── TOP ROW ── */
 .footerTop {

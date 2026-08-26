@@ -64,6 +64,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
+ 
         {/* ── SKILL-BASED GAMING DISCLAIMER BANNER ── */}
         <section className={styles.skillSection}>
           <div className="container">
@@ -251,19 +252,35 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ── CTA ── */}
-        <section className={styles.ctaSection}>
+        {/* ── TRUSTED INFRASTRUCTURE STRIP ── */}
+        <section className={styles.infraSection}>
           <div className="container">
-            <div className={styles.ctaBox}>
-              <h2 className={styles.ctaTitle}>
-                READY TO <span className={styles.goldText}>REGISTER YOUR SQUAD?</span>
-              </h2>
-              <p className={styles.ctaDesc}>
-                Limited 20 teams per slot. Secure your spot now and start grinding toward the Grand Finals.
-              </p>
-              <Link href="/slots" className={styles.primaryCta}>
-                REGISTER FOR A SLOT
-              </Link>
+            <div className={styles.infraContainer}>
+              <span className={styles.infraLabel}>TRUSTED INFRASTRUCTURE</span>
+              <div className={styles.infraGrid}>
+                {/* Razorpay */}
+                <div className={styles.infraItem}>
+                  <span className={styles.infraCaption}>PAYMENTS SECURED BY</span>
+                  <img
+                    src="/photos/razorpaywhite.png"
+                    alt="Razorpay"
+                    className={styles.infraLogo}
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className={styles.infraDivider} />
+
+                {/* Vercel */}
+                <div className={styles.infraItem}>
+                  <span className={styles.infraCaption}>DEPLOYED ON</span>
+                  <img
+                    src="/photos/vercel.png"
+                    alt="Vercel"
+                    className={styles.infraLogoVercel}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>

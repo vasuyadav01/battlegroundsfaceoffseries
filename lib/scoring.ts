@@ -3,7 +3,7 @@
  * Standard BGIS-style placement points + elimination points
  */
 
-// Placement points lookup
+// Position / Placement points lookup
 export function getPlacementPoints(placement: number): number {
   if (placement === 1) return 10
   if (placement === 2) return 6
@@ -15,12 +15,16 @@ export function getPlacementPoints(placement: number): number {
   return 0 // 16th–24th
 }
 
+export function getPositionPoints(position: number): number {
+  return getPlacementPoints(position)
+}
+
 export function getKillPoints(kills: number): number {
   return kills // 1 point per elimination
 }
 
 export function getTotalPoints(placement: number, kills: number): number {
-  return getPlacementPoints(placement) + getKillPoints(kills)
+  return getPositionPoints(placement) + getKillPoints(kills)
 }
 
 /**

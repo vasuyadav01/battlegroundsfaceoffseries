@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, X, Lock, MessageCircle, Flame } from 'lucide-react'
+import { Check, Sparkles, X, Lock, MessageCircle, Flame, Key } from 'lucide-react'
 import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
 import styles from './page.module.css'
 
@@ -480,7 +480,46 @@ function loadRazorpayScript(): Promise<boolean> {
                           ))}
                         </div>
 
-                        <p className={styles.bookedNote}>Room ID &amp; password posted 10 minutes before each match</p>
+                        <div
+                          className={styles.whatsappReasonBanner}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '2px',
+                            width: '100%',
+                            margin: '0.2rem 0 0.35rem 0',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              color: '#ffffff',
+                              fontSize: '0.66rem',
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              width: '100%',
+                            }}
+                          >
+                            <Key size={11} color="#fbbf24" style={{ flexShrink: 0 }} />
+                            <span>Join WhatsApp group for Room ID &amp; Pass</span>
+                          </div>
+                          <div
+                            style={{
+                              color: '#9ca3af',
+                              fontSize: '0.55rem',
+                              fontWeight: 500,
+                              whiteSpace: 'nowrap',
+                              lineHeight: 1,
+                            }}
+                          >
+                            Posted 10 mins before each match
+                          </div>
+                        </div>
                       </div>
 
                       <a

@@ -49,11 +49,7 @@ export default function LoginPage() {
         .single()
 
       setLoading(false)
-      if (!userRow?.team_id) {
-        router.push('/onboard')
-      } else {
-        router.push('/dashboard')
-      }
+      router.push('/dashboard')
     } else {
       setLoading(false)
     }
@@ -107,18 +103,8 @@ export default function LoginPage() {
 
     const userId = data.user?.id
     if (userId) {
-      const { data: userRow } = await supabase
-        .from('users')
-        .select('team_id')
-        .eq('user_id', userId)
-        .single()
-
       setLoading(false)
-      if (!userRow?.team_id) {
-        router.push('/onboard')
-      } else {
-        router.push('/dashboard')
-      }
+      router.push('/dashboard')
     } else {
       setLoading(false)
     }

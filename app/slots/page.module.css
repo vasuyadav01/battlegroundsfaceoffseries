@@ -1053,15 +1053,35 @@
     font-size: 1.5rem;
   }
 
-  .slotCard {
-    padding: 0.8rem 0.55rem;
-    min-height: 160px;
+  .slotCard, .slotCardBooked, .bookedCard {
+    padding: 0.75rem 0.5rem;
+    min-height: 215px;
     border-radius: 12px;
+  }
+
+  .matchCellsGrid {
+    gap: 4px;
+  }
+
+  .matchCellBooked, .matchCellOpen {
+    padding: 0.35rem 0.1rem;
+  }
+
+  .matchCellLabelBooked, .matchCellLabelOpen {
+    font-size: 0.5rem !important;
+  }
+
+  .matchCellTime {
+    font-size: 0.68rem !important;
+  }
+
+  .matchCellMap {
+    font-size: 0.52rem !important;
   }
 
   .cardTime {
     font-size: 0.95rem;
-    margin: 0.4rem 0 0.15rem;
+    margin: 0.3rem 0 0.15rem;
   }
 
   .normalPriceTag {
@@ -1072,11 +1092,10 @@
     font-size: 0.8rem;
   }
 
-  .cardBtnNormal, .cardBtnFreeOutline {
-    font-size: 0.76rem;
-    padding: 0.55rem 0.35rem;
+  .cardBtnNormal, .cardBtnFreeOutline, .bookedBtn {
+    font-size: 0.74rem;
+    padding: 0.55rem 0.3rem;
   }
-
 
   .modalOverlay {
     align-items: flex-end;

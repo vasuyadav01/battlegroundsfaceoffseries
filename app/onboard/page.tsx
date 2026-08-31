@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-import OnboardPage from './OnboardPage'
+import { redirect } from 'next/navigation'
 
 export default function Page() {
-  return <OnboardPage />
+  redirect('/dashboard')
 }

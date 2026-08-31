@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Phone, Clock, Send } from 'lucide-react'
+import { Mail, MessageCircle, Clock, Send } from 'lucide-react'
 import styles from './page.module.css'
 
 export default function ContactPage() {
@@ -66,16 +66,21 @@ export default function ContactPage() {
 
                 <div className={styles.contactRow}>
                   <div className={styles.contactIcon}>
-                    <Phone size={18} color="#fbbf24" strokeWidth={1.75} />
+                    <MessageCircle size={18} color="#22c55e" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className={styles.contactLabel}>WhatsApp / Phone</p>
+                    <p className={styles.contactLabel}>WhatsApp Support</p>
                     <p className={styles.contactValue}>
-                      <a href="tel:+918303974916" style={{ color: '#fbbf24' }}>
-                        +91 83039 74916
+                      <a
+                        href="https://wa.me/916388024698?text=Hi%20BGFS%20Support%2C%20I%20have%20a%20query%20regarding%20tournament%20slots."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#22c55e', fontWeight: 700 }}
+                      >
+                        +91 63880 24698
                       </a>
                     </p>
-                    <p className={styles.contactValueNote}>For urgent match-day issues only</p>
+                    <p className={styles.contactValueNote}>Click to chat directly on WhatsApp</p>
                   </div>
                 </div>
 

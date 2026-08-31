@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   height: 88px;
+  width: 100%;
 }
 
 .logo {
@@ -20,6 +21,8 @@
   align-items: center;
   gap: 14px;
   text-decoration: none;
+  flex-shrink: 0;
+  margin-right: auto;
 }
 
 .logoImg {
@@ -60,6 +63,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  margin: 0 auto;
 }
 
 .link {
@@ -90,6 +94,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .ctaBtn {
@@ -133,6 +139,17 @@
   background: #323232;
   border-color: #fbbf24;
   color: #fbbf24;
+}
+
+.activeBtn {
+  border-color: #fbbf24 !important;
+  color: #fbbf24 !important;
+  background: #212121 !important;
+}
+
+.activeCta {
+  background: #fde047 !important;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.5) !important;
 }
 
 /* Hamburger */

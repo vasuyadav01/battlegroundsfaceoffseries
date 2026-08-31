@@ -34,14 +34,42 @@ export default async function LeaderboardPage() {
     .order('date', { ascending: false })
     .order('time_label', { ascending: false })
 
+  // Fetch test teams to exclude from public standings
+  const { data: testTeams } = await supabase
+    .from('teams')
+    .select('team_id')
+    .eq('is_test_account', true)
+
+  const testTeamIds = new Set(testTeams?.map(t => t.team_id) || [])
+
+  const filteredRows = (rows || []).filter(r => !testTeamIds.has(r.team_id))
+  const filteredMatches = (allMatches || []).filter(m => !testTeamIds.has(m.team_id))
+
+  // Fetch all paid bookings with team names & custom room slot numbers
+  let { data: bookingsRaw, error: bookingErr } = await supabase
+    .from('bookings')
+    .select('booking_id, team_id, slot_id, room_slot_number, teams(team_name)')
+    .eq('payment_status', 'paid')
+
+  if (bookingErr && bookingErr.message?.includes('room_slot_number')) {
+    const fallback = await supabase
+      .from('bookings')
+      .select('booking_id, team_id, slot_id, teams(team_name)')
+      .eq('payment_status', 'paid')
+    bookingsRaw = fallback.data as any[]
+  }
+
+  const filteredBookings = (bookingsRaw || []).filter(b => !testTeamIds.has(b.team_id))
+
   // Rank the overall rows
-  const ranked = (rows || []).map((row, idx) => ({ ...row, rank: idx + 1 }))
+  const ranked = filteredRows.map((row, idx) => ({ ...row, rank: idx + 1 }))
 
   return (
     <LeaderboardClient
       rows={ranked}
-      allMatches={allMatches || []}
+      allMatches={filteredMatches}
       slots={slots || []}
+      bookings={filteredBookings as any[]}
     />
   )
 }

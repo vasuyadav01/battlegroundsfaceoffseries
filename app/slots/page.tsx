@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   description: 'Book your match slots for Battlegrounds Faceoff Series.',
 }
 
+interface FreeCoupon {
+  coupon_id: string
+  code: string
+}
+
 export default async function SlotsPage() {
   const supabase = await createClient()
 
@@ -83,17 +88,22 @@ export default async function SlotsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   let userTeam = null
   let freeCoupon = null
+  let unusedCoupons: FreeCoupon[] = []
   let userBookedSlotIds: string[] = []
+
+  let isTestAccount = false
 
   if (user) {
     const admin = await createAdminClient()
 
-    // 1. Fetch user's linked team ID from users table
+    // 1. Fetch user's linked team ID & test account flag from users table
     let { data: userProfile } = await admin
       .from('users')
-      .select('team_id')
+      .select('team_id, is_test_account')
       .eq('user_id', user.id)
       .maybeSingle()
+
+    if (userProfile?.is_test_account) isTestAccount = true
 
     let teamId = userProfile?.team_id
 
@@ -101,13 +111,14 @@ export default async function SlotsPage() {
     if (!teamId) {
       const { data: teamByCaptain } = await admin
         .from('teams')
-        .select('team_id, team_name')
+        .select('team_id, team_name, is_test_account')
         .eq('captain_user_id', user.id)
         .maybeSingle()
 
       if (teamByCaptain) {
         teamId = teamByCaptain.team_id
         userTeam = teamByCaptain
+        if (teamByCaptain.is_test_account) isTestAccount = true
 
         // Link team_id to user profile
         await admin
@@ -118,24 +129,24 @@ export default async function SlotsPage() {
       // Fetch team details
       const { data: teamData } = await admin
         .from('teams')
-        .select('team_id, team_name')
+        .select('team_id, team_name, is_test_account')
         .eq('team_id', teamId)
         .maybeSingle()
 
       userTeam = teamData
+      if (teamData?.is_test_account) isTestAccount = true
     }
 
     if (teamId) {
-      // 3. Fetch unused free slot coupon for this team if available
-      const { data: couponData } = await admin
+      // 3. Fetch unused free slot coupons for this team
+      const { data: couponsData } = await admin
         .from('coupons')
         .select('coupon_id, code')
         .eq('team_id', teamId)
         .eq('status', 'unused')
-        .limit(1)
-        .maybeSingle()
 
-      freeCoupon = couponData
+      unusedCoupons = couponsData || []
+      freeCoupon = unusedCoupons.length > 0 ? unusedCoupons[0] : null
 
       // 4. Fetch all slot IDs already booked by this team (paid)
       const { data: userBookings } = await admin
@@ -162,10 +173,12 @@ export default async function SlotsPage() {
       slots={slots || []}
       userTeam={userTeam}
       freeCoupon={freeCoupon}
+      unusedCoupons={unusedCoupons}
       userBookedSlotIds={userBookedSlotIds}
       whatsappLink={config.whatsapp_invite_link || ''}
       entryFee={parseInt(config.slot_entry_fee || '50')}
       isLoggedIn={!!user}
+      isTestAccount={isTestAccount}
     />
   )
 }

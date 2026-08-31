@@ -2,6 +2,7 @@
 
 import { useState, useMemo, Fragment } from 'react'
 import { Trophy, Medal, Award, Layers, ChevronDown, Check } from 'lucide-react'
+import { formatMonthDay, formatFullDate } from '@/lib/utils/formatDate'
 import styles from './page.module.css'
 
 interface LeaderboardRow {
@@ -35,13 +36,22 @@ interface SlotItem {
   teams_booked_count: number
 }
 
+interface BookingEntry {
+  booking_id: string
+  team_id: string
+  slot_id: string
+  room_slot_number?: number | null
+  teams?: { team_name: string } | null
+}
+
 interface Props {
   rows: LeaderboardRow[]
   allMatches: MatchEntry[]
   slots: SlotItem[]
+  bookings?: BookingEntry[]
 }
 
-export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
+export default function LeaderboardClient({ rows, allMatches, slots, bookings = [] }: Props) {
   const [viewMode, setViewMode] = useState<'overall' | 'slot'>('overall')
   const [search, setSearch] = useState('')
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null)
@@ -69,12 +79,12 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
 
   // Compute per-slot leaderboard for the selected slot
   const slotLeaderboard = useMemo(() => {
-    if (!selectedSlotId) return []
+    if (!selectedSlotId) return { items: [], hasMatches: false }
 
-    const matchesForSlot = allMatches.filter(m => m.slot_id === selectedSlotId)
     const teamMap: Record<string, {
       team_id: string
       team_name: string
+      room_slot_number: number
       m1?: MatchEntry
       m2?: MatchEntry
       m3?: MatchEntry
@@ -82,11 +92,27 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
       total_kills: number
     }> = {}
 
+    // First, populate all paid bookings for this slot
+    const slotBookings = bookings.filter(b => b.slot_id === selectedSlotId)
+    slotBookings.forEach((b, index) => {
+      const roomSlot = b.room_slot_number || (5 + index)
+      teamMap[b.team_id] = {
+        team_id: b.team_id,
+        team_name: b.teams?.team_name || 'Team #' + b.team_id.slice(0, 5),
+        room_slot_number: roomSlot,
+        total_points: 0,
+        total_kills: 0,
+      }
+    })
+
+    // Then, merge match data for this slot
+    const matchesForSlot = allMatches.filter(m => m.slot_id === selectedSlotId)
     matchesForSlot.forEach(m => {
       if (!teamMap[m.team_id]) {
         teamMap[m.team_id] = {
           team_id: m.team_id,
           team_name: m.teams?.team_name || 'Team #' + m.team_id.slice(0, 5),
+          room_slot_number: 5,
           total_points: 0,
           total_kills: 0,
         }
@@ -99,13 +125,19 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
       entry.total_kills += m.kills || 0
     })
 
+    const hasMatches = matchesForSlot.length > 0
+
     const list = Object.values(teamMap).sort((a, b) => {
       if (b.total_points !== a.total_points) return b.total_points - a.total_points
-      return b.total_kills - a.total_kills
+      if (b.total_kills !== a.total_kills) return b.total_kills - a.total_kills
+      return a.room_slot_number - b.room_slot_number
     })
 
-    return list.map((item, idx) => ({ ...item, rank: idx + 1 }))
-  }, [selectedSlotId, allMatches])
+    return {
+      items: list.map((item, idx) => ({ ...item, rank: idx + 1 })),
+      hasMatches,
+    }
+  }, [selectedSlotId, allMatches, bookings])
 
   const selectedSlot = useMemo(() =>
     slots.find(s => s.slot_id === selectedSlotId),
@@ -135,7 +167,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
           <div>
             <h1 className={styles.title}>STANDINGS & LEADERBOARD</h1>
             <p className={styles.subtitle}>
-              Official BGFS League Standings • Best-16 Scoring Aggregation System
+              Official BGFS League Standings • Best 5 Slots (15 Matches) Scoring System
             </p>
           </div>
           <div className={styles.headerRight}>
@@ -179,7 +211,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
             }}
           >
             <Trophy size={16} color={viewMode === 'overall' ? '#000000' : '#facc15'} />
-            <span>OVERALL STANDINGS (BEST-16)</span>
+            <span>OVERALL STANDINGS (BEST 5 SLOTS)</span>
           </button>
 
           <button
@@ -212,7 +244,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
           </button>
         </div>
 
-        {/* ── MODE 1: OVERALL STANDINGS (BEST 16) ── */}
+        {/* ── MODE 1: OVERALL STANDINGS (BEST 5 SLOTS) ── */}
         {viewMode === 'overall' && (
           <>
             {/* Desktop Table */}
@@ -224,7 +256,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', width: '64px' }}>RANK</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a' }}>TEAM NAME</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCHES PLAYED</th>
-                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>BEST-16 TOTAL</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>BEST 5 SLOTS TOTAL</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>ELIMINATIONS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', width: '60px' }}></th>
                     </tr>
@@ -384,7 +416,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
 
               {selectedSlot && (
                 <div className={styles.slotInfoBadge}>
-                  ⚡ {new Date(selectedSlot.date + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} • {selectedSlot.time_label} • 3 MATCHES
+                  ⚡ {formatMonthDay(selectedSlot.date)} • {selectedSlot.time_label} • 3 MATCHES
                 </div>
               )}
             </div>
@@ -406,7 +438,7 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                     </tr>
                   </thead>
                   <tbody>
-                    {slotLeaderboard.map(row => (
+                    {slotLeaderboard.items.map(row => (
                       <tr key={row.team_id} className={`${styles.teamRow} ${getRowRankClass(row.rank)}`}>
                         <td>
                           <span className={`badge ${getRankBadgeClass(row.rank)}`}>
@@ -414,7 +446,16 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                           </span>
                         </td>
                         <td>
-                          <span className={styles.teamNameText}>{row.team_name}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span className={styles.teamNameText}>
+                              {row.team_name} {!slotLeaderboard.hasMatches && <span style={{ color: '#fbbf24', fontSize: '0.85rem', fontWeight: 700 }}>[Slot {row.room_slot_number}]</span>}
+                            </span>
+                            {!slotLeaderboard.hasMatches && (
+                              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#facc15', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                                ROOM SLOT: SLOT {row.room_slot_number}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td style={{ textAlign: 'center', fontSize: '0.85rem' }}>
                           {row.m1 ? (
@@ -454,17 +495,17 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                         <td style={{ textAlign: 'center' }}>
                           {row.rank === 1 && (
                             <span className={styles.prizeTagGold}>
-                              <Trophy size={12} /> ₹170 REWARD
+                              <Trophy size={12} /> ₹250 REWARD
                             </span>
                           )}
                           {row.rank === 2 && (
                             <span className={styles.prizeTagSilver}>
-                              <Medal size={12} /> ₹100 REWARD
+                              <Medal size={12} /> ₹150 REWARD
                             </span>
                           )}
                           {row.rank === 3 && (
                             <span className={styles.prizeTagBronze}>
-                              <Award size={12} /> NEXT SLOT PASS
+                              <Award size={12} /> FREE SLOT PASS
                             </span>
                           )}
                           {row.rank > 3 && (
@@ -473,10 +514,10 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
                         </td>
                       </tr>
                     ))}
-                    {slotLeaderboard.length === 0 && (
+                    {slotLeaderboard.items.length === 0 && (
                       <tr>
                         <td colSpan={8} style={{ textAlign: 'center', color: '#888888', padding: '3rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
-                          No match scores submitted for this slot yet. Matches in progress or awaiting admin score entry.
+                          No registered teams or match scores for this slot yet.
                         </td>
                       </tr>
                     )}
@@ -487,12 +528,21 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
 
             {/* Per-Slot Mobile View */}
             <div className={styles.mobileList}>
-              {slotLeaderboard.map(row => (
+              {slotLeaderboard.items.map(row => (
                 <div key={row.team_id} className={`${styles.mobileCard} ${getRowRankClass(row.rank)}`} style={{ padding: '1.25rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className={`badge ${getRankBadgeClass(row.rank)}`}>#{row.rank}</span>
-                      <span className={styles.mobileTeamName}>{row.team_name}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className={styles.mobileTeamName}>
+                          {row.team_name} {!slotLeaderboard.hasMatches && <span style={{ color: '#fbbf24', fontSize: '0.8rem', fontWeight: 700 }}>[Slot {row.room_slot_number}]</span>}
+                        </span>
+                        {!slotLeaderboard.hasMatches && (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#facc15', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                            ROOM SLOT: SLOT {row.room_slot_number}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <div className={styles.mobileStatVal}>{row.total_points}</div>
@@ -509,17 +559,17 @@ export default function LeaderboardClient({ rows, allMatches, slots }: Props) {
 
                   {row.rank <= 3 && (
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-                      {row.rank === 1 && <span className={styles.prizeTagGold}><Trophy size={12} /> ₹170 REWARD</span>}
-                      {row.rank === 2 && <span className={styles.prizeTagSilver}><Medal size={12} /> ₹100 REWARD</span>}
-                      {row.rank === 3 && <span className={styles.prizeTagBronze}><Award size={12} /> NEXT SLOT PASS</span>}
+                      {row.rank === 1 && <span className={styles.prizeTagGold}><Trophy size={12} /> ₹250 REWARD</span>}
+                      {row.rank === 2 && <span className={styles.prizeTagSilver}><Medal size={12} /> ₹150 REWARD</span>}
+                      {row.rank === 3 && <span className={styles.prizeTagBronze}><Award size={12} /> FREE SLOT PASS</span>}
                     </div>
                   )}
                 </div>
               ))}
 
-              {slotLeaderboard.length === 0 && (
+              {slotLeaderboard.items.length === 0 && (
                 <p style={{ textAlign: 'center', color: '#888888', padding: '3rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
-                  No match scores submitted for this slot yet. Matches in progress or awaiting admin score entry.
+                  No registered teams or match scores for this slot yet.
                 </p>
               )}
             </div>
@@ -545,12 +595,7 @@ function CustomSlotDropdown({
 
   const getLabel = (s?: SlotItem) => {
     if (!s) return 'No slots created yet'
-    const formattedDate = new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    })
+    const formattedDate = formatFullDate(s.date)
     return `${formattedDate} — ${s.time_label} ${s.status === 'completed' ? '✓ (Completed)' : ''}`
   }
 

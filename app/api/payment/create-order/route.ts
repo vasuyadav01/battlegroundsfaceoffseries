@@ -17,6 +17,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing bookingId or amount' }, { status: 400 })
     }
 
+    // Check if booking is a test mode booking
+    const { data: bookingRec } = await supabase
+      .from('bookings')
+      .select('is_test_booking')
+      .eq('booking_id', bookingId)
+      .maybeSingle()
+
+    if (bookingRec?.is_test_booking) {
+      return NextResponse.json({ error: 'Test mode booking — Razorpay payment bypassed.' }, { status: 400 })
+    }
+
     const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET
 

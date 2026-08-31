@@ -56,7 +56,7 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav Links (Center) */}
         <div className={styles.links}>
           {navLinks.map(link => (
             <Link
@@ -69,19 +69,24 @@ export default function Navbar() {
           ))}
         </div>
 
+        {/* Right Side Actions: Dashboard & Login */}
         <div className={styles.actions}>
+          <Link
+            href="/dashboard"
+            className={`${styles.secondaryBtn} ${pathname === '/dashboard' ? styles.activeBtn : ''}`}
+          >
+            Dashboard
+          </Link>
           {user ? (
-            <>
-              <Link href="/dashboard" className={styles.secondaryBtn}>
-                Dashboard
-              </Link>
-              <button onClick={handleSignOut} className={styles.secondaryBtn}>
-                Sign Out
-              </button>
-            </>
+            <button onClick={handleSignOut} className={styles.secondaryBtn}>
+              Sign Out
+            </button>
           ) : (
-            <Link href="/login" className={styles.ctaBtn}>
-              Join Tournament
+            <Link
+              href="/login"
+              className={`${styles.ctaBtn} ${pathname === '/login' ? styles.activeCta : ''}`}
+            >
+              Login
             </Link>
           )}
         </div>

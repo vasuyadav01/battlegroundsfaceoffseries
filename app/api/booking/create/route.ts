@@ -20,29 +20,39 @@ export async function POST(request: Request) {
 
     const admin = await createAdminClient()
 
-    // Get user's team profile
+    // Get user's team profile & check test account status
     const { data: userProfile } = await admin
       .from('users')
-      .select('team_id')
+      .select('team_id, is_test_account, test_mode_active')
       .eq('user_id', user.id)
       .maybeSingle()
 
     let team_id = userProfile?.team_id
+    let isTestAccount = Boolean(userProfile?.is_test_account)
+    let isTestModeActive = (userProfile as any)?.test_mode_active !== false
 
     // Fallback: Check if user is already captain of an existing team in teams table
     if (!team_id) {
       const { data: existingTeam } = await admin
         .from('teams')
-        .select('team_id')
+        .select('team_id, is_test_account')
         .eq('captain_user_id', user.id)
         .maybeSingle()
 
       if (existingTeam) {
         team_id = existingTeam.team_id
+        if (existingTeam.is_test_account) isTestAccount = true
         await admin
           .from('users')
           .upsert({ user_id: user.id, email: user.email, team_id, role: 'captain' }, { onConflict: 'user_id' })
       }
+    } else {
+      const { data: teamRec } = await admin
+        .from('teams')
+        .select('is_test_account')
+        .eq('team_id', team_id)
+        .maybeSingle()
+      if (teamRec?.is_test_account) isTestAccount = true
     }
 
     // If user has no team yet, create one seamlessly on the spot!
@@ -57,6 +67,7 @@ export async function POST(request: Request) {
           team_name: teamToInsert,
           captain_user_id: user.id,
           invite_code: inviteCode,
+          is_test_account: isTestAccount,
         })
         .select('team_id')
         .single()
@@ -69,6 +80,7 @@ export async function POST(request: Request) {
             team_name: teamToInsert,
             captain_user_id: user.id,
             invite_code: inviteCode,
+            is_test_account: isTestAccount,
           })
           .select('team_id')
           .single()
@@ -116,7 +128,7 @@ export async function POST(request: Request) {
     // Check for duplicate booking
     const { data: existingBooking } = await admin
       .from('bookings')
-      .select('booking_id, payment_status')
+      .select('booking_id, payment_status, is_test_booking')
       .eq('team_id', team_id)
       .eq('slot_id', slot_id)
       .maybeSingle()
@@ -125,14 +137,76 @@ export async function POST(request: Request) {
       if (existingBooking.payment_status === 'paid') {
         return NextResponse.json({ error: 'Your team has already booked this slot.' }, { status: 409 })
       }
+    }
+
+    // TEST MODE BRANCH: Auto-confirm booking directly without Razorpay if test account or payment keys not configured
+    const isTestMode = isTestAccount || isTestModeActive || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('placeholder')
+    if (isTestMode) {
+      // Calculate FCFS room slot number starting from Slot 5
+      const { count: existingPaidCount } = await admin
+        .from('bookings')
+        .select('booking_id', { count: 'exact', head: true })
+        .eq('slot_id', slot_id)
+        .eq('payment_status', 'paid')
+
+      const room_slot_number = 5 + (existingPaidCount || 0)
+
+      let { data: booking, error: bookErr } = await admin
+        .from('bookings')
+        .upsert({
+          team_id,
+          slot_id,
+          payment_status: 'paid',
+          amount_paid: 0,
+          is_test_booking: true,
+          room_slot_number,
+        }, { onConflict: 'team_id,slot_id' })
+        .select('booking_id')
+        .single()
+
+      if (bookErr && bookErr.message?.includes('room_slot_number')) {
+        const fallback = await admin
+          .from('bookings')
+          .upsert({
+            team_id,
+            slot_id,
+            payment_status: 'paid',
+            amount_paid: 0,
+            is_test_booking: true,
+          }, { onConflict: 'team_id,slot_id' })
+          .select('booking_id')
+          .single()
+        booking = fallback.data
+        bookErr = fallback.error
+      }
+
+      if (bookErr) {
+        return NextResponse.json({ error: bookErr.message }, { status: 500 })
+      }
+
+      // Increment slot capacity count if this was not already paid
+      if (!existingBooking || existingBooking.payment_status !== 'paid') {
+        const newCount = (slot.teams_booked_count || 0) + 1
+        const isFull = newCount >= slot.capacity
+        await admin
+          .from('slots')
+          .update({
+            teams_booked_count: newCount,
+            status: isFull ? 'full' : slot.status,
+          })
+          .eq('slot_id', slot_id)
+      }
+
       return NextResponse.json({
         success: true,
-        booking_id: existingBooking.booking_id,
-        amount: slot.entry_fee ?? 50,
+        booking_id: booking?.booking_id,
+        is_test_booking: true,
+        auto_confirmed: true,
+        amount: 0,
       })
     }
 
-    // Create pending booking
+    // Create pending booking for standard accounts
     const { data: booking, error: bookErr } = await admin
       .from('bookings')
       .insert({
@@ -140,6 +214,7 @@ export async function POST(request: Request) {
         slot_id,
         payment_status: 'pending',
         amount_paid: 0,
+        is_test_booking: false,
       })
       .select('booking_id')
       .single()

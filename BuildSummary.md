@@ -47,7 +47,7 @@ BGFS/
 │   └── images/                      # High-res branding assets (faceofflogo.png, bgmilogo.png)
 │
 ├── lib/
-│   ├── scoring.ts                   # Business logic: BGIS 10-pt placement + elimination points, Best-16 calculator
+│   ├── scoring.ts                   # Business logic: BGIS 10-pt placement + elimination points, Best 5 Slots (15 matches) calculator
 │   └── utils/
 │       └── slotTime.ts              # Robust slot expiration helper & ISO date comparison logic
 │   └── supabase/
@@ -57,12 +57,14 @@ BGFS/
 │
 ├── supabase/
 │   └── migrations/
-│       ├── 001_initial_schema.sql   # Full DB schema, RLS policies, triggers, & Best-16 leaderboard view
+│       ├── 001_initial_schema.sql   # Full DB schema, RLS policies, triggers, & leaderboard view
 │       ├── 002_slot_booking_v2.sql  # Per-slot WhatsApp link, coupons, & capacity checks
-│       └── 003_seed_9_to_11_pm_slots.sql # 9-11 PM daily slots for next 7 days & unique date-time constraint
+│       ├── 003_best_5_slots_leaderboard.sql # Best 5 Slots (15 matches) aggregate leaderboard view
+│       ├── 004_admin_test_mode.sql  # Test account & test mode schema flags
+│       └── 004_room_slot_number.sql # Custom room slot number assignment (starts at Slot 5) & view update
 │
 ├── components/
-│   ├── Navbar.tsx                   # Responsive navigation header with dual logo & auth-aware actions
+│   ├── Navbar.tsx                   # Desktop left logos, center navigation, right user actions
 │   ├── Navbar.module.css
 │   ├── Footer.tsx                   # Redesigned footer: border divider, trust badges (SSL/Razorpay), clean link grid
 │   ├── Footer.module.css
@@ -80,27 +82,30 @@ BGFS/
     │
     ├── register/                    # Team & Account Registration
     │   ├── page.tsx                 # Server wrapper
-    │   ├── RegisterClient.tsx       # Account creation form (Team Name, Email, Password) + auto team setup
+    │   ├── RegisterClient.tsx       # Account creation form + automatic team setup
     │   └── page.module.css
+    │
+    ├── reset-password/              # Password Reset Flow
+    │   └── page.tsx                 # Reset password form
     │
     ├── slots/                       # Slot Booking & Tournament Schedule
     │   ├── page.tsx                 # Server data fetcher (Auto-seeds 9-11 PM next 7 days & expires past slots)
-    │   ├── SlotsClient.tsx          # Date-grouped slots, instant registration flow, WhatsApp links, Calendar, Receipt Modal
+    │   ├── SlotsClient.tsx          # Date-grouped slots, instant test mode registration, WhatsApp links, Receipt Modal
     │   └── page.module.css
     │
     ├── leaderboard/                 # Public Live Leaderboard & Slot Results
-    │   ├── page.tsx                 # Server fetcher (Revalidates 60s)
-    │   ├── LeaderboardClient.tsx    # Best-16 overall view + Per-slot results view + Eliminations stats
+    │   ├── page.tsx                 # Server fetcher
+    │   ├── LeaderboardClient.tsx    # Overall standings + Slot Results (3 Matches) view with Room Slot tags
     │   └── page.module.css
     │
     ├── dashboard/                   # Player Dashboard
     │   ├── page.tsx                 # Server fetcher (User profile & active team bookings)
-    │   ├── DashboardClient.tsx      # My Slots card + My Standing card (Wallet section cleanly removed)
+    │   ├── DashboardClient.tsx      # My Slots (with Room Slot #) + My Standing + In-Dashboard Password Change
     │   └── page.module.css
     │
     ├── admin/                       # Role-Gated Admin Panel
     │   ├── page.tsx                 # Server role verifier (`admin` & `admin_scores`)
-    │   ├── AdminClient.tsx          # Score Entry (Eliminations + Placement), Slot Creator, Role Manager
+    │   ├── AdminClient.tsx          # Score Entry with Room Slot dropdown helpers, Slot Creator, Role Manager
     │   └── page.module.css
     │
     ├── fair-play/                   # Legal: Fair Play & Skill-Based Gaming Policy
@@ -114,12 +119,16 @@ BGFS/
         ├── auth/
         │   └── callback/route.ts    # Supabase Auth code exchange handler
         ├── booking/
-        │   ├── create/route.ts      # Slot booking creation API with expiration guard
+        │   ├── create/route.ts      # Slot booking creation API with Test Mode auto-confirm & Room Slot calculation
         │   └── confirm/route.ts     # Slot booking confirmation API
         ├── coupon/
         │   └── redeem/route.ts      # 3rd-place Next Slot Pass redemption API
         ├── register-team/route.ts   # Server-side Admin Client team creation API
         ├── setup-team/route.ts      # Server-side Admin Client squad onboarding API
+        ├── team/
+        │   └── rename/route.ts      # 1-time team rename API
+        ├── user/
+        │   └── toggle-test-mode/route.ts # Test mode toggle API
         └── payment/
             ├── create-order/route.ts # Razorpay Order generation API
             ├── verify/route.ts       # Razorpay checkout HMAC SHA-256 signature verification
@@ -130,27 +139,28 @@ BGFS/
 
 ## 🔗 Key Features & Recent Upgrades
 
-### 1. Razorpay Production Payment Gateway Integration
-- **Secure Server Signature Verification**: `/api/payment/verify` uses HMAC SHA-256 cryptographic verification of `razorpay_order_id`, `razorpay_payment_id`, and `razorpay_signature` using `RAZORPAY_KEY_SECRET`.
-- **Async Webhook Listener**: `/api/payment/webhook` processes payment events (`payment.captured`, `order.paid`).
-- **Environment Architecture**: `NEXT_PUBLIC_RAZORPAY_KEY_ID` used on client SDK; `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` kept strictly server-side.
+### 1. In-Game Custom Room Slot Assignment (FCFS Starting at Slot 5)
+- **First-Come, First-Served Logic**: Each paid booking for a slot automatically receives an assigned custom room slot starting from **Slot 5** (1st team = Slot 5, 2nd team = Slot 6, 3rd team = Slot 7, etc.).
+- **Immediate Visibility**: Booked teams appear on the **Slot Results (3 Matches)** view instantly upon booking.
+- **Slot Results Display**: Before match scores are submitted, team names feature **`Team Name [Slot 5]`** and a gold **`ROOM SLOT: SLOT 5`** sub-label. After match score entry, standard match scores, placements, and points are cleanly rendered.
+- **Admin Score Entry Helper**: Admin team selection dropdown lists `Team Name [Slot 5]` to simplify score entry from BGMI custom room result screenshots.
+- **Player Dashboard**: Player slot tickets display **`ROOM SLOT: SLOT 5`** under date and time labels.
 
-### 2. Registered Slot Card Redesign (`/slots`)
-- **Compact 1-Column Layout**: Fits standard 1-column card slot in grid matching surrounding cards without breaking layout rhythm.
-- **Squad Tag Pill**: Gold squad tag pill displayed in top right corner (e.g. `Godlike`).
-- **Match Schedule Chips**: Displays 3 micro match time chips (`M1 9:00 PM`, `M2 9:42 PM`, `M3 10:18 PM`).
-- **Expectation Setting Note**: Compact 1-line guidance line: `"Room ID/Pass posted in WhatsApp 10m before matches."`
-- **Primary & Secondary Actions**: WhatsApp green Join button + side-by-side **Add to Calendar** (Google Calendar sync) and **View Receipt** modal triggers.
-- **Receipt Modal**: Displays reference ID, team name, time window, match count, amount paid, and verified payment status.
+### 2. Scoring System Refactor (Best 5 Slots / 15 Matches)
+- **Aggregate Scoring**: Leaderboard tracks a team's top 5 highest-scoring slots (3 matches per slot = 15 matches aggregate total points).
+- **Postgres View**: `003_best_5_slots_leaderboard.sql` and `004_room_slot_number.sql` compute top 5 slot totals dynamically.
 
-### 3. Filter Tabs & Footer UI Refinements
-- **Clean Filter Tabs**: Emojis removed from filter buttons (`OPEN / UPCOMING SLOTS`, `PAST SLOTS`, `ALL SLOTS`).
-- **Footer Redesign**: Top border divider added, trust badges (SSL Secured, Razorpay) placed near Legal column, operator block replaced with clean logo & tagline anchor, and bottom bar copyright/legal links aligned on a single row.
+### 3. Authentication & Password Security Enhancements
+- **OTP & Password Sign In**: Supported via `LoginPage.tsx`.
+- **In-Dashboard Password Change**: Logged-in captains can change password directly inside the dashboard.
+- **Password Reset Flow**: `/reset-password` route handles recovery links seamlessly.
 
-### 4. Terminology & Legal Copy Standardization ("Eliminations")
-- **Eliminations Standardization**: Replaced all instances of "kills" / "kill points" / "finishes" across every page with **"eliminations"** / **"elims"** / **"Elimination Points"**.
-- **Removal of AI-Generated Em-Dashes (`—`)**: Cleaned up page metadata titles, section headers, hero descriptions, marquee banners, and legal disclosures.
-- **Skill-Based Gaming Disclosures**: Ensured all legal pages (`/fair-play`, `/terms`, `/privacy-policy`, `/refund-policy`) explicitly highlight Article 19(1)(g) Game of Skill jurisprudence under Indian law.
+### 4. Layout & Desktop Header Refactor
+- **Header Alignment**: Desktop header features brand logos on the far left, navigation links centered, and user account actions on the far right.
+
+### 5. Razorpay Production Payment Gateway & Test Mode
+- **Production Payment Verification**: HMAC SHA-256 signature verification in `/api/payment/verify`.
+- **Test Mode Auto-Confirmation**: Built-in test mode branch in `/api/booking/create` allowing instant auto-confirmed slot bookings when Razorpay keys are omitted or when test mode is enabled.
 
 ---
 
@@ -158,26 +168,24 @@ BGFS/
 
 | Component | Status | Details |
 | :--- | :---: | :--- |
-| Next.js App Structure | ✅ COMPLETE | App Router, Next.js 16, 17 static & dynamic routes |
+| Next.js App Structure | ✅ COMPLETE | App Router, Next.js 16, 18 static & dynamic routes |
 | Design System & UI | ✅ COMPLETE | Dark gaming aesthetic (`#111111`, `#fbbf24`), lucide-react vector icons |
+| Custom Room Slot Assignment | ✅ COMPLETE | FCFS starting at Slot 5; instant leaderboard & dashboard display |
+| Leaderboard & Best 5 Slots | ✅ COMPLETE | Top 5 slot (15 matches) calculator + per-slot filter with room slot numbers |
 | Terminology Standardization | ✅ COMPLETE | "Eliminations" used across all pages; em-dashes (`—`) eliminated |
 | Mobile Responsiveness | ✅ COMPLETE | Touch targets 44px+, responsive card grid |
-| Database Schema | ✅ COMPLETE | SQL migrations 001, 002, 003 ready with RLS & Best-16 view |
-| Password & OTP Auth | ✅ COMPLETE | Dual auth mode support in `LoginPage.tsx` |
-| Account & Team Registration | ✅ COMPLETE | Redesigned `/register` & `/login` pages + `/api/register-team` Admin API |
+| Database Schema | ✅ COMPLETE | SQL migrations 001, 002, 003, 004 ready with RLS & leaderboard view |
+| Password & OTP Auth | ✅ COMPLETE | Dual auth mode, reset password route, and in-dashboard password change |
+| Account & Team Registration | ✅ COMPLETE | Redesigned `/register` & `/login` pages + auto team setup |
 | 9-11 PM Slots & Expiration | ✅ COMPLETE | Auto-maintained 7-day 9-11 PM slots + DB expiration lock |
-| Razorpay Payment Gateway | ✅ COMPLETE | HMAC SHA-256 signature verification + Webhook route |
-| Registered Slot Card & Modal | ✅ COMPLETE | Compact 1-column card + match schedule pills + receipt modal |
-| Dashboard Streamline | ✅ COMPLETE | My Slots + My Standing 2-card grid (Wallet removed) |
-| Leaderboard & Best-16 | ✅ COMPLETE | Best-16 view + per-slot filter + Eliminations breakdowns |
-| Admin Panel | ✅ COMPLETE | Score entry (Elims + Placement), room credentials, role management |
-| Legal & Compliance Pages | ✅ COMPLETE | Terms, Privacy Policy, Refund Policy, Fair Play Policy |
+| Razorpay & Test Mode | ✅ COMPLETE | Production HMAC SHA-256 verification + instant test mode branch |
+| Admin Panel | ✅ COMPLETE | Score entry with room slot dropdown helpers, slot creator, role management |
 | Production Build Verification | ✅ COMPLETE | `npm run build` compiles clean with 0 warnings or errors |
 
 ---
 
 ## 📋 Quick Setup Checklist for Live Deployment:
-1. Execute `supabase/migrations/001_initial_schema.sql`, `002_slot_booking_v2.sql`, and `003_seed_9_to_11_pm_slots.sql` in your Supabase SQL Editor.
+1. Execute `supabase/migrations/001_initial_schema.sql`, `002_slot_booking_v2.sql`, `003_best_5_slots_leaderboard.sql`, `004_admin_test_mode.sql`, and `004_room_slot_number.sql` in your Supabase SQL Editor.
 2. In Vercel Project Settings > **Environment Variables**, add:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`

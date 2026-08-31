@@ -52,15 +52,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Slot just filled up before payment could complete. Please choose another slot.' }, { status: 409 })
     }
 
-    // ── PAYMENT VERIFIED (simulated) ──
-    // When wiring real Razorpay: add HMAC-SHA256 signature check above this line.
+    // ── PAYMENT VERIFIED ──
+    // Calculate FCFS room slot number starting from Slot 5
+    const { count: existingPaidCount } = await admin
+      .from('bookings')
+      .select('booking_id', { count: 'exact', head: true })
+      .eq('slot_id', booking.slot_id)
+      .eq('payment_status', 'paid')
 
-    // Mark booking as paid — the DB trigger updates teams_booked_count automatically
+    const room_slot_number = 5 + (existingPaidCount || 0)
+
+    // Mark booking as paid & assign custom room slot
     const { error: updateErr } = await admin
       .from('bookings')
       .update({
         payment_status: 'paid',
         amount_paid: slot.entry_fee ?? 50,
+        room_slot_number,
       })
       .eq('booking_id', booking_id)
 

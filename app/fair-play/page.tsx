@@ -88,7 +88,7 @@ export default function FairPlayPage() {
               <ul className={styles.legalList}>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Placement Points:</strong> 1st Place (10 pts), 2nd Place (6 pts), 3rd Place (5 pts), 4th Place (4 pts), 5th Place (3 pts), 6th–10th (2 pts), 11th–15th (1 pt).</span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Elimination Points:</strong> 1 Point per verified in-game elimination.</span></li>
-                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Best-16 Aggregate:</strong> Leaderboard rankings automatically calculate a team&apos;s best 16 match performances across the cycle.</span></li>
+                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Best 5 Slots Aggregate:</strong> Leaderboard rankings automatically calculate a team&apos;s best 5 slot scores (15 matches total) across the cycle.</span></li>
               </ul>
             </div>
 
@@ -105,7 +105,7 @@ export default function FairPlayPage() {
               </p>
               <ul className={styles.legalList}>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Email Support:</strong> <a href="mailto:battlegroundsfaceoffseries@gmail.com" style={{ color: '#fbbf24' }}>battlegroundsfaceoffseries@gmail.com</a></span></li>
-                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Phone / WhatsApp:</strong> <a href="tel:+918303974916" style={{ color: '#fbbf24' }}>+91 83039 74916</a></span></li>
+                <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>WhatsApp Support:</strong> <a href="https://wa.me/916388024698?text=Hi%20BGFS%20Support%2C%20I%20have%20a%20query%20regarding%20fair%20play." target="_blank" rel="noopener noreferrer" style={{ color: '#22c55e' }}>+91 63880 24698</a></span></li>
                 <li><span className={styles.legalBullet}>●</span><span><strong style={{ color: '#ffffff' }}>Hours:</strong> 10:00 AM to 8:00 PM IST (All Days)</span></li>
               </ul>
             </div>

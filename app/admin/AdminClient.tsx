@@ -27,13 +27,13 @@ export default function AdminClient({ userRole = 'admin', slots, teams, payouts:
   const isSuperAdmin = userRole === 'admin'
 
   const allTabs: { id: AdminTab; label: string; superOnly?: boolean }[] = [
-    { id: 'scores', label: '📊 Score Entry' },
-    { id: 'slots', label: '📅 Slots', superOnly: true },
-    { id: 'payouts', label: `💸 Payouts (${payouts.filter(p => p.status === 'pending').length})`, superOnly: true },
-    { id: 'bookings', label: '📋 Bookings', superOnly: true },
-    { id: 'coupons', label: '🎟️ Coupons', superOnly: true },
-    { id: 'config', label: '⚙️ Config', superOnly: true },
-    { id: 'users', label: '👥 Admin Roles', superOnly: true },
+    { id: 'scores', label: 'Score Entry' },
+    { id: 'slots', label: 'Slots', superOnly: true },
+    { id: 'payouts', label: `Payouts (${payouts.filter(p => p.status === 'pending').length})`, superOnly: true },
+    { id: 'bookings', label: 'Bookings', superOnly: true },
+    { id: 'coupons', label: 'Coupons', superOnly: true },
+    { id: 'config', label: 'Config', superOnly: true },
+    { id: 'users', label: 'Admin Roles', superOnly: true },
   ]
 
   const visibleTabs = isSuperAdmin ? allTabs : allTabs.filter(t => !t.superOnly)
@@ -138,10 +138,13 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     // Load booked teams for slot
     const { data: bData } = await supabase
       .from('bookings')
-      .select('team_id, teams(team_id, team_name)')
+      .select('team_id, room_slot_number, teams(team_id, team_name)')
       .eq('slot_id', slotId)
       .eq('payment_status', 'paid')
-    setBookedTeams(bData?.map((b: any) => b.teams).filter(Boolean) || [])
+    setBookedTeams(bData?.map((b: any) => ({
+      ...(b.teams || {}),
+      room_slot_number: b.room_slot_number || 5,
+    })).filter(Boolean) || [])
 
     // Load recorded matches for slot
     setLoadingMatches(true)
@@ -169,6 +172,62 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     setKills('')
     setSelectedTeam('')
     setMsg('')
+  }
+
+  async function checkAndIssue3rdPlaceReward(slotId: string) {
+    if (!slotId) return null
+
+    const { data: mData } = await supabase
+      .from('matches')
+      .select('team_id, total_points, kills, teams(team_name)')
+      .eq('slot_id', slotId)
+
+    if (!mData || mData.length === 0) return null
+
+    const teamTotals: Record<string, { team_id: string; team_name: string; total_points: number; total_kills: number }> = {}
+    mData.forEach((m: any) => {
+      if (!teamTotals[m.team_id]) {
+        teamTotals[m.team_id] = {
+          team_id: m.team_id,
+          team_name: m.teams?.team_name || 'Team',
+          total_points: 0,
+          total_kills: 0,
+        }
+      }
+      teamTotals[m.team_id].total_points += (m.total_points || 0)
+      teamTotals[m.team_id].total_kills += (m.kills || 0)
+    })
+
+    const sorted = Object.values(teamTotals).sort((a, b) => {
+      if (b.total_points !== a.total_points) return b.total_points - a.total_points
+      return b.total_kills - a.total_kills
+    })
+
+    const thirdTeam = sorted[2]
+    if (!thirdTeam) return null
+
+    const { data: existingCoupon } = await supabase
+      .from('coupons')
+      .select('coupon_id')
+      .eq('team_id', thirdTeam.team_id)
+      .eq('issued_from_slot', slotId)
+      .maybeSingle()
+
+    if (existingCoupon) return null
+
+    const code = `FREE3RD-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
+    const { error: couponErr } = await supabase.from('coupons').insert({
+      team_id: thirdTeam.team_id,
+      type: 'free_slot',
+      status: 'unused',
+      issued_from_slot: slotId,
+      code,
+    })
+
+    if (!couponErr) {
+      return thirdTeam.team_name
+    }
+    return null
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -201,7 +260,14 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     } else {
       const teamObj = bookedTeams.find(t => String(t.team_id) === String(selectedTeam))
       const name = teamObj?.team_name || 'Team'
-      setMsg(editingMatchId ? `✅ Score updated for ${name} (Match ${matchNum})!` : `✅ Saved! Match ${matchNum}: #${pos} (${posPts} Pos Pts) + ${k} Elims (${elimPts} Elim Pts) = ${total} Total`)
+      let message = editingMatchId ? `✅ Score updated for ${name} (Match ${matchNum})!` : `✅ Saved! Match ${matchNum}: #${pos} (${posPts} Pos Pts) + ${k} Elims (${elimPts} Elim Pts) = ${total} Total`
+      
+      const thirdPlaceWinner = await checkAndIssue3rdPlaceReward(selectedSlot)
+      if (thirdPlaceWinner) {
+        message += ` | 🎁 Free Slot Pass automatically issued to 3rd Place (${thirdPlaceWinner})!`
+      }
+
+      setMsg(message)
       setEditingMatchId(null)
       setPosition('')
       setKills('')
@@ -231,7 +297,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   return (
     <div>
       <div style={{ marginBottom: '0.75rem' }}>
-        <h2 className={styles.tabTitle}>📊 Points Table Score Entry</h2>
+        <h2 className={styles.tabTitle}>Points Table Score Entry</h2>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '1rem' }}>
@@ -283,7 +349,9 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                       : 'Select registered team...'}
                   </option>
                   {availableTeams.map((t: any) => (
-                    <option key={t.team_id} value={t.team_id}>{t.team_name}</option>
+                    <option key={t.team_id} value={t.team_id}>
+                      {t.team_name} [Slot {t.room_slot_number || 5}]
+                    </option>
                   ))}
                 </select>
               </div>
@@ -412,7 +480,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                 style={{ flex: 1, padding: '0.55rem', fontWeight: 800, fontSize: '0.85rem' }}
                 disabled={saving}
               >
-                {saving ? 'Saving Score...' : editingMatchId ? '✏️ Update Match Score →' : '💾 Save Match Score →'}
+                {saving ? 'Saving Score...' : editingMatchId ? 'Update Match Score →' : 'Save Match Score →'}
               </button>
               {editingMatchId && (
                 <button
@@ -439,7 +507,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
           }}
         >
           <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fbbf24', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            📜 BGIS Position Points Table
+            BGIS Position Points Table
           </h3>
           <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
             <thead>
@@ -679,7 +747,7 @@ function SlotsTab({ slots, supabase }: any) {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem', flexDirection: 'column' }}>
-                      <button className="btn btn-success btn-sm" onClick={() => saveRoomDetails(slot.slot_id)}>💾 Save</button>
+                      <button className="btn btn-success btn-sm" onClick={() => saveRoomDetails(slot.slot_id)}>Save</button>
 
                       {slot.status === 'completed' ? (
                         <button
@@ -688,7 +756,7 @@ function SlotsTab({ slots, supabase }: any) {
                           onClick={() => changeSlotStatus(slot.slot_id, 'open')}
                           title="Revert back to Open status if clicked by mistake"
                         >
-                          ↺ REVERT TO OPEN
+                          REVERT TO OPEN
                         </button>
                       ) : (
                         <div style={{ display: 'flex', gap: '0.3rem' }}>
@@ -697,7 +765,7 @@ function SlotsTab({ slots, supabase }: any) {
                             style={{ flex: 1, fontSize: '0.75rem' }}
                             onClick={() => changeSlotStatus(slot.slot_id, 'completed')}
                           >
-                            ✓ Done
+                            Done
                           </button>
                           {slot.status === 'open' ? (
                             <button
@@ -719,7 +787,7 @@ function SlotsTab({ slots, supabase }: any) {
                         </div>
                       )}
 
-                      <button className="btn btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => deleteSlot(slot.slot_id)}>🗑 Delete</button>
+                      <button className="btn btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => deleteSlot(slot.slot_id)}>Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -828,10 +896,63 @@ function PayoutsTab({ payouts, onMarkPaid }: { payouts: any[]; onMarkPaid: (id: 
 
 // ── BOOKINGS TAB ─────────────────────────────────────────────────
 function BookingsTab({ bookings }: { bookings: any[] }) {
+  const realBookings = bookings.filter(b => !b.is_test_booking)
+  const testBookings = bookings.filter(b => b.is_test_booking)
+  const realRevenue = realBookings.reduce((sum, b) => sum + (b.coupon_used ? 0 : (b.amount_paid || 50)), 0)
+
   return (
     <div>
       <h2 className={styles.tabTitle}>Bookings</h2>
-      <p className={styles.tabDesc}>All paid slot bookings. Payment confirmed automatically by Razorpay.</p>
+      <p className={styles.tabDesc}>All slot bookings. Test account bookings are isolated and excluded from revenue metrics.</p>
+
+      {/* Financial & Count Summary */}
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        marginTop: '1rem',
+        marginBottom: '1rem',
+        flexWrap: 'wrap',
+      }}>
+        <div style={{
+          background: 'var(--surface-elevated, #18181b)',
+          border: '1px solid var(--border-color, #27272a)',
+          borderRadius: '8px',
+          padding: '0.85rem 1.25rem',
+          flex: '1',
+          minWidth: '160px',
+        }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>REAL REVENUE</div>
+          <div style={{ color: '#22c55e', fontSize: '1.25rem', fontWeight: 800 }}>₹{realRevenue}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Excludes test mode &amp; free rewards</div>
+        </div>
+
+        <div style={{
+          background: 'var(--surface-elevated, #18181b)',
+          border: '1px solid var(--border-color, #27272a)',
+          borderRadius: '8px',
+          padding: '0.85rem 1.25rem',
+          flex: '1',
+          minWidth: '160px',
+        }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>PAID BOOKINGS</div>
+          <div style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: 800 }}>{realBookings.length}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Real player registrations</div>
+        </div>
+
+        <div style={{
+          background: 'var(--surface-elevated, #18181b)',
+          border: '1px solid #c084fc',
+          borderRadius: '8px',
+          padding: '0.85rem 1.25rem',
+          flex: '1',
+          minWidth: '160px',
+        }}>
+          <div style={{ color: '#d8b4fe', fontSize: '0.75rem', fontWeight: 600 }}>TEST MODE BOOKINGS</div>
+          <div style={{ color: '#c084fc', fontSize: '1.25rem', fontWeight: 800 }}>{testBookings.length}</div>
+          <div style={{ color: '#d8b4fe', fontSize: '0.7rem' }}>Bypassed payments (Isolated)</div>
+        </div>
+      </div>
+
       <div className="table-wrapper" style={{ marginTop: '1rem' }}>
         <table>
           <thead>
@@ -839,18 +960,42 @@ function BookingsTab({ bookings }: { bookings: any[] }) {
               <th>Team</th>
               <th>Slot Date</th>
               <th>Slot Time</th>
-              <th>Payment</th>
+              <th>Status / Mode</th>
               <th>Coupon Used</th>
               <th>Booked At</th>
             </tr>
           </thead>
           <tbody>
             {bookings.map(b => (
-              <tr key={b.booking_id}>
-                <td><strong>{b.teams?.team_name}</strong></td>
+              <tr key={b.booking_id} style={b.is_test_booking ? { background: 'rgba(168, 85, 247, 0.05)' } : undefined}>
+                <td>
+                  <strong>{b.teams?.team_name}</strong>
+                  {b.is_test_booking && (
+                    <span style={{
+                      background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)',
+                      color: '#ffffff',
+                      fontSize: '0.62rem',
+                      fontWeight: 800,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      marginLeft: '8px',
+                      letterSpacing: '0.05em',
+                      display: 'inline-block',
+                    }}>
+                      TEST
+                    </span>
+                  )}
+                </td>
                 <td>{b.slots?.date ? new Date(b.slots.date + 'T00:00:00').toLocaleDateString('en-IN') : '—'}</td>
                 <td style={{ fontSize: '0.85rem' }}>{b.slots?.time_label || '—'}</td>
-                <td><span className="badge badge-success">{b.payment_status}</span></td>
+                <td>
+                  <span className="badge badge-success">{b.payment_status}</span>
+                  {b.is_test_booking && (
+                    <span style={{ color: '#c084fc', fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>
+                      (Test Mode)
+                    </span>
+                  )}
+                </td>
                 <td>
                   {b.coupon_used
                     ? <span className="badge badge-info">Coupon Applied</span>

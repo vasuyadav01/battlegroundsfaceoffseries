@@ -114,7 +114,7 @@ export default async function LandingPage() {
                   num: '03',
                   step: 'STEP 03',
                   title: 'GRIND & DOMINATE',
-                  desc: '3 matches per slot. Play as many slots as you want: only your top 16 match scores count.',
+                  desc: '3 matches per slot. Play as many slots as you want: only your top 5 slot scores (15 matches) count.',
                   Icon: Crosshair,
                 },
                 {
@@ -205,14 +205,14 @@ export default async function LandingPage() {
               <div>
                 <h2 className={styles.sectionTitle}>BGIS SCORING SYSTEM</h2>
                 <p className={styles.scoringDesc}>
-                  Official esports placement point system + 1 point per elimination. Play unlimited slots without penalty: our system automatically aggregates your <strong>Best 16 match performances</strong>.
+                  Official esports placement point system + 1 point per elimination. Play unlimited slots without penalty: our system automatically aggregates your <strong>Best 5 Slots (15 Matches total)</strong>.
                 </p>
                 <div className={styles.scoringFeatures}>
                   {[
                     '1st Place = 10 Placement Points',
                     '1 Elimination = 1 Point',
                     'Unlimited Slot Re-entry allowed',
-                    'Best 16 match score auto-calculation',
+                    'Best 5 Slots (15 Matches) auto-calculation',
                     'Off-days do not hurt your overall rank',
                   ].map(f => (
                     <div key={f} className={styles.scoringFeature}>

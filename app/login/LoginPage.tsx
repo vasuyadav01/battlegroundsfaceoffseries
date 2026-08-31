@@ -7,7 +7,7 @@ import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
-type LoginMode = 'password' | 'otp'
+type LoginMode = 'password' | 'otp' | 'reset'
 type OtpStep = 'email' | 'otp'
 
 export default function LoginPage() {
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [resetSent, setResetSent] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
 
   // Standard Password Sign In
@@ -42,17 +43,32 @@ export default function LoginPage() {
 
     const userId = data.user?.id
     if (userId) {
-      const { data: userRow } = await supabase
-        .from('users')
-        .select('team_id')
-        .eq('user_id', userId)
-        .single()
-
       setLoading(false)
       router.push('/dashboard')
     } else {
       setLoading(false)
     }
+  }
+
+  // Request Password Reset Link
+  async function handleRequestPasswordReset(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    setResetSent(false)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+
+    setLoading(false)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setResetSent(true)
   }
 
   // OTP Request
@@ -165,7 +181,16 @@ export default function LoginPage() {
             </div>
 
             <div className={styles.fieldGroup}>
-              <label className={styles.label} htmlFor="login-password">PASSWORD</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className={styles.label} htmlFor="login-password">PASSWORD</label>
+                <button
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: '#facc15', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                  onClick={() => { setLoginMode('reset'); setError(''); setResetSent(false) }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <input
                 id="login-password"
                 type="password"
@@ -188,6 +213,66 @@ export default function LoginPage() {
               {loading ? <><span className="spinner" /> SIGNING IN...</> : 'SIGN IN →'}
             </button>
           </form>
+        )}
+
+        {/* ── FORM 3: RESET PASSWORD REQUEST ── */}
+        {loginMode === 'reset' && (
+          <div className={styles.form}>
+            {resetSent ? (
+              <div style={{
+                background: 'rgba(74, 222, 128, 0.1)',
+                border: '1px solid #4ade80',
+                borderRadius: '8px',
+                padding: '1rem',
+                color: '#4ade80',
+                fontSize: '0.85rem',
+                textAlign: 'center'
+              }}>
+                <p style={{ margin: '0 0 0.5rem', fontWeight: 800 }}>Reset Link Sent! ✉️</p>
+                <p style={{ margin: 0, color: '#cccccc', fontSize: '0.8rem' }}>
+                  Check your email ({email}) for instructions to set your new password.
+                </p>
+                <button
+                  type="button"
+                  style={{ marginTop: '1rem', background: 'transparent', border: '1px solid #4ade80', color: '#4ade80', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                  onClick={() => { setLoginMode('password'); setResetSent(false) }}
+                >
+                  Return to Sign In
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleRequestPasswordReset} className={styles.form}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="reset-email">YOUR ACCOUNT EMAIL</label>
+                  <input
+                    id="reset-email"
+                    type="email"
+                    className={styles.input}
+                    placeholder="player@bgfsesports.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+                {error && <p className={styles.errorMsg}>{error}</p>}
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={loading}
+                >
+                  {loading ? <><span className="spinner" /> SENDING RESET LINK...</> : 'SEND RESET LINK →'}
+                </button>
+                <button
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: '#888888', fontSize: '0.8rem', cursor: 'pointer', width: '100%', textAlign: 'center', marginTop: '0.5rem' }}
+                  onClick={() => { setLoginMode('password'); setError('') }}
+                >
+                  ← Back to Password Sign In
+                </button>
+              </form>
+            )}
+          </div>
         )}
 
         {/* ── FORM 2: OTP SIGN IN ── */}

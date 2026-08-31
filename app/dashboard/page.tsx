@@ -87,13 +87,24 @@ export default async function DashboardPage() {
   }
 
   // Fetch booked slots for this team
-  const { data: bookings } = await admin
+  let { data: bookings, error: bookingErr } = await admin
     .from('bookings')
     .select(
-      'booking_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals)'
+      'booking_id, payment_status, amount_paid, coupon_used, created_at, room_slot_number, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals)'
     )
     .eq('team_id', safeTeam.team_id)
     .order('created_at', { ascending: false })
+
+  if (bookingErr && bookingErr.message?.includes('room_slot_number')) {
+    const fallback = await admin
+      .from('bookings')
+      .select(
+        'booking_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals)'
+      )
+      .eq('team_id', safeTeam.team_id)
+      .order('created_at', { ascending: false })
+    bookings = fallback.data as any[]
+  }
 
   // Fetch full leaderboard standings to calculate team rank and stats
   const { data: allLeaderboard } = await admin
@@ -113,6 +124,16 @@ export default async function DashboardPage() {
     .select('amount, status')
     .eq('team_id', safeTeam.team_id)
 
+  // Fetch coupons/rewards for this team
+  const { data: coupons } = await admin
+    .from('coupons')
+    .select('coupon_id, code, type, status, issued_at')
+    .eq('team_id', safeTeam.team_id)
+    .order('issued_at', { ascending: false })
+
+  // Check test account status from user profile or team
+  const isTestAccount = Boolean(userProfile?.is_test_account || (team as any)?.is_test_account)
+
   return (
     <DashboardClient
       team={safeTeam}
@@ -121,7 +142,9 @@ export default async function DashboardPage() {
       leaderboardEntry={leaderboardEntry}
       rank={rank}
       payouts={payouts || []}
+      coupons={coupons || []}
       isCaptain={safeTeam.captain_user_id === user.id}
+      isTestAccount={isTestAccount}
     />
   )
 }

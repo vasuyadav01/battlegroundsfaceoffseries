@@ -42,13 +42,12 @@ export async function updateSession(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Protected routes
-    const protectedPaths = ['/onboard']
     const adminPaths = ['/admin']
     const pathname = request.nextUrl.pathname
 
-    if (!user && protectedPaths.some(p => pathname.startsWith(p))) {
+    if (pathname.startsWith('/onboard')) {
       const url = request.nextUrl.clone()
-      url.pathname = '/login'
+      url.pathname = user ? '/dashboard' : '/login'
       return NextResponse.redirect(url)
     }
 

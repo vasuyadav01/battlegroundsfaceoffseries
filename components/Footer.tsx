@@ -62,7 +62,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className={styles.footerBottom}>
-          <p className={styles.copyright}>
+          <p className={styles.copyright} suppressHydrationWarning>
             © {new Date().getFullYear()} Battlegrounds Faceoff Series (BGFS). Skill-based esports tournament platform. Match outcomes are determined entirely by in-game performance, not chance.
           </p>
           <div className={styles.legalLinks}>

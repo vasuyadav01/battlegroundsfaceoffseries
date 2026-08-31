@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Calendar, TrendingUp, Edit3, Lock, Check, X } from 'lucide-react'
+import { Calendar, TrendingUp, Edit3, Lock, Check, X, FlaskConical, AlertCircle, KeyRound } from 'lucide-react'
+import { formatShortDate } from '@/lib/utils/formatDate'
+import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
 interface SlotInfo {
@@ -20,6 +22,7 @@ interface Booking {
   amount_paid: number
   coupon_used: boolean
   created_at: string
+  room_slot_number?: number | null
   slots: any
 }
 
@@ -35,6 +38,14 @@ interface Payout {
   status: 'paid' | 'pending' | string
 }
 
+interface Coupon {
+  coupon_id: string
+  code: string
+  type: string
+  status: 'unused' | 'used' | string
+  issued_at: string
+}
+
 interface Props {
   team: {
     team_id: string
@@ -47,7 +58,9 @@ interface Props {
   leaderboardEntry: LeaderboardEntry | null
   rank: number
   payouts: Payout[]
+  coupons?: Coupon[]
   isCaptain: boolean
+  isTestAccount?: boolean
 }
 
 function getSlotInfo(slots: any): SlotInfo | null {
@@ -63,8 +76,11 @@ export default function DashboardClient({
   leaderboardEntry,
   rank,
   payouts,
+  coupons = [],
   isCaptain,
+  isTestAccount = false,
 }: Props) {
+  const unusedCoupons = coupons.filter(c => c.status === 'unused')
   // Team name edit state
   const [currentTeamName, setCurrentTeamName] = useState(team.team_name)
   const [hasChangedName, setHasChangedName] = useState(!!team.name_changed)
@@ -73,6 +89,47 @@ export default function DashboardClient({
   const [renameLoading, setRenameLoading] = useState(false)
   const [renameError, setRenameError] = useState('')
   const [renameSuccessMsg, setRenameSuccessMsg] = useState('')
+
+  // Password Change state
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [newPass, setNewPass] = useState('')
+  const [confirmPass, setConfirmPass] = useState('')
+  const [passLoading, setPassLoading] = useState(false)
+  const [passErr, setPassErr] = useState('')
+  const [passMsg, setPassMsg] = useState('')
+
+  async function handleChangePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPassErr('')
+    setPassMsg('')
+
+    if (newPass.length < 6) {
+      setPassErr('Password must be at least 6 characters.')
+      return
+    }
+    if (newPass !== confirmPass) {
+      setPassErr('Passwords do not match.')
+      return
+    }
+
+    setPassLoading(true)
+    const supabase = createClient()
+    const { error } = await supabase.auth.updateUser({ password: newPass })
+    setPassLoading(false)
+
+    if (error) {
+      setPassErr(error.message)
+      return
+    }
+
+    setPassMsg('Password updated successfully!')
+    setNewPass('')
+    setConfirmPass('')
+    setTimeout(() => {
+      setIsChangingPassword(false)
+      setPassMsg('')
+    }, 2000)
+  }
 
   // Handle Team Rename submit
   async function handleRenameSubmit(e: React.FormEvent) {
@@ -140,13 +197,7 @@ export default function DashboardClient({
   const isQualified = rank > 0 && rank <= 16
 
   function formatDate(dateStr: string) {
-    if (!dateStr) return ''
-    const d = new Date(dateStr + 'T00:00:00')
-    return d.toLocaleDateString('en-IN', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    })
+    return formatShortDate(dateStr)
   }
 
   return (
@@ -165,6 +216,23 @@ export default function DashboardClient({
 
                   {userEmail && <span className={styles.emailText}>({userEmail})</span>}
                   {isCaptain && <span className={styles.captainBadge}>CAPTAIN</span>}
+                  {isTestAccount && (
+                    <span style={{
+                      background: '#1f1f1f',
+                      border: '1px solid #333333',
+                      color: '#aaaaaa',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      letterSpacing: '0.05em',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}>
+                      <FlaskConical size={11} /> TEST ACCOUNT
+                    </span>
+                  )}
 
                   {!hasChangedName ? (
                     <button
@@ -179,6 +247,14 @@ export default function DashboardClient({
                       <Lock size={11} /> Name Locked
                     </span>
                   )}
+
+                  <button
+                    className={styles.renameTriggerBtn}
+                    style={{ borderColor: 'rgba(250, 204, 21, 0.4)', color: '#facc15' }}
+                    onClick={() => { setIsChangingPassword(!isChangingPassword); setPassErr(''); setPassMsg('') }}
+                  >
+                    <KeyRound size={13} /> {isChangingPassword ? 'Cancel Password' : 'Change Password'}
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleRenameSubmit} className={styles.renameForm}>
@@ -202,15 +278,92 @@ export default function DashboardClient({
                   >
                     <X size={14} />
                   </button>
-                  <span className={styles.renameNotice}>⚠️ 1-time change only</span>
+                  <span className={styles.renameNotice}><AlertCircle size={11} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '3px' }} /> 1-time change only</span>
                 </form>
               )}
 
-              {renameError && <div className={styles.renameErrorMsg}>{renameError}</div>}
-              {renameSuccessMsg && <div className={styles.renameSuccessMsg}>{renameSuccessMsg}</div>}
+              {/* Password Change Inline Form */}
+              {isChangingPassword && (
+                <form onSubmit={handleChangePasswordSubmit} className={styles.renameForm} style={{ marginTop: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <input
+                    type="password"
+                    className={styles.renameInput}
+                    value={newPass}
+                    onChange={e => setNewPass(e.target.value)}
+                    placeholder="New Password (min 6 chars)"
+                    minLength={6}
+                    required
+                    style={{ minWidth: '180px' }}
+                  />
+                  <input
+                    type="password"
+                    className={styles.renameInput}
+                    value={confirmPass}
+                    onChange={e => setConfirmPass(e.target.value)}
+                    placeholder="Confirm New Password"
+                    minLength={6}
+                    required
+                    style={{ minWidth: '180px' }}
+                  />
+                  <button type="submit" className={styles.renameSaveBtn} disabled={passLoading}>
+                    {passLoading ? 'Updating...' : <><Check size={14} /> Update Password</>}
+                  </button>
+                  {passErr && <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: 0, width: '100%' }}>{passErr}</p>}
+                  {passMsg && <p style={{ color: '#4ade80', fontSize: '0.8rem', margin: 0, width: '100%' }}>{passMsg}</p>}
+                </form>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Free Slot Reward Banner */}
+        {unusedCoupons.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.15) 0%, rgba(202, 138, 4, 0.08) 100%)',
+            border: '1px solid #facc15',
+            borderRadius: '12px',
+            padding: '1.25rem 1.5rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            boxShadow: '0 4px 20px rgba(250, 204, 21, 0.1)',
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '1.25rem' }}>🎁</span>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#facc15', fontFamily: 'Inter, sans-serif' }}>
+                  {unusedCoupons.length === 1
+                    ? '1 Free Slot Reward Available!'
+                    : `${unusedCoupons.length} Free Slot Rewards Available!`}
+                </h3>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#d4d4d4', fontFamily: 'Inter, sans-serif' }}>
+                Earned from placing 3rd in slot matches. Redeem on any open tournament slot with zero entry fee!
+              </p>
+            </div>
+            <Link
+              href="/slots"
+              className="btn btn-primary"
+              style={{
+                background: '#facc15',
+                color: '#000000',
+                fontWeight: 800,
+                fontSize: '0.875rem',
+                padding: '0.6rem 1.25rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              Redeem on Open Slots →
+            </Link>
+          </div>
+        )}
 
         {/* 3-Card Grid */}
         <div className={styles.cardGrid}>
@@ -243,6 +396,11 @@ export default function DashboardClient({
                           <span className={styles.slotTime}>
                             {b.slotData?.time_label}
                           </span>
+                          {b.room_slot_number && (
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#facc15', marginTop: '3px', letterSpacing: '0.04em' }}>
+                              ROOM SLOT: SLOT {b.room_slot_number}
+                            </span>
+                          )}
                         </div>
                         <span
                           className={

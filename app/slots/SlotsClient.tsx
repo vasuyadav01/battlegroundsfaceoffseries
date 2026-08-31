@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, X, Lock, MessageCircle, Flame, Key } from 'lucide-react'
+import { Check, Sparkles, X, Lock, MessageCircle, Flame, Key, FlaskConical, Ticket } from 'lucide-react'
 import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
 import styles from './page.module.css'
 
@@ -28,10 +28,12 @@ interface Props {
   slots: Slot[]
   userTeam: any
   freeCoupon: FreeCoupon | null
+  unusedCoupons?: FreeCoupon[]
   userBookedSlotIds?: string[]
   whatsappLink: string
   entryFee: number
   isLoggedIn: boolean
+  isTestAccount?: boolean
 }
 
 type FilterTab = 'upcoming' | 'past' | 'all'
@@ -90,10 +92,12 @@ export default function SlotsClient({
   slots,
   userTeam,
   freeCoupon,
+  unusedCoupons = [],
   userBookedSlotIds = [],
   whatsappLink,
   entryFee,
   isLoggedIn,
+  isTestAccount = false,
 }: Props) {
   const router = useRouter()
 
@@ -101,12 +105,27 @@ export default function SlotsClient({
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
   const [confirmFreeSlot, setConfirmFreeSlot] = useState<Slot | null>(null)
 
-  const [couponUsedInSession, setCouponUsedInSession] = useState(false)
+  const [remainingCoupons, setRemainingCoupons] = useState<FreeCoupon[]>(() => {
+    if (unusedCoupons && unusedCoupons.length > 0) return unusedCoupons
+    if (freeCoupon) return [freeCoupon]
+    return []
+  })
   const [successToast, setSuccessToast] = useState<string | null>(null)
   const [filterTab, setFilterTab] = useState<FilterTab>('upcoming')
 
-  // Auto free slot detection
-  const activeFreeCoupon = couponUsedInSession ? null : freeCoupon
+  const [testModeEnabled, setTestModeEnabled] = useState<boolean>(true)
+
+  async function toggleTestMode() {
+    const nextState = !testModeEnabled
+    setTestModeEnabled(nextState)
+    try {
+      await fetch('/api/user/toggle-test-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: nextState }),
+      })
+    } catch (e) {}
+  }
 
   // Filter slots based on date/time expiration
   const filteredSlots = useMemo(() => {
@@ -162,13 +181,14 @@ function loadRazorpayScript(): Promise<boolean> {
     setBookingSlotId(slot.slot_id)
 
     try {
-      if (isFree && activeFreeCoupon) {
+      if (isFree && remainingCoupons.length > 0) {
+        const couponToUse = remainingCoupons[0]
         // Redeem free slot reward
         const res = await fetch('/api/coupon/redeem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            coupon_id: activeFreeCoupon.coupon_id,
+            coupon_id: couponToUse.coupon_id,
             slot_id: slot.slot_id,
             team_name: userTeam?.team_name || 'My Team',
           }),
@@ -181,7 +201,7 @@ function loadRazorpayScript(): Promise<boolean> {
           return
         }
 
-        setCouponUsedInSession(true)
+        setRemainingCoupons(prev => prev.slice(1))
       } else {
         // Create booking record first
         const createRes = await fetch('/api/booking/create', {
@@ -196,6 +216,14 @@ function loadRazorpayScript(): Promise<boolean> {
 
         if (!createRes.ok || !createData.booking_id) {
           alert(createData.error || 'Failed to book slot.')
+          setBookingSlotId(null)
+          return
+        }
+
+        // Test Mode Auto-Confirmation
+        if (createData.auto_confirmed || createData.is_test_booking) {
+          setBookedSlotIds(prev => [...prev, slot.slot_id])
+          setSuccessToast(`🧪 TEST MODE: Slot for ${slot.time_label} registered successfully!`)
           setBookingSlotId(null)
           return
         }
@@ -303,19 +331,67 @@ function loadRazorpayScript(): Promise<boolean> {
   return (
     <main className={styles.page}>
       <div className="container">
+        {/* Banner for Admin Test Mode */}
+        {isTestAccount && (
+          <div style={{
+            background: '#151515',
+            border: '1px solid #262626',
+            borderRadius: '12px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FlaskConical size={16} style={{ color: testModeEnabled ? '#fbbf24' : '#666666', flexShrink: 0 }} />
+              <div>
+                <strong style={{ color: '#ffffff', fontSize: '0.9rem', display: 'block' }}>
+                  ADMIN TEST MODE
+                </strong>
+                <span style={{ color: '#888888', fontSize: '0.8rem' }}>
+                  {testModeEnabled ? 'Auto-confirms for ₹0 without Razorpay' : 'Standard user payment flow'}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={toggleTestMode}
+              style={{
+                background: testModeEnabled ? '#fbbf24' : '#262626',
+                color: testModeEnabled ? '#111111' : '#aaaaaa',
+                border: testModeEnabled ? 'none' : '1px solid #333333',
+                borderRadius: '20px',
+                padding: '5px 14px',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.18s ease',
+              }}
+            >
+              TEST MODE: {testModeEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        )}
+
         {/* Banner if team has earned a free slot */}
-        {activeFreeCoupon && (
+        {remainingCoupons.length > 0 && (
           <div className={styles.freeRewardBanner}>
             <div className={styles.freeRewardBannerLeft}>
               <Sparkles size={20} className={styles.sparkleIcon} />
               <div>
                 <strong style={{ color: '#ffffff', fontSize: '0.95rem' }}>FREE SLOT REWARD UNLOCKED!</strong>
                 <span className={styles.bannerSubtext}>
-                  You earned a free slot reward (3rd place finish). Choose any open slot below to claim for ₹0!
+                  You earned free slot reward pass(es) from placing 3rd in slot matches. Select any open slot below to claim for ₹0!
                 </span>
               </div>
             </div>
-            <span className={styles.freeRewardTag}>1 FREE REWARD</span>
+            <span className={styles.freeRewardTag}>{remainingCoupons.length} FREE REWARD{remainingCoupons.length > 1 ? 'S' : ''}</span>
           </div>
         )}
 
@@ -390,7 +466,7 @@ function loadRazorpayScript(): Promise<boolean> {
                 const isFull = !isCompleted && (spotsLeft <= 0 || slot.status === 'full')
                 const isUrgent = !isFull && !isCompleted && !isAlreadyBooked && spotsLeft < 5
 
-                const showFreeOption = Boolean(activeFreeCoupon && !isFull && !isCompleted && !isAlreadyBooked)
+                const showFreeOption = Boolean(remainingCoupons.length > 0 && !isFull && !isCompleted && !isAlreadyBooked)
                 const currentFee = slot.entry_fee || entryFee
 
                 if (isAlreadyBooked) {
@@ -407,73 +483,16 @@ function loadRazorpayScript(): Promise<boolean> {
                       <div className={styles.bookedCenter}>
                         <div className={styles.bookedTime}>{slot.time_label}</div>
 
-                        <div
-                          className={styles.matchCellsGrid}
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: '6px',
-                            width: '100%',
-                            margin: '0.35rem 0',
-                          }}
-                        >
+                        <div className={styles.matchCellsGrid}>
                           {matchTimes.map((m, idx) => (
-                            <div
-                              key={idx}
-                              className={styles.matchCellBooked}
-                              style={{
-                                border: '1.5px solid #22c55e',
-                                borderRadius: '8px',
-                                background: '#0e190f',
-                                padding: '0.4rem 0.2rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '2px',
-                                textAlign: 'center',
-                                boxShadow: '0 2px 8px rgba(34, 197, 94, 0.15)',
-                              }}
-                            >
-                              <div
-                                className={styles.matchCellLabelBooked}
-                                style={{
-                                  display: 'block',
-                                  color: '#4ade80',
-                                  fontSize: '0.55rem',
-                                  fontWeight: 800,
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.06em',
-                                  lineHeight: 1,
-                                }}
-                              >
+                            <div key={idx} className={styles.matchCellBooked}>
+                              <div className={styles.matchCellLabelBooked}>
                                 MATCH {idx + 1}
                               </div>
-                              <div
-                                className={styles.matchCellTime}
-                                style={{
-                                  display: 'block',
-                                  color: '#ffffff',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 800,
-                                  lineHeight: 1.1,
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
+                              <div className={styles.matchCellTime}>
                                 {m.time}
                               </div>
-                              <div
-                                className={styles.matchCellMap}
-                                style={{
-                                  display: 'block',
-                                  color: '#fbbf24',
-                                  fontSize: '0.58rem',
-                                  fontWeight: 700,
-                                  lineHeight: 1,
-                                  letterSpacing: '0.02em',
-                                  marginTop: '2px',
-                                }}
-                              >
+                              <div className={styles.matchCellMap}>
                                 {m.map}
                               </div>
                             </div>
@@ -597,73 +616,16 @@ function loadRazorpayScript(): Promise<boolean> {
                     </div>
 
                     {/* 3-cell match timings grid */}
-                    <div
-                      className={styles.matchCellsGrid}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '6px',
-                        width: '100%',
-                        margin: '0.35rem 0',
-                      }}
-                    >
+                    <div className={styles.matchCellsGrid}>
                       {matchTimes.map((m, idx) => (
-                        <div
-                          key={idx}
-                          className={styles.matchCellOpen}
-                          style={{
-                            border: '1.5px solid #3f3f46',
-                            borderRadius: '8px',
-                            background: '#181818',
-                            padding: '0.4rem 0.2rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '2px',
-                            textAlign: 'center',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
-                          }}
-                        >
-                          <div
-                            className={styles.matchCellLabelOpen}
-                            style={{
-                              display: 'block',
-                              color: '#a1a1aa',
-                              fontSize: '0.55rem',
-                              fontWeight: 800,
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.06em',
-                              lineHeight: 1,
-                            }}
-                          >
+                        <div key={idx} className={styles.matchCellOpen}>
+                          <div className={styles.matchCellLabelOpen}>
                             MATCH {idx + 1}
                           </div>
-                          <div
-                            className={styles.matchCellTime}
-                            style={{
-                              display: 'block',
-                              color: '#ffffff',
-                              fontSize: '0.75rem',
-                              fontWeight: 800,
-                              lineHeight: 1.1,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
+                          <div className={styles.matchCellTime}>
                             {m.time}
                           </div>
-                          <div
-                            className={styles.matchCellMap}
-                            style={{
-                              display: 'block',
-                              color: '#fbbf24',
-                              fontSize: '0.58rem',
-                              fontWeight: 700,
-                              lineHeight: 1,
-                              letterSpacing: '0.02em',
-                              marginTop: '2px',
-                            }}
-                          >
+                          <div className={styles.matchCellMap}>
                             {m.map}
                           </div>
                         </div>
@@ -700,6 +662,8 @@ function loadRazorpayScript(): Promise<boolean> {
                         >
                           {isBookingThis ? (
                             <><span className="spinner" /> REGISTERING...</>
+                          ) : isTestAccount && testModeEnabled ? (
+                            <><FlaskConical size={13} /> Register (Test Mode)</>
                           ) : (
                             'Register'
                           )}
@@ -726,9 +690,9 @@ function loadRazorpayScript(): Promise<boolean> {
               <Sparkles size={28} color="#fbbf24" />
             </div>
 
-            <h2 className={styles.modalTitle}>Redeem Next Slot Pass?</h2>
+            <h2 className={styles.modalTitle}>Redeem Free Slot Pass?</h2>
             <p className={styles.modalBody}>
-              You are claiming your 3rd-place Next Slot Pass Reward for:
+              You are using 1 of your 3rd-place Free Slot Pass Rewards for:
             </p>
 
             <div className={styles.modalSlotPreview}>
@@ -741,7 +705,7 @@ function loadRazorpayScript(): Promise<boolean> {
             </div>
 
             <p className={styles.modalWarningText}>
-              Confirming will mark your 3rd-place reward as redeemed and immediately register your team into this slot.
+              Confirming will redeem 1 free slot reward and immediately register your team into this slot without payment.
             </p>
 
             <div className={styles.modalActionColumn}>
@@ -753,7 +717,7 @@ function loadRazorpayScript(): Promise<boolean> {
                   handleDirectBookSlot(slotToBook, true)
                 }}
               >
-                ✓ CONFIRM &amp; REGISTER SLOT PASS
+                ✓ CONFIRM FREE REGISTRATION
               </button>
               <button
                 className={styles.cancelBtn}

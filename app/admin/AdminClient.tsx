@@ -109,6 +109,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   const [bookedTeams, setBookedTeams] = useState<any[]>([])
   const [recordedMatches, setRecordedMatches] = useState<any[]>([])
   const [loadingMatches, setLoadingMatches] = useState(false)
+  const [editingMatchId, setEditingMatchId] = useState<string | null>(null)
 
   // Live Mathematical Auto-Calculations
   const posNum = parseInt(position)
@@ -117,10 +118,12 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   const eliminationPoints = killsNum * 1
   const totalPoints = positionPoints + eliminationPoints
 
-  // Filter booked teams: only show teams booked in selected slot that do NOT have a score for current matchNum yet
+  // Filter booked teams: only show teams booked in selected slot that do NOT have a score for current matchNum yet (excluding the record currently being edited)
   const availableTeams = bookedTeams.filter(t => {
     const alreadyScored = recordedMatches.some(
-      m => m.match_number === matchNum && String(m.team_id) === String(t.team_id)
+      m => m.match_number === matchNum &&
+           String(m.team_id) === String(t.team_id) &&
+           String(m.match_id) !== String(editingMatchId)
     )
     return !alreadyScored
   })
@@ -151,6 +154,23 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     setLoadingMatches(false)
   }
 
+  function handleEditMatch(m: any) {
+    setEditingMatchId(m.match_id)
+    setMatchNum(m.match_number)
+    setSelectedTeam(m.team_id)
+    setPosition(String(m.placement))
+    setKills(String(m.kills))
+    setMsg(`✏️ Editing Match ${m.match_number} score for ${m.teams?.team_name || 'selected team'}`)
+  }
+
+  function handleCancelEdit() {
+    setEditingMatchId(null)
+    setPosition('')
+    setKills('')
+    setSelectedTeam('')
+    setMsg('')
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setMsg('')
@@ -179,7 +199,10 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     if (error) {
       setMsg('❌ Error: ' + error.message)
     } else {
-      setMsg(`✅ Saved! Match ${matchNum}: #${pos} (${posPts} Pos Pts) + ${k} Elims (${elimPts} Elim Pts) = ${total} Total`)
+      const teamObj = bookedTeams.find(t => String(t.team_id) === String(selectedTeam))
+      const name = teamObj?.team_name || 'Team'
+      setMsg(editingMatchId ? `✅ Score updated for ${name} (Match ${matchNum})!` : `✅ Saved! Match ${matchNum}: #${pos} (${posPts} Pos Pts) + ${k} Elims (${elimPts} Elim Pts) = ${total} Total`)
+      setEditingMatchId(null)
       setPosition('')
       setKills('')
       setSelectedTeam('')
@@ -190,6 +213,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   async function handleDeleteMatch(matchId: string, teamName?: string) {
     if (!confirm(`Delete match score entry for ${teamName || 'this team'}?`)) return
     
+    if (editingMatchId === matchId) handleCancelEdit()
     setMsg('')
     // Optimistically update UI so team immediately reappears in dropdown for this match
     setRecordedMatches(prev => prev.filter(m => String(m.match_id) !== String(matchId)))
@@ -380,15 +404,27 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
               </p>
             )}
 
-            <button
-              id="save-score-btn"
-              type="submit"
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '0.55rem', fontWeight: 800, fontSize: '0.85rem' }}
-              disabled={saving}
-            >
-              {saving ? 'Saving Score...' : '💾 Save Match Score →'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                id="save-score-btn"
+                type="submit"
+                className="btn btn-primary"
+                style={{ flex: 1, padding: '0.55rem', fontWeight: 800, fontSize: '0.85rem' }}
+                disabled={saving}
+              >
+                {saving ? 'Saving Score...' : editingMatchId ? '✏️ Update Match Score →' : '💾 Save Match Score →'}
+              </button>
+              {editingMatchId && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ padding: '0.55rem 0.85rem', fontSize: '0.82rem', borderColor: '#444' }}
+                  onClick={handleCancelEdit}
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -460,21 +496,30 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
               </thead>
               <tbody>
                 {recordedMatches.map((m: any) => (
-                  <tr key={m.match_id}>
+                  <tr key={m.match_id} style={editingMatchId === m.match_id ? { background: 'rgba(251, 191, 36, 0.1)' } : {}}>
                     <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: '#fbbf24' }}>Match {m.match_number}</strong></td>
                     <td style={{ padding: '0.4rem 0.6rem' }}><strong>{m.teams?.team_name || m.team_id}</strong></td>
                     <td style={{ padding: '0.4rem 0.6rem' }}>#{m.placement}</td>
                     <td style={{ padding: '0.4rem 0.6rem', color: '#fbbf24', fontWeight: 600 }}>{m.placement_points} pts</td>
                     <td style={{ padding: '0.4rem 0.6rem', color: '#4ade80', fontWeight: 600 }}>{m.kills} elims ({m.kill_points} pts)</td>
                     <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: '#ffffff', fontSize: '0.88rem' }}>{m.total_points} PTS</strong></td>
-                    <td style={{ padding: '0.4rem 0.6rem' }}>
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.15rem 0.45rem', fontSize: '0.72rem' }}
-                        onClick={() => handleDeleteMatch(m.match_id, m.teams?.team_name)}
-                      >
-                        🗑 Delete
-                      </button>
+                    <td style={{ padding: '0.4rem 0.6rem', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: '#fbbf24', borderColor: '#fbbf24', padding: '0.15rem 0.45rem', fontSize: '0.72rem' }}
+                          onClick={() => handleEditMatch(m)}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.15rem 0.45rem', fontSize: '0.72rem' }}
+                          onClick={() => handleDeleteMatch(m.match_id, m.teams?.team_name)}
+                        >
+                          🗑 Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

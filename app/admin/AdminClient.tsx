@@ -189,8 +189,18 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
 
   async function handleDeleteMatch(matchId: string) {
     if (!confirm('Delete this match score entry?')) return
-    await supabase.from('matches').delete().eq('match_id', matchId)
-    loadSlotData(selectedSlot)
+    
+    // Optimistically update UI
+    setRecordedMatches(prev => prev.filter(m => m.match_id !== matchId))
+
+    const { error } = await supabase.from('matches').delete().eq('match_id', matchId)
+    if (error) {
+      setMsg('❌ Failed to delete match score: ' + error.message)
+      loadSlotData(selectedSlot)
+    } else {
+      setMsg('✅ Match score deleted.')
+      loadSlotData(selectedSlot)
+    }
   }
 
   return (

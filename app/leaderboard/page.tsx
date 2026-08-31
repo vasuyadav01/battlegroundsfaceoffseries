@@ -61,7 +61,7 @@ export default async function LeaderboardPage() {
     bookingsRaw = fallback.data as any[]
   }
 
-  const filteredBookings = (bookingsRaw || []).filter(b => !b.is_test_booking && !testTeamIds.has(b.team_id))
+  const filteredBookings = bookingsRaw || []
 
   // Rank the overall rows
   const ranked = filteredRows.map((row, idx) => ({ ...row, rank: idx + 1 }))

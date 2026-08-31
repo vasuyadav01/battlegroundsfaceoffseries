@@ -142,14 +142,15 @@ export async function POST(request: Request) {
     // TEST MODE BRANCH: Auto-confirm booking directly without Razorpay if test account or payment keys not configured
     const isTestMode = isTestAccount || isTestModeActive || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('placeholder')
     if (isTestMode) {
-      // Calculate FCFS room slot number starting from Slot 5
-      const { count: existingPaidCount } = await admin
+      // Calculate FCFS room slot number starting from Slot 5 for this specific slot
+      const { count: otherPaidCount } = await admin
         .from('bookings')
         .select('booking_id', { count: 'exact', head: true })
         .eq('slot_id', slot_id)
         .eq('payment_status', 'paid')
+        .neq('team_id', team_id)
 
-      const room_slot_number = 5 + (existingPaidCount || 0)
+      const room_slot_number = 5 + (otherPaidCount || 0)
 
       let { data: booking, error: bookErr } = await admin
         .from('bookings')

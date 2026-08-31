@@ -53,14 +53,15 @@ export async function POST(request: Request) {
     }
 
     // ── PAYMENT VERIFIED ──
-    // Calculate FCFS room slot number starting from Slot 5
-    const { count: existingPaidCount } = await admin
+    // Calculate FCFS room slot number starting from Slot 5 for this specific slot
+    const { count: otherPaidCount } = await admin
       .from('bookings')
       .select('booking_id', { count: 'exact', head: true })
       .eq('slot_id', booking.slot_id)
       .eq('payment_status', 'paid')
+      .neq('team_id', booking.team_id)
 
-    const room_slot_number = 5 + (existingPaidCount || 0)
+    const room_slot_number = 5 + (otherPaidCount || 0)
 
     // Mark booking as paid & assign custom room slot
     const { error: updateErr } = await admin

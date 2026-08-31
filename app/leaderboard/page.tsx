@@ -45,17 +45,19 @@ export default async function LeaderboardPage() {
   const filteredRows = (rows || []).filter(r => !testTeamIds.has(r.team_id))
   const filteredMatches = (allMatches || []).filter(m => !testTeamIds.has(m.team_id))
 
-  // Fetch all paid bookings with team names & custom room slot numbers
+  // Fetch all paid bookings with team names & custom room slot numbers (ordered by created_at ASC)
   let { data: bookingsRaw, error: bookingErr } = await supabase
     .from('bookings')
-    .select('booking_id, team_id, slot_id, room_slot_number, teams(team_name)')
+    .select('booking_id, team_id, slot_id, room_slot_number, created_at, teams(team_name)')
     .eq('payment_status', 'paid')
+    .order('created_at', { ascending: true })
 
   if (bookingErr && bookingErr.message?.includes('room_slot_number')) {
     const fallback = await supabase
       .from('bookings')
-      .select('booking_id, team_id, slot_id, teams(team_name)')
+      .select('booking_id, team_id, slot_id, created_at, teams(team_name)')
       .eq('payment_status', 'paid')
+      .order('created_at', { ascending: true })
     bookingsRaw = fallback.data as any[]
   }
 

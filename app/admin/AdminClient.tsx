@@ -117,6 +117,14 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   const eliminationPoints = killsNum * 1
   const totalPoints = positionPoints + eliminationPoints
 
+  // Filter booked teams: only show teams booked in selected slot that do NOT have a score for current matchNum yet
+  const availableTeams = bookedTeams.filter(t => {
+    const alreadyScored = recordedMatches.some(
+      m => m.match_number === matchNum && m.team_id === t.team_id
+    )
+    return !alreadyScored
+  })
+
   async function loadSlotData(slotId: string) {
     if (!slotId) {
       setBookedTeams([])
@@ -171,11 +179,11 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     if (error) {
       setMsg('❌ Error: ' + error.message)
     } else {
-      setMsg(`✅ Saved! Match ${matchNum}: Position #${pos} (${posPts} Pts) + ${k} Elims (${elimPts} Pts) = ${total} Total Pts`)
+      setMsg(`✅ Saved! Match ${matchNum}: #${pos} (${posPts} Pos Pts) + ${k} Elims (${elimPts} Elim Pts) = ${total} Total`)
       setPosition('')
       setKills('')
+      setSelectedTeam('')
       loadSlotData(selectedSlot)
-      if (matchNum < 3) setMatchNum(matchNum + 1)
     }
   }
 
@@ -187,237 +195,210 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
 
   return (
     <div>
-      <div className={styles.tabHeader}>
-        <div>
-          <h2 className={styles.tabTitle}>📊 Points Table Score Entry</h2>
-          <p className={styles.tabDesc}>
-            Fill in team finish position &amp; eliminations. Position points and total points are calculated automatically using the mathematical tool based on the official BGIS points table.
-          </p>
-        </div>
+      <div style={{ marginBottom: '0.75rem' }}>
+        <h2 className={styles.tabTitle}>📊 Points Table Score Entry</h2>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1.25rem', marginTop: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '1rem' }}>
         {/* Main Entry Form */}
-        <form onSubmit={handleSave} className={styles.scoreForm}>
-          <div className={styles.formRow}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Select Slot</label>
-              <select
-                className="form-input"
-                value={selectedSlot}
-                onChange={e => {
-                  setSelectedSlot(e.target.value)
-                  setSelectedTeam('')
-                  loadSlotData(e.target.value)
-                }}
-                required
-              >
-                <option value="">Select slot...</option>
-                {slots.map((s: any) => (
-                  <option key={s.slot_id} value={s.slot_id}>
-                    {new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} • {s.time_label}
+        <div style={{ background: '#121212', border: '1px solid #222222', borderRadius: '10px', padding: '1rem' }}>
+          <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* Top Row: Slot & Team Selection */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
+              <div>
+                <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>Select Slot</label>
+                <select
+                  className="form-input"
+                  style={{ padding: '0.45rem 0.6rem', fontSize: '0.85rem' }}
+                  value={selectedSlot}
+                  onChange={e => {
+                    setSelectedSlot(e.target.value)
+                    setSelectedTeam('')
+                    loadSlotData(e.target.value)
+                  }}
+                  required
+                >
+                  <option value="">Select slot...</option>
+                  {slots.map((s: any) => (
+                    <option key={s.slot_id} value={s.slot_id}>
+                      {new Date(s.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} • {s.time_label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>
+                  Select Team {availableTeams.length > 0 && <span style={{ color: '#22c55e', fontWeight: 600 }}>({availableTeams.length} available)</span>}
+                </label>
+                <select
+                  className="form-input"
+                  style={{ padding: '0.45rem 0.6rem', fontSize: '0.85rem' }}
+                  value={selectedTeam}
+                  onChange={e => setSelectedTeam(e.target.value)}
+                  required
+                >
+                  <option value="">
+                    {!selectedSlot
+                      ? 'Select a slot first'
+                      : bookedTeams.length === 0
+                      ? 'No registered teams in slot'
+                      : availableTeams.length === 0
+                      ? `All teams scored for Match ${matchNum}`
+                      : 'Select registered team...'}
                   </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">
-                Select Team {bookedTeams.length > 0 && <span style={{ color: '#22c55e', fontWeight: 600 }}>({bookedTeams.length} booked)</span>}
-              </label>
-              <select
-                className="form-input"
-                value={selectedTeam}
-                onChange={e => setSelectedTeam(e.target.value)}
-                required
-              >
-                <option value="">
-                  {selectedSlot ? (bookedTeams.length > 0 ? 'Select booked team...' : 'Select team...') : 'Select a slot first'}
-                </option>
-                {(bookedTeams.length > 0 ? bookedTeams : teams).map((t: any) => (
-                  <option key={t.team_id} value={t.team_id}>{t.team_name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.formRow}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Match Number</label>
-              <div className={styles.matchBtns}>
-                {[1, 2, 3].map(n => (
-                  <button
-                    key={n}
-                    type="button"
-                    className={`btn ${matchNum === n ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-                    style={matchNum === n ? { background: '#fbbf24', color: '#111', fontWeight: 800 } : {}}
-                    onClick={() => setMatchNum(n)}
-                  >
-                    Match {n}
-                  </button>
-                ))}
+                  {availableTeams.map((t: any) => (
+                    <option key={t.team_id} value={t.team_id}>{t.team_name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Position / Rank (1 – 24)</label>
-              <input
-                type="number"
-                className="form-input"
-                min={1}
-                max={24}
-                value={position}
-                onChange={e => setPosition(e.target.value)}
-                placeholder="e.g. 1 (for 1st place)"
-                required
-              />
+            {/* Second Row: Match #, Position, Eliminations */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '0.75rem', alignItems: 'flex-end' }}>
+              <div>
+                <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>Match Number</label>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {[1, 2, 3].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem 0.3rem',
+                        fontSize: '0.78rem',
+                        fontWeight: matchNum === n ? 800 : 500,
+                        background: matchNum === n ? '#fbbf24' : '#1e1e1e',
+                        color: matchNum === n ? '#111111' : '#aaaaaa',
+                        border: matchNum === n ? '1px solid #fbbf24' : '1px solid #333333',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onClick={() => {
+                        setMatchNum(n)
+                        setSelectedTeam('')
+                      }}
+                    >
+                      Match {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>Position (1–24)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  style={{ padding: '0.45rem 0.6rem', fontSize: '0.85rem' }}
+                  min={1}
+                  max={24}
+                  value={position}
+                  onChange={e => setPosition(e.target.value)}
+                  placeholder="e.g. 1"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>Eliminations</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  style={{ padding: '0.45rem 0.6rem', fontSize: '0.85rem' }}
+                  min={0}
+                  max={99}
+                  value={kills}
+                  onChange={e => setKills(e.target.value)}
+                  placeholder="e.g. 5"
+                />
+              </div>
             </div>
 
-            <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Eliminations / Kills</label>
-              <input
-                type="number"
-                className="form-input"
-                min={0}
-                max={99}
-                value={kills}
-                onChange={e => setKills(e.target.value)}
-                placeholder="e.g. 5 (1 pt / kill)"
-              />
-            </div>
-          </div>
-
-          {/* Automatic Mathematical Calculation Box */}
-          <div
-            style={{
-              background: '#121212',
-              border: '1.5px solid #fbbf24',
-              borderRadius: '12px',
-              padding: '1rem',
-              margin: '1rem 0',
-            }}
-          >
+            {/* Compact Live Mathematical Calculation Strip */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                color: '#fbbf24',
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                marginBottom: '0.75rem',
+                justifyContent: 'space-between',
+                background: '#181818',
+                border: '1px solid #282828',
+                borderRadius: '8px',
+                padding: '0.45rem 0.85rem',
+                fontSize: '0.78rem',
+                color: '#cccccc',
+                marginTop: '0.25rem',
               }}
             >
-              <span>🧮 AUTOMATIC MATHEMATICAL SCORE CALCULATOR</span>
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr auto 1.2fr',
-                alignItems: 'center',
-                gap: '0.5rem',
-                textAlign: 'center',
-              }}
-            >
-              {/* Position Points */}
-              <div
-                style={{
-                  background: '#1a1a1a',
-                  border: '1px solid #333333',
-                  borderRadius: '8px',
-                  padding: '0.6rem 0.4rem',
-                }}
-              >
-                <div style={{ fontSize: '0.6rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>
-                  POSITION POINTS
-                </div>
-                <div style={{ fontSize: '1.2rem', color: '#fbbf24', fontWeight: 900, marginTop: '2px' }}>
-                  {position ? `${positionPoints} Pts` : '—'}
-                </div>
-                <div style={{ fontSize: '0.58rem', color: '#6b7280', marginTop: '2px' }}>
-                  {position ? `Pos #${posNum} auto-filled` : 'Fill position above'}
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ color: '#888888', textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>Pos Pts:</span>
+                <strong style={{ color: '#fbbf24', fontSize: '0.9rem' }}>{position ? positionPoints : '—'}</strong>
               </div>
 
-              <div style={{ color: '#fbbf24', fontWeight: 900, fontSize: '1.2rem' }}>+</div>
+              <span style={{ color: '#444444' }}>+</span>
 
-              {/* Elimination Points */}
-              <div
-                style={{
-                  background: '#1a1a1a',
-                  border: '1px solid #333333',
-                  borderRadius: '8px',
-                  padding: '0.6rem 0.4rem',
-                }}
-              >
-                <div style={{ fontSize: '0.6rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>
-                  ELIMINATION POINTS
-                </div>
-                <div style={{ fontSize: '1.2rem', color: '#22c55e', fontWeight: 900, marginTop: '2px' }}>
-                  {eliminationPoints} Pts
-                </div>
-                <div style={{ fontSize: '0.58rem', color: '#6b7280', marginTop: '2px' }}>
-                  {killsNum} Kills × 1 pt
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ color: '#888888', textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>Elim Pts:</span>
+                <strong style={{ color: '#4ade80', fontSize: '0.9rem' }}>{eliminationPoints}</strong>
               </div>
 
-              <div style={{ color: '#fbbf24', fontWeight: 900, fontSize: '1.2rem' }}>=</div>
+              <span style={{ color: '#444444' }}>=</span>
 
-              {/* Total Points */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)',
-                  border: '1.5px solid #fbbf24',
-                  borderRadius: '8px',
-                  padding: '0.6rem 0.4rem',
-                  boxShadow: '0 0 12px rgba(251, 191, 36, 0.2)',
-                }}
-              >
-                <div style={{ fontSize: '0.62rem', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>
-                  TOTAL MATCH POINTS
-                </div>
-                <div style={{ fontSize: '1.4rem', color: '#ffffff', fontWeight: 900, marginTop: '2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ color: '#888888', textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>Total:</span>
+                <strong
+                  style={{
+                    color: '#ffffff',
+                    fontSize: '0.95rem',
+                    fontWeight: 900,
+                    background: 'rgba(251, 191, 36, 0.15)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(251, 191, 36, 0.3)',
+                  }}
+                >
                   {position ? `${totalPoints} PTS` : '—'}
-                </div>
-                <div style={{ fontSize: '0.58rem', color: '#fbbf24', fontWeight: 700, marginTop: '2px' }}>
-                  Auto Calculated
-                </div>
+                </strong>
               </div>
             </div>
-          </div>
 
-          {msg && (
-            <p className={`${styles.scoreMsg} ${msg.includes('✅') ? styles.scoreMsgOk : styles.scoreMsgErr}`}>
-              {msg}
-            </p>
-          )}
+            {msg && (
+              <p className={`${styles.scoreMsg} ${msg.includes('✅') ? styles.scoreMsgOk : styles.scoreMsgErr}`} style={{ padding: '0.4rem 0.6rem', margin: 0, fontSize: '0.8rem' }}>
+                {msg}
+              </p>
+            )}
 
-          <button id="save-score-btn" type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontWeight: 800 }} disabled={saving}>
-            {saving ? 'Saving Match Score...' : '💾 Save Match Score →'}
-          </button>
-        </form>
+            <button
+              id="save-score-btn"
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '0.55rem', fontWeight: 800, fontSize: '0.85rem' }}
+              disabled={saving}
+            >
+              {saving ? 'Saving Score...' : '💾 Save Match Score →'}
+            </button>
+          </form>
+        </div>
 
         {/* Reference Cheat Sheet Box */}
         <div
           style={{
-            background: '#151515',
-            border: '1px solid #262626',
-            borderRadius: '12px',
-            padding: '1rem',
+            background: '#121212',
+            border: '1px solid #222222',
+            borderRadius: '10px',
+            padding: '0.85rem',
             height: 'fit-content',
           }}
         >
-          <h3 style={{ fontSize: '0.82rem', fontWeight: 800, color: '#fbbf24', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fbbf24', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             📜 BGIS Position Points Table
           </h3>
-          <table style={{ width: '100%', fontSize: '0.78rem', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #333', textAlign: 'left', color: '#888' }}>
-                <th style={{ padding: '4px 6px' }}>Position</th>
-                <th style={{ padding: '4px 6px', textAlign: 'right' }}>Points</th>
+              <tr style={{ borderBottom: '1px solid #2a2a2a', textAlign: 'left', color: '#777777' }}>
+                <th style={{ padding: '3px 4px' }}>Position</th>
+                <th style={{ padding: '3px 4px', textAlign: 'right' }}>Points</th>
               </tr>
             </thead>
             <tbody>
@@ -431,14 +412,14 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                 ['11th–15th Place', '1 Pt'],
                 ['16th–24th Place', '0 Pts'],
               ].map(([posStr, ptStr]) => (
-                <tr key={posStr} style={{ borderBottom: '1px solid #1f1f1f' }}>
-                  <td style={{ padding: '5px 6px', color: '#e5e7eb', fontWeight: 600 }}>{posStr}</td>
-                  <td style={{ padding: '5px 6px', textAlign: 'right', color: '#fbbf24', fontWeight: 800 }}>{ptStr}</td>
+                <tr key={posStr} style={{ borderBottom: '1px solid #1a1a1a' }}>
+                  <td style={{ padding: '4px 4px', color: '#cccccc', fontWeight: 500 }}>{posStr}</td>
+                  <td style={{ padding: '4px 4px', textAlign: 'right', color: '#fbbf24', fontWeight: 700 }}>{ptStr}</td>
                 </tr>
               ))}
-              <tr style={{ borderTop: '1px solid #333' }}>
-                <td style={{ padding: '6px 6px', color: '#4ade80', fontWeight: 700 }}>Each Elimination</td>
-                <td style={{ padding: '6px 6px', textAlign: 'right', color: '#4ade80', fontWeight: 800 }}>1 Pt</td>
+              <tr style={{ borderTop: '1px solid #2a2a2a' }}>
+                <td style={{ padding: '5px 4px', color: '#4ade80', fontWeight: 600 }}>Each Elimination</td>
+                <td style={{ padding: '5px 4px', textAlign: 'right', color: '#4ade80', fontWeight: 700 }}>1 Pt</td>
               </tr>
             </tbody>
           </table>
@@ -447,36 +428,38 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
 
       {/* Recorded Scores List for Selected Slot */}
       {selectedSlot && (
-        <div style={{ marginTop: '2rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-            Recorded Match Scores for Selected Slot ({recordedMatches.length})
-          </h3>
+        <div style={{ marginTop: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+              Recorded Match Scores ({recordedMatches.length})
+            </h3>
+          </div>
           <div className="table-wrapper">
-            <table>
+            <table style={{ fontSize: '0.8rem' }}>
               <thead>
                 <tr>
-                  <th>Match #</th>
-                  <th>Team</th>
-                  <th>Position</th>
-                  <th>Position Points</th>
-                  <th>Elimination Points</th>
-                  <th>Total Points</th>
-                  <th>Actions</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Match #</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Team</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Position</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Pos Pts</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Elim Pts</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Total Points</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {recordedMatches.map((m: any) => (
                   <tr key={m.match_id}>
-                    <td><strong style={{ color: '#fbbf24' }}>Match {m.match_number}</strong></td>
-                    <td><strong>{m.teams?.team_name || m.team_id}</strong></td>
-                    <td>#{m.placement}</td>
-                    <td style={{ color: '#fbbf24', fontWeight: 700 }}>{m.placement_points} pts</td>
-                    <td style={{ color: '#4ade80', fontWeight: 700 }}>{m.kills} elims ({m.kill_points} pts)</td>
-                    <td><strong style={{ color: '#ffffff', fontSize: '0.95rem' }}>{m.total_points} PTS</strong></td>
-                    <td>
+                    <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: '#fbbf24' }}>Match {m.match_number}</strong></td>
+                    <td style={{ padding: '0.4rem 0.6rem' }}><strong>{m.teams?.team_name || m.team_id}</strong></td>
+                    <td style={{ padding: '0.4rem 0.6rem' }}>#{m.placement}</td>
+                    <td style={{ padding: '0.4rem 0.6rem', color: '#fbbf24', fontWeight: 600 }}>{m.placement_points} pts</td>
+                    <td style={{ padding: '0.4rem 0.6rem', color: '#4ade80', fontWeight: 600 }}>{m.kills} elims ({m.kill_points} pts)</td>
+                    <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: '#ffffff', fontSize: '0.88rem' }}>{m.total_points} PTS</strong></td>
+                    <td style={{ padding: '0.4rem 0.6rem' }}>
                       <button
                         className="btn btn-ghost btn-sm"
-                        style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                        style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.15rem 0.45rem', fontSize: '0.72rem' }}
                         onClick={() => handleDeleteMatch(m.match_id)}
                       >
                         🗑 Delete
@@ -486,8 +469,8 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                 ))}
                 {recordedMatches.length === 0 && !loadingMatches && (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', color: '#888888', padding: '1.5rem' }}>
-                      No score entries recorded for this slot yet. Use the form above to add scores.
+                    <td colSpan={7} style={{ textAlign: 'center', color: '#777777', padding: '1rem' }}>
+                      No score entries recorded for this slot yet.
                     </td>
                   </tr>
                 )}

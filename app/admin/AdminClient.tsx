@@ -120,7 +120,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   // Filter booked teams: only show teams booked in selected slot that do NOT have a score for current matchNum yet
   const availableTeams = bookedTeams.filter(t => {
     const alreadyScored = recordedMatches.some(
-      m => m.match_number === matchNum && m.team_id === t.team_id
+      m => m.match_number === matchNum && String(m.team_id) === String(t.team_id)
     )
     return !alreadyScored
   })
@@ -187,19 +187,20 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
     }
   }
 
-  async function handleDeleteMatch(matchId: string) {
-    if (!confirm('Delete this match score entry?')) return
+  async function handleDeleteMatch(matchId: string, teamName?: string) {
+    if (!confirm(`Delete match score entry for ${teamName || 'this team'}?`)) return
     
-    // Optimistically update UI
-    setRecordedMatches(prev => prev.filter(m => m.match_id !== matchId))
+    setMsg('')
+    // Optimistically update UI so team immediately reappears in dropdown for this match
+    setRecordedMatches(prev => prev.filter(m => String(m.match_id) !== String(matchId)))
 
     const { error } = await supabase.from('matches').delete().eq('match_id', matchId)
     if (error) {
       setMsg('❌ Failed to delete match score: ' + error.message)
-      loadSlotData(selectedSlot)
+      await loadSlotData(selectedSlot)
     } else {
-      setMsg('✅ Match score deleted.')
-      loadSlotData(selectedSlot)
+      setMsg(`✅ Score deleted for ${teamName || 'team'}. Team is now available in dropdown again!`)
+      await loadSlotData(selectedSlot)
     }
   }
 
@@ -470,7 +471,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                       <button
                         className="btn btn-ghost btn-sm"
                         style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.15rem 0.45rem', fontSize: '0.72rem' }}
-                        onClick={() => handleDeleteMatch(m.match_id)}
+                        onClick={() => handleDeleteMatch(m.match_id, m.teams?.team_name)}
                       >
                         🗑 Delete
                       </button>

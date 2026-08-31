@@ -149,6 +149,7 @@ export async function POST(request: Request) {
         .eq('slot_id', slot_id)
         .eq('payment_status', 'paid')
         .neq('team_id', team_id)
+        .neq('is_test_booking', true)
 
       const room_slot_number = 5 + (otherPaidCount || 0)
 

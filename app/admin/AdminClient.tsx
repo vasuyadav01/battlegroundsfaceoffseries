@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getPlacementPoints, getPositionPoints, getKillPoints } from '@/lib/scoring'
 import styles from './page.module.css'
@@ -117,6 +117,61 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
   const positionPoints = position && posNum >= 1 && posNum <= 24 ? getPositionPoints(posNum) : 0
   const eliminationPoints = killsNum * 1
   const totalPoints = positionPoints + eliminationPoints
+
+  // Cumulative Total Points per team for the selected slot
+  const teamSlotTotals = useMemo(() => {
+    const map: Record<string, {
+      team_id: string
+      team_name: string
+      room_slot_number: number
+      total_points: number
+      total_kills: number
+      total_pos_points: number
+      matches_count: number
+    }> = {}
+
+    bookedTeams.forEach(t => {
+      map[t.team_id] = {
+        team_id: t.team_id,
+        team_name: t.team_name,
+        room_slot_number: t.room_slot_number || 5,
+        total_points: 0,
+        total_kills: 0,
+        total_pos_points: 0,
+        matches_count: 0,
+      }
+    })
+
+    recordedMatches.forEach((m: any) => {
+      if (!map[m.team_id]) {
+        map[m.team_id] = {
+          team_id: m.team_id,
+          team_name: m.teams?.team_name || 'Team #' + String(m.team_id).slice(0, 5),
+          room_slot_number: 5,
+          total_points: 0,
+          total_kills: 0,
+          total_pos_points: 0,
+          matches_count: 0,
+        }
+      }
+      const entry = map[m.team_id]
+      entry.total_points += (m.total_points || 0)
+      entry.total_kills += (m.kills || 0)
+      const posPts = m.placement_points !== undefined ? m.placement_points : Math.max(0, (m.total_points || 0) - (m.kills || 0))
+      entry.total_pos_points += posPts
+      entry.matches_count += 1
+    })
+
+    return map
+  }, [bookedTeams, recordedMatches])
+
+  const slotStandingsList = useMemo(() => {
+    return Object.values(teamSlotTotals).sort((a, b) => {
+      if (b.total_points !== a.total_points) return b.total_points - a.total_points
+      if (b.total_kills !== a.total_kills) return b.total_kills - a.total_kills
+      return a.room_slot_number - b.room_slot_number
+    }).map((item, idx) => ({ ...item, rank: idx + 1 }))
+  }, [teamSlotTotals])
 
   // Filter booked teams: only show teams booked in selected slot that do NOT have a score for current matchNum yet (excluding the record currently being edited)
   const availableTeams = bookedTeams.filter(t => {
@@ -348,11 +403,14 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                       ? `All teams scored for Match ${matchNum}`
                       : 'Select registered team...'}
                   </option>
-                  {availableTeams.map((t: any) => (
-                    <option key={t.team_id} value={t.team_id}>
-                      {t.team_name} [Slot {t.room_slot_number || 5}]
-                    </option>
-                  ))}
+                  {availableTeams.map((t: any) => {
+                    const tot = teamSlotTotals[t.team_id]?.total_points || 0
+                    return (
+                      <option key={t.team_id} value={t.team_id}>
+                        {t.team_name} [Slot {t.room_slot_number || 5}] {tot > 0 ? `• Current Total: ${tot} pts` : ''}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
             </div>
@@ -449,7 +507,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
               <span style={{ color: '#444444' }}>=</span>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ color: '#888888', textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>Total:</span>
+                <span style={{ color: '#888888', textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>Match Total:</span>
                 <strong
                   style={{
                     color: '#ffffff',
@@ -464,6 +522,15 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                   {position ? `${totalPoints} PTS` : '—'}
                 </strong>
               </div>
+
+              {selectedTeam && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', borderLeft: '1px solid #333', paddingLeft: '0.6rem' }}>
+                  <span style={{ color: '#888888', textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>Cumul. Slot Total:</span>
+                  <strong style={{ color: '#60a5fa', fontSize: '0.95rem', fontWeight: 900 }}>
+                    {(teamSlotTotals[selectedTeam]?.total_points || 0) + (editingMatchId ? 0 : (position ? totalPoints : 0))} PTS
+                  </strong>
+                </div>
+              )}
             </div>
 
             {msg && (
@@ -558,7 +625,8 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                   <th style={{ padding: '0.4rem 0.6rem' }}>Position</th>
                   <th style={{ padding: '0.4rem 0.6rem' }}>Pos Pts</th>
                   <th style={{ padding: '0.4rem 0.6rem' }}>Elim Pts</th>
-                  <th style={{ padding: '0.4rem 0.6rem' }}>Total Points</th>
+                  <th style={{ padding: '0.4rem 0.6rem' }}>Match Pts</th>
+                  <th style={{ padding: '0.4rem 0.6rem', color: '#60a5fa' }}>Team Slot Total</th>
                   <th style={{ padding: '0.4rem 0.6rem' }}>Actions</th>
                 </tr>
               </thead>
@@ -571,6 +639,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                     <td style={{ padding: '0.4rem 0.6rem', color: '#fbbf24', fontWeight: 600 }}>{m.placement_points} pts</td>
                     <td style={{ padding: '0.4rem 0.6rem', color: '#4ade80', fontWeight: 600 }}>{m.kills} elims ({m.kill_points} pts)</td>
                     <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: '#ffffff', fontSize: '0.88rem' }}>{m.total_points} PTS</strong></td>
+                    <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: '#60a5fa', fontSize: '0.88rem' }}>{teamSlotTotals[m.team_id]?.total_points || m.total_points} PTS</strong></td>
                     <td style={{ padding: '0.4rem 0.6rem', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button
@@ -593,7 +662,7 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
                 ))}
                 {recordedMatches.length === 0 && !loadingMatches && (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', color: '#777777', padding: '1rem' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', color: '#777777', padding: '1rem' }}>
                       No score entries recorded for this slot yet.
                     </td>
                   </tr>
@@ -601,6 +670,45 @@ function ScoreEntryTab({ slots, teams, supabase }: any) {
               </tbody>
             </table>
           </div>
+
+          {/* Slot Overall Cumulative Standings Summary */}
+          {slotStandingsList.length > 0 && (
+            <div style={{ marginTop: '1.5rem', background: '#121212', border: '1px solid #252525', borderRadius: '10px', padding: '1rem' }}>
+              <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#fbbf24', margin: '0 0 0.75rem 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                🏆 Slot Cumulative Team Standings ({slotStandingsList.length} Teams)
+              </h3>
+              <div className="table-wrapper">
+                <table style={{ fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ background: '#181818' }}>
+                      <th style={{ padding: '0.4rem 0.6rem', width: '50px' }}>Rank</th>
+                      <th style={{ padding: '0.4rem 0.6rem' }}>Team Name</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center' }}>Room Slot</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center' }}>Matches Played</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center', color: '#fbbf24' }}>Pos Pts</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center', color: '#4ade80' }}>Elims</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center', color: '#60a5fa' }}>Grand Total Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slotStandingsList.map((t: any) => (
+                      <tr key={t.team_id}>
+                        <td style={{ padding: '0.4rem 0.6rem' }}><strong style={{ color: t.rank === 1 ? '#fbbf24' : t.rank === 2 ? '#94a3b8' : t.rank === 3 ? '#cd7f32' : '#aaaaaa' }}>#{t.rank}</strong></td>
+                        <td style={{ padding: '0.4rem 0.6rem' }}><strong>{t.team_name}</strong></td>
+                        <td style={{ padding: '0.4rem 0.6rem', textAlign: 'center', color: '#888' }}>Slot {t.room_slot_number}</td>
+                        <td style={{ padding: '0.4rem 0.6rem', textAlign: 'center' }}>{t.matches_count} / 3</td>
+                        <td style={{ padding: '0.4rem 0.6rem', textAlign: 'center', color: '#fbbf24', fontWeight: 600 }}>{t.total_pos_points} pts</td>
+                        <td style={{ padding: '0.4rem 0.6rem', textAlign: 'center', color: '#4ade80', fontWeight: 600 }}>{t.total_kills} elims</td>
+                        <td style={{ padding: '0.4rem 0.6rem', textAlign: 'center' }}>
+                          <strong style={{ color: '#60a5fa', fontSize: '0.95rem', fontWeight: 800 }}>{t.total_points} PTS</strong>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

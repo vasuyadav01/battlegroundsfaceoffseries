@@ -90,6 +90,7 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
       m3?: MatchEntry
       total_points: number
       total_kills: number
+      total_position_points: number
     }> = {}
 
     // First, populate all paid bookings for this slot
@@ -102,6 +103,7 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
         room_slot_number: roomSlot,
         total_points: 0,
         total_kills: 0,
+        total_position_points: 0,
       }
     })
 
@@ -115,6 +117,7 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
           room_slot_number: 5,
           total_points: 0,
           total_kills: 0,
+          total_position_points: 0,
         }
       }
       const entry = teamMap[m.team_id]
@@ -123,6 +126,8 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
       if (m.match_number === 3) entry.m3 = m
       entry.total_points += m.total_points || 0
       entry.total_kills += m.kills || 0
+      const posPts = m.placement_points !== undefined ? m.placement_points : Math.max(0, (m.total_points || 0) - (m.kills || 0))
+      entry.total_position_points += posPts
     })
 
     const hasMatches = matchesForSlot.length > 0
@@ -432,6 +437,7 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 1</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 2</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>MATCH 3</th>
+                      <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>POSITION POINTS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>ELIMINATIONS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>SLOT POINTS</th>
                       <th style={{ background: '#161616', color: '#facc15', padding: '14px 16px', textTransform: 'uppercase', fontWeight: 800, fontSize: '12px', letterSpacing: '0.08em', borderBottom: '1px solid #2a2a2a', textAlign: 'center' }}>SLOT PRIZE</th>
@@ -459,8 +465,8 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
                         </td>
                         <td style={{ textAlign: 'center', fontSize: '0.85rem' }}>
                           {row.m1 ? (
-                            <span style={{ color: '#e5e5e5' }}>
-                              #{row.m1.placement} <span style={{ color: '#888' }}>({row.m1.total_points}pts)</span>
+                            <span style={{ color: '#e5e5e5', fontWeight: 600 }}>
+                              {row.m1.total_points} pts <span style={{ color: '#888', fontSize: '0.78rem' }}>(#{row.m1.placement})</span>
                             </span>
                           ) : (
                             <span style={{ color: '#555' }}>—</span>
@@ -468,8 +474,8 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
                         </td>
                         <td style={{ textAlign: 'center', fontSize: '0.85rem' }}>
                           {row.m2 ? (
-                            <span style={{ color: '#e5e5e5' }}>
-                              #{row.m2.placement} <span style={{ color: '#888' }}>({row.m2.total_points}pts)</span>
+                            <span style={{ color: '#e5e5e5', fontWeight: 600 }}>
+                              {row.m2.total_points} pts <span style={{ color: '#888', fontSize: '0.78rem' }}>(#{row.m2.placement})</span>
                             </span>
                           ) : (
                             <span style={{ color: '#555' }}>—</span>
@@ -477,12 +483,15 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
                         </td>
                         <td style={{ textAlign: 'center', fontSize: '0.85rem' }}>
                           {row.m3 ? (
-                            <span style={{ color: '#e5e5e5' }}>
-                              #{row.m3.placement} <span style={{ color: '#888' }}>({row.m3.total_points}pts)</span>
+                            <span style={{ color: '#e5e5e5', fontWeight: 600 }}>
+                              {row.m3.total_points} pts <span style={{ color: '#888', fontSize: '0.78rem' }}>(#{row.m3.placement})</span>
                             </span>
                           ) : (
                             <span style={{ color: '#555' }}>—</span>
                           )}
+                        </td>
+                        <td style={{ textAlign: 'center', color: '#60a5fa', fontWeight: '700', fontSize: '0.95rem' }}>
+                          {row.total_position_points}
                         </td>
                         <td style={{ textAlign: 'center', color: '#b8b8b8', fontWeight: '600' }}>
                           {row.total_kills}
@@ -516,7 +525,7 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
                     ))}
                     {slotLeaderboard.items.length === 0 && (
                       <tr>
-                        <td colSpan={8} style={{ textAlign: 'center', color: '#888888', padding: '3rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
+                        <td colSpan={9} style={{ textAlign: 'center', color: '#888888', padding: '3rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
                           No registered teams or match scores for this slot yet.
                         </td>
                       </tr>
@@ -551,10 +560,14 @@ export default function LeaderboardClient({ rows, allMatches, slots, bookings = 
                   </div>
 
                   <div style={{ display: 'flex', gap: '6px', fontSize: '0.75rem', color: '#b8b8b8', background: '#141414', padding: '8px 12px', borderRadius: '6px', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span>M1: {row.m1 ? `#${row.m1.placement} (${row.m1.total_points}p)` : '—'}</span>
-                    <span>M2: {row.m2 ? `#${row.m2.placement} (${row.m2.total_points}p)` : '—'}</span>
-                    <span>M3: {row.m3 ? `#${row.m3.placement} (${row.m3.total_points}p)` : '—'}</span>
-                    <span>Elims: {row.total_kills}</span>
+                    <span>M1: {row.m1 ? `${row.m1.total_points}pts (#${row.m1.placement})` : '—'}</span>
+                    <span>M2: {row.m2 ? `${row.m2.total_points}pts (#${row.m2.placement})` : '—'}</span>
+                    <span>M3: {row.m3 ? `${row.m3.total_points}pts (#${row.m3.placement})` : '—'}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: '#b8b8b8', background: '#141414', padding: '6px 12px', borderRadius: '6px', justifyContent: 'space-around', marginBottom: '0.5rem' }}>
+                    <span>Pos Pts: <strong style={{ color: '#60a5fa' }}>{row.total_position_points}</strong></span>
+                    <span>Elims: <strong style={{ color: '#e5e5e5' }}>{row.total_kills}</strong></span>
                   </div>
 
                   {row.rank <= 3 && (

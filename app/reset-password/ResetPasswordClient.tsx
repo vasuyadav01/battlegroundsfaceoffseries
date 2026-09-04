@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, KeyRound, Check } from 'lucide-react'
+import { ArrowLeft, KeyRound, Check, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from '../login/page.module.css'
 
@@ -14,8 +14,50 @@ export default function ResetPasswordClient() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [hasValidSession, setHasValidSession] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    async function verifyResetAccess() {
+      // Check existing session
+      const { data: { session } } = await supabase.auth.getSession()
+
+      // Check if URL has PKCE code parameter
+      const searchParams = new URLSearchParams(window.location.search)
+      const code = searchParams.get('code')
+
+      if (session) {
+        setHasValidSession(true)
+        setCheckingSession(false)
+      } else if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error && data.session) {
+          setHasValidSession(true)
+        } else {
+          setHasValidSession(false)
+        }
+        setCheckingSession(false)
+      } else {
+        setHasValidSession(false)
+        setCheckingSession(false)
+      }
+    }
+
+    verifyResetAccess()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setHasValidSession(true)
+        setCheckingSession(false)
+      }
+    })
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
 
   async function handleResetPassword(e: React.FormEvent) {
     e.preventDefault()
@@ -68,7 +110,34 @@ export default function ResetPasswordClient() {
           </p>
         </div>
 
-        {success ? (
+        {checkingSession ? (
+          <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#aaaaaa' }}>
+            <span className="spinner" style={{ display: 'inline-block', marginBottom: '0.75rem' }} />
+            <p style={{ margin: 0, fontSize: '0.85rem' }}>Verifying password reset session...</p>
+          </div>
+        ) : !hasValidSession && !success ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '1.5rem 1rem',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '8px',
+            color: '#f87171',
+          }}>
+            <AlertCircle size={32} style={{ margin: '0 auto 0.75rem', display: 'block' }} />
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 800 }}>Invalid or Expired Link</h3>
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', color: '#cccccc', lineHeight: 1.5 }}>
+              Your password reset link is invalid or has expired. Please request a new reset link from the sign-in page.
+            </p>
+            <Link
+              href="/login"
+              className="btn btn-primary"
+              style={{ display: 'inline-block', padding: '0.5rem 1.25rem', fontSize: '0.82rem', fontWeight: 800 }}
+            >
+              Request New Reset Link →
+            </Link>
+          </div>
+        ) : success ? (
           <div style={{
             textAlign: 'center',
             padding: '2rem 1rem',

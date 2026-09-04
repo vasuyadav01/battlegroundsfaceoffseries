@@ -19,14 +19,14 @@ function getValidTargetTime(targetDateProp?: string): number {
   const now = Date.now()
   let target = targetDateProp ? new Date(targetDateProp).getTime() : NaN
 
-  // If target date is invalid or in the past, fallback to upcoming August 29 at 11:00 PM IST
+  // If target date is invalid or in the past, fallback to upcoming October 3 at 9:30 PM IST
   if (isNaN(target) || target <= now) {
     const currentYear = new Date().getFullYear()
-    let aug29 = new Date(`${currentYear}-08-29T23:00:00+05:30`).getTime()
-    if (aug29 <= now) {
-      aug29 = new Date(`${currentYear + 1}-08-29T23:00:00+05:30`).getTime()
+    let oct3 = new Date(`${currentYear}-10-03T21:30:00+05:30`).getTime()
+    if (oct3 <= now) {
+      oct3 = new Date(`${currentYear + 1}-10-03T21:30:00+05:30`).getTime()
     }
-    return aug29
+    return oct3
   }
 
   return target

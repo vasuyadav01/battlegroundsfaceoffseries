@@ -207,9 +207,20 @@ function loadRazorpayScript(): Promise<boolean> {
             team_name: userTeam?.team_name || 'My Team',
           }),
         })
-        const createData = await createRes.json()
+        let createData: any = {}
+        try {
+          createData = await createRes.json()
+        } catch (e) {
+          createData = { error: 'Server returned invalid response.' }
+        }
 
         if (!createRes.ok || !createData.booking_id) {
+          if (createRes.status === 401) {
+            alert('Your session has expired. Please sign in again to book a slot.')
+            router.push('/login?redirect=/slots')
+            setBookingSlotId(null)
+            return
+          }
           alert(createData.error || 'Failed to book slot.')
           setBookingSlotId(null)
           return
@@ -321,7 +332,11 @@ function loadRazorpayScript(): Promise<boolean> {
 
       setTimeout(() => setSuccessToast(null), 5000)
     } catch (err: any) {
-      alert(err.message || 'Connection error during booking.')
+      console.error('Booking error:', err)
+      const errMsg = err?.message?.includes('Load failed') || err?.message?.includes('Failed to fetch')
+        ? 'Connection lost or session expired. Please refresh the page and try again.'
+        : (err?.message || 'Connection error during booking.')
+      alert(errMsg)
       setBookingSlotId(null)
     }
   }

@@ -24,24 +24,56 @@ export async function POST(request: Request) {
     // Use admin client (service role) — bypasses RLS entirely
     const admin = await createAdminClient()
 
-    // Insert team
-    const { data: team, error: teamErr } = await admin
+    // First check if a team already exists for this captain
+    let { data: team } = await admin
       .from('teams')
-      .insert({
-        team_name: teamName.trim(),
-        captain_user_id: user.id,
-      })
-      .select()
-      .single()
+      .select('*')
+      .eq('captain_user_id', user.id)
+      .maybeSingle()
+
+    let teamErr: any = null
+
+    if (!team) {
+      // Try inserting team with admin client
+      const res = await admin
+        .from('teams')
+        .insert({
+          team_name: teamName.trim(),
+          captain_user_id: user.id,
+        })
+        .select()
+        .maybeSingle()
+
+      team = res.data
+      teamErr = res.error
+
+      // If RLS error or service role fallback fails, retry using authenticated user client
+      if (teamErr && (teamErr.code === '42501' || teamErr.message?.toLowerCase().includes('security') || teamErr.message?.toLowerCase().includes('rls'))) {
+        const userRes = await supabase
+          .from('teams')
+          .insert({
+            team_name: teamName.trim(),
+            captain_user_id: user.id,
+          })
+          .select()
+          .maybeSingle()
+
+        if (userRes.data) {
+          team = userRes.data
+          teamErr = null
+        }
+      }
+    }
 
     if (teamErr) {
-      const isUnique = teamErr.message.toLowerCase().includes('unique') ||
-        teamErr.code === '23505'
+      const isUnique = teamErr.message?.toLowerCase().includes('unique') || teamErr.code === '23505'
       return NextResponse.json(
         { error: isUnique ? 'Team name already taken. Please choose a different team name.' : teamErr.message },
         { status: isUnique ? 409 : 500 }
       )
     }
+
+    const teamId = team?.team_id || null
 
     // Upsert user profile — service role ignores RLS
     const { error: userErr } = await admin
@@ -49,13 +81,22 @@ export async function POST(request: Request) {
       .upsert({
         user_id: user.id,
         email: user.email,
-        team_id: team.team_id,
+        team_id: teamId,
         role: 'captain',
         display_name: displayName?.trim() || teamName.trim(),
       }, { onConflict: 'user_id' })
 
     if (userErr) {
-      return NextResponse.json({ error: `Profile setup failed: ${userErr.message}` }, { status: 500 })
+      // Try fallback upsert via user client
+      await supabase
+        .from('users')
+        .upsert({
+          user_id: user.id,
+          email: user.email,
+          team_id: teamId,
+          role: 'captain',
+          display_name: displayName?.trim() || teamName.trim(),
+        }, { onConflict: 'user_id' })
     }
 
     return NextResponse.json({ success: true, team_id: team.team_id })

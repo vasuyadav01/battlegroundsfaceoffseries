@@ -158,9 +158,28 @@ BGFS/
 ### 4. Layout & Desktop Header Refactor
 - **Header Alignment**: Desktop header features brand logos on the far left, navigation links centered, and user account actions on the far right.
 
-### 5. Razorpay Production Payment Gateway & Test Mode
-- **Production Payment Verification**: HMAC SHA-256 signature verification in `/api/payment/verify`.
-- **Test Mode Auto-Confirmation**: Built-in test mode branch in `/api/booking/create` allowing instant auto-confirmed slot bookings when Razorpay keys are omitted or when test mode is enabled.
+### 5. Razorpay Production Payment Gateway & Testing Direct Booking Mode
+- **Production Payment Verification**: HMAC SHA-256 signature verification in `/api/payment/verify` (Verified Working).
+- **Direct Instant Booking Mode (Testing)**: Currently, `app/api/booking/create/route.ts` line 157 has `const isTestMode = true` enabled to allow instant slot registrations for testing leaderboard tables, room slot numbers, and post-booking user flows without opening the Razorpay payment window every time.
+- **How to Re-apply Live Razorpay Gateway**:
+  - Open `app/api/booking/create/route.ts`.
+  - Change line 157 from:
+    ```typescript
+    const isTestMode = true
+    ```
+    back to:
+    ```typescript
+    const isTestMode = Boolean(isTestAccount)
+    ```
+  - This immediately re-enables live Razorpay checkout modals for all standard users while keeping Admin-flagged test accounts in test mode.
+
+### 6. Granular Admin Test Mode Control
+- **User Management in `/admin`**: Super admins can view `🧪 Test Mode ON` vs `Real Account` badges and toggle test mode on/off per user with a single click.
+
+### 7. Team Name Uniqueness & Team Provisioning
+- **Pre-provisioning on Signup**: Teams are automatically created in `public.teams` and linked to `public.users` during registration using the team name entered by the user.
+- **Duplicate Name Safeguards**: Case-insensitive duplicate team name checks (`ilike('team_name', name)`) prevent teams from picking existing names during signup (`/register`) or rename (`/dashboard`).
+- **Team Rename Sync**: Renaming team in dashboard updates both `teams.team_name` and `users.display_name` seamlessly.
 
 ---
 
@@ -168,18 +187,18 @@ BGFS/
 
 | Component | Status | Details |
 | :--- | :---: | :--- |
-| Next.js App Structure | ✅ COMPLETE | App Router, Next.js 16, 18 static & dynamic routes |
-| Design System & UI | ✅ COMPLETE | Dark gaming aesthetic (`#111111`, `#fbbf24`), lucide-react vector icons |
+| Next.js App Structure | ✅ COMPLETE | App Router, Next.js 16, 26 static & dynamic routes |
+| Design System & UI | ✅ COMPLETE | Dark gaming aesthetic (`#111111`, `#fbbf24`), eye toggle buttons on auth forms |
 | Custom Room Slot Assignment | ✅ COMPLETE | FCFS starting at Slot 5; instant leaderboard & dashboard display |
 | Leaderboard & Best 5 Slots | ✅ COMPLETE | Top 5 slot (15 matches) calculator + per-slot filter with room slot numbers |
 | Terminology Standardization | ✅ COMPLETE | "Eliminations" used across all pages; em-dashes (`—`) eliminated |
 | Mobile Responsiveness | ✅ COMPLETE | Touch targets 44px+, responsive card grid |
-| Database Schema | ✅ COMPLETE | SQL migrations 001, 002, 003, 004 ready with RLS & leaderboard view |
+| Database Schema | ✅ COMPLETE | SQL migrations 001 to 005 ready with RLS & leaderboard views |
 | Password & OTP Auth | ✅ COMPLETE | Dual auth mode, reset password route, and in-dashboard password change |
-| Account & Team Registration | ✅ COMPLETE | Redesigned `/register` & `/login` pages + auto team setup |
+| Account & Team Registration | ✅ COMPLETE | Redesigned `/register` & `/login` pages + auto team setup & duplicate name validation |
 | 9-11 PM Slots & Expiration | ✅ COMPLETE | Auto-maintained 7-day 9-11 PM slots + DB expiration lock |
-| Razorpay & Test Mode | ✅ COMPLETE | Production HMAC SHA-256 verification + instant test mode branch |
-| Admin Panel | ✅ COMPLETE | Score entry with room slot dropdown helpers, slot creator, role management |
+| Razorpay Payment Gateway | ✅ VERIFIED | Production HMAC SHA-256 verification (Direct bypass mode active for testing) |
+| Admin Panel & User Roles | ✅ COMPLETE | Granular Test Mode toggle button, score entry helpers, role manager |
 | Production Build Verification | ✅ COMPLETE | `npm run build` compiles clean with 0 warnings or errors |
 
 ---

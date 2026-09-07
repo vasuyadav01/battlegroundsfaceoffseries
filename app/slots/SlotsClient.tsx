@@ -477,7 +477,7 @@ function loadRazorpayScript(): Promise<boolean> {
 
             <div className={styles.slotGrid}>
               {dateSlots.map(slot => {
-                const isAlreadyBooked = bookedSlotIds.includes(slot.slot_id)
+                const isAlreadyBooked = bookedSlotIds.some(id => String(id).trim().toLowerCase() === String(slot.slot_id).trim().toLowerCase())
                 const isBookingThis = bookingSlotId === slot.slot_id
                 const spotsLeft = Math.max(0, slot.capacity - slot.teams_booked_count)
 

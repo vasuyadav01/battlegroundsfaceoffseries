@@ -159,12 +159,11 @@ export default async function SlotsPage() {
       unusedCoupons = couponsData || []
       freeCoupon = unusedCoupons.length > 0 ? unusedCoupons[0] : null
 
-      // 4. Fetch all slot IDs already booked by this user/team (paid)
+      // 4. Fetch all slot IDs already booked by this user/team
       const { data: userBookings } = await admin
         .from('bookings')
         .select('slot_id')
         .in('team_id', allUserTeamIds)
-        .eq('payment_status', 'paid')
 
       userBookedSlotIds = Array.from(new Set((userBookings || []).map(b => b.slot_id).filter(Boolean)))
     }

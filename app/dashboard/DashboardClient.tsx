@@ -68,9 +68,27 @@ interface Props {
   isTestAccount?: boolean
 }
 
-function getSlotInfo(slots: any): SlotInfo | null {
-  if (!slots) return null
-  if (Array.isArray(slots)) return slots[0] || null
+function getSlotInfo(slots: any): SlotInfo {
+  if (!slots) {
+    return {
+      slot_id: '',
+      date: new Date().toISOString().split('T')[0],
+      time_label: 'Tournament Slot',
+      status: 'open',
+      entry_fee: 50,
+      is_grand_finals: false,
+    }
+  }
+  if (Array.isArray(slots)) {
+    return slots[0] || {
+      slot_id: '',
+      date: new Date().toISOString().split('T')[0],
+      time_label: 'Tournament Slot',
+      status: 'open',
+      entry_fee: 50,
+      is_grand_finals: false,
+    }
+  }
   return slots as SlotInfo
 }
 

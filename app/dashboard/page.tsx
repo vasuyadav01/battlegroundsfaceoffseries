@@ -105,23 +105,51 @@ export default async function DashboardPage() {
   )
 
   // Fetch booked slots for this user/team with slot details & whatsapp_link
-  let { data: bookings, error: bookingErr } = await admin
-    .from('bookings')
-    .select(
-      'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, room_slot_number, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
-    )
-    .in('team_id', allUserTeamIds)
-    .order('created_at', { ascending: false })
-
-  if (bookingErr && bookingErr.message?.includes('room_slot_number')) {
-    const fallback = await admin
+  let bookings: any[] = []
+  if (allUserTeamIds.length > 0) {
+    let { data: bData, error: bookingErr } = await admin
       .from('bookings')
       .select(
-        'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
+        'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, room_slot_number, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
       )
       .in('team_id', allUserTeamIds)
       .order('created_at', { ascending: false })
-    bookings = fallback.data as any[]
+
+    if (bookingErr && bookingErr.message?.includes('room_slot_number')) {
+      const fallback = await admin
+        .from('bookings')
+        .select(
+          'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
+        )
+        .in('team_id', allUserTeamIds)
+        .order('created_at', { ascending: false })
+      bData = fallback.data as any[]
+    }
+    bookings = bData || []
+  }
+
+  // Populate missing slot objects directly from slots table if join returned null
+  if (bookings.length > 0) {
+    const missingSlotIds = bookings
+      .filter(b => !b.slots && b.slot_id)
+      .map(b => b.slot_id)
+
+    if (missingSlotIds.length > 0) {
+      const { data: fetchedSlots } = await admin
+        .from('slots')
+        .select('slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link')
+        .in('slot_id', missingSlotIds)
+
+      if (fetchedSlots && fetchedSlots.length > 0) {
+        const slotMap = new Map(fetchedSlots.map(s => [s.slot_id, s]))
+        bookings = bookings.map(b => {
+          if (!b.slots && b.slot_id && slotMap.has(b.slot_id)) {
+            return { ...b, slots: slotMap.get(b.slot_id) }
+          }
+          return b
+        })
+      }
+    }
   }
 
   // Fetch all confirmed team bookings for these slots to show room slot layout table

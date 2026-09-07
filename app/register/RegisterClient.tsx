@@ -60,14 +60,21 @@ export default function RegisterClient() {
       return
     }
 
-    // Always create team and profile in database immediately using userId
+    // Create team and profile in database immediately using userId and validate name availability
     try {
-      await fetch('/api/register-team', {
+      const regRes = await fetch('/api/register-team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamName: teamName.trim(), displayName: teamName.trim(), userId: user.id }),
       })
-    } catch (e) {
+      const regData = await regRes.json()
+
+      if (!regRes.ok) {
+        setLoading(false)
+        setError(regData.error || 'Registration failed. Please choose a different team name.')
+        return
+      }
+    } catch (e: any) {
       console.error('Pre-provision team error:', e)
     }
 

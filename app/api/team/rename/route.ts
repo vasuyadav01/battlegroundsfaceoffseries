@@ -108,11 +108,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Team record not found.' }, { status: 404 })
     }
 
-    // Guard: Enforce 1-time name change limit
-    if (team.name_changed) {
-      return NextResponse.json({
-        error: 'Your team name has already been changed once and is now locked.'
-      }, { status: 403 })
+    if (trimmedName.toLowerCase() === team.team_name.toLowerCase()) {
+      return NextResponse.json({ error: `Your team name is already set to "${trimmedName}".` }, { status: 400 })
     }
 
     // Check if new name is already taken by another team
@@ -124,10 +121,10 @@ export async function POST(request: Request) {
       .maybeSingle()
 
     if (existingTeam) {
-      return NextResponse.json({ error: 'This team name is already taken. Please pick another name.' }, { status: 409 })
+      return NextResponse.json({ error: `The team name "${trimmedName}" is already taken by another team. Please pick a different name.` }, { status: 409 })
     }
 
-    // Update team name and lock further edits
+    // Update team name and set name_changed to true
     const { error: updateErr } = await admin
       .from('teams')
       .update({
@@ -140,10 +137,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: updateErr.message }, { status: 500 })
     }
 
+    // Also update display_name in users table
+    await admin
+      .from('users')
+      .update({ display_name: trimmedName })
+      .eq('user_id', user.id)
+
     return NextResponse.json({
       success: true,
       new_team_name: trimmedName,
-      message: 'Team name updated successfully (1-time edit used).',
+      message: 'Team name updated successfully!',
     })
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 })

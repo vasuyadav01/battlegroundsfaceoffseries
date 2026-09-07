@@ -32,6 +32,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    // Check if team name is already taken by another squad (case insensitive)
+    const { data: nameCheck } = await admin
+      .from('teams')
+      .select('team_id, captain_user_id')
+      .ilike('team_name', teamName.trim())
+      .maybeSingle()
+
+    if (nameCheck && nameCheck.captain_user_id !== targetUserId) {
+      return NextResponse.json(
+        { error: `The team name "${teamName.trim()}" is already taken by another team. Please choose a different team name.` },
+        { status: 409 }
+      )
+    }
+
     // First check if a team already exists for this captain
     let { data: team } = await admin
       .from('teams')
@@ -48,6 +62,7 @@ export async function POST(request: Request) {
         .insert({
           team_name: teamName.trim(),
           captain_user_id: targetUserId,
+          name_changed: false,
         })
         .select()
         .maybeSingle()
@@ -62,6 +77,7 @@ export async function POST(request: Request) {
           .insert({
             team_name: teamName.trim(),
             captain_user_id: targetUserId,
+            name_changed: false,
           })
           .select()
           .maybeSingle()

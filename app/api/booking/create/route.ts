@@ -71,21 +71,6 @@ export async function POST(request: Request) {
         .select('team_id')
         .single()
 
-      if (teamErr && (teamErr.message?.includes('row-level security') || teamErr.message?.includes('RLS'))) {
-        const retryUser = await supabase
-          .from('teams')
-          .insert({
-            team_name: teamToInsert,
-            captain_user_id: user.id,
-            invite_code: inviteCode,
-            is_test_account: isTestAccount,
-          })
-          .select('team_id')
-          .single()
-        newTeam = retryUser.data
-        teamErr = retryUser.error
-      }
-
       if (teamErr && teamErr.code === '23505') {
         teamToInsert = `${finalTeamName} ${Math.floor(1000 + Math.random() * 9000)}`
         const retry = await admin

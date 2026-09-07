@@ -222,29 +222,37 @@ export async function POST(request: Request) {
       })
     }
 
-    // Create pending booking for standard accounts
+    // Create or reuse pending booking for standard accounts
+    if (existingBooking && existingBooking.booking_id) {
+      return NextResponse.json({
+        success: true,
+        booking_id: existingBooking.booking_id,
+        amount: slot.entry_fee ?? 50,
+      })
+    }
+
     let { data: booking, error: bookErr } = await admin
       .from('bookings')
-      .insert({
+      .upsert({
         team_id,
         slot_id,
         payment_status: 'pending',
         amount_paid: 0,
         is_test_booking: false,
-      })
+      }, { onConflict: 'team_id,slot_id' })
       .select('booking_id')
       .single()
 
     if (bookErr && (bookErr.message?.includes('row-level security') || bookErr.message?.includes('RLS'))) {
       const fallback = await supabase
         .from('bookings')
-        .insert({
+        .upsert({
           team_id,
           slot_id,
           payment_status: 'pending',
           amount_paid: 0,
           is_test_booking: false,
-        })
+        }, { onConflict: 'team_id,slot_id' })
         .select('booking_id')
         .single()
       booking = fallback.data

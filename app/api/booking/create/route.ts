@@ -153,8 +153,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // TEST MODE BRANCH: Auto-confirm booking directly ONLY if explicitly flagged as a Test Account by Admin
-    const isTestMode = Boolean(isTestAccount)
+    // DIRECT INSTANT BOOKING MODE (Testing Mode requested by user: bypasses Razorpay popup for testing leaderboards & post-booking flows)
+    const isTestMode = true
     if (isTestMode) {
       // Calculate FCFS room slot number starting from Slot 5 for this specific slot
       const { count: otherPaidCount } = await admin

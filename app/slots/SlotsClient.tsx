@@ -210,10 +210,10 @@ function loadRazorpayScript(): Promise<boolean> {
           return
         }
 
-        // Test Mode Auto-Confirmation
+        // Direct Instant Booking Confirmation (Bypasses Razorpay for testing)
         if (createData.auto_confirmed || createData.is_test_booking) {
           setBookedSlotIds(prev => [...prev, slot.slot_id])
-          setSuccessToast(`🧪 TEST MODE: Slot for ${slot.time_label} registered successfully!`)
+          setSuccessToast(`✅ Slot for ${slot.time_label} registered successfully!`)
           setBookingSlotId(null)
           return
         }

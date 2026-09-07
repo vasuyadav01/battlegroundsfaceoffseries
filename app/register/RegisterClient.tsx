@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
@@ -22,6 +22,7 @@ export default function RegisterClient() {
   const [teamName, setTeamName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [confirmEmail, setConfirmEmail] = useState(false)
@@ -31,9 +32,11 @@ export default function RegisterClient() {
     setError('')
     setLoading(true)
 
+    const cleanEmail = email.trim().toLowerCase()
+
     // Step 1: Register the auth user
     const { data: authData, error: authErr } = await supabase.auth.signUp({
-      email: email.trim(),
+      email: cleanEmail,
       password,
       options: {
         data: { display_name: teamName.trim() },
@@ -161,16 +164,26 @@ export default function RegisterClient() {
             <label className={styles.label} htmlFor="register-password">
               CREATE PASSWORD *
             </label>
-            <input
-              id="register-password"
-              type="password"
-              className={styles.input}
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              minLength={6}
-              required
-            />
+            <div className={styles.passwordWrapper}>
+              <input
+                id="register-password"
+                type={showPassword ? 'text' : 'password'}
+                className={`${styles.input} ${styles.passwordInput}`}
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                minLength={6}
+                required
+              />
+              <button
+                type="button"
+                className={styles.eyeBtn}
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {error && <p className={styles.errorMsg}>{error}</p>}

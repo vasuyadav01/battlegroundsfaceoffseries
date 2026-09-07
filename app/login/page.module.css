@@ -162,6 +162,36 @@
   font-size: 15px;
 }
 
+.passwordWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInput {
+  padding-right: 44px !important;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #888888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.15s ease;
+  z-index: 2;
+}
+
+.eyeBtn:hover {
+  color: #fbbf24;
+}
+
 .otpInput {
   font-size: 1.5rem !important;
   letter-spacing: 0.3em;

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
 
@@ -26,6 +26,7 @@ export default function LoginPage() {
   const [loginMode, setLoginMode] = useState<LoginMode>('password')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [otpStep, setOtpStep] = useState<OtpStep>('email')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
@@ -47,14 +48,19 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
+    const cleanEmail = email.trim().toLowerCase()
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: cleanEmail,
       password,
     })
 
     if (error) {
       setLoading(false)
-      setError(error.message)
+      if (error.message.toLowerCase().includes('invalid login credentials')) {
+        setError('Invalid email or password. Please check your spelling or click "Forgot Password?" below.')
+      } else {
+        setError(error.message)
+      }
       return
     }
 
@@ -74,7 +80,8 @@ export default function LoginPage() {
     setLoading(true)
     setResetSent(false)
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    const cleanEmail = email.trim().toLowerCase()
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: `${window.location.origin}/api/auth/callback?next=/reset-password`,
     })
 
@@ -94,8 +101,9 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
+    const cleanEmail = email.trim().toLowerCase()
     const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
+      email: cleanEmail,
       options: {
         shouldCreateUser: true,
         emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
@@ -119,25 +127,55 @@ export default function LoginPage() {
     }, 1000)
   }
 
-  // OTP Verification
+  // OTP Verification (Tries email, signup, or recovery token types for 100% reliability)
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: otp.trim(),
+    const cleanEmail = email.trim().toLowerCase()
+    const cleanToken = otp.trim()
+
+    // 1. Try default email OTP type
+    let { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
       type: 'email',
     })
 
+    // 2. Fallback to signup type
+    if (error) {
+      const retrySignup = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: 'signup',
+      })
+      if (!retrySignup.error) {
+        data = retrySignup.data
+        error = null
+      }
+    }
+
+    // 3. Fallback to recovery type
+    if (error) {
+      const retryRecovery = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: 'recovery',
+      })
+      if (!retryRecovery.error) {
+        data = retryRecovery.data
+        error = null
+      }
+    }
+
     if (error) {
       setLoading(false)
-      setError(error.message)
+      setError(error.message || 'Invalid or expired OTP code. Please check your email and try again.')
       return
     }
 
-    const userId = data.user?.id
+    const userId = data?.user?.id
     if (userId) {
       setLoading(false)
       window.location.href = getRedirectUrl()
@@ -211,15 +249,26 @@ export default function LoginPage() {
                   Forgot Password?
                 </button>
               </div>
-              <input
-                id="login-password"
-                type="password"
-                className={styles.input}
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
+
+              <div className={styles.passwordWrapper}>
+                <input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  className={`${styles.input} ${styles.passwordInput}`}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             {error && <p className={styles.errorMsg}>{error}</p>}

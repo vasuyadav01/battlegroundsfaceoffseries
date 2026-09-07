@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, KeyRound, Check, AlertCircle } from 'lucide-react'
+import { ArrowLeft, KeyRound, Check, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from '../login/page.module.css'
 
@@ -13,6 +13,7 @@ export default function ResetPasswordClient() {
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
   const [hasValidSession, setHasValidSession] = useState(false)
@@ -156,31 +157,51 @@ export default function ResetPasswordClient() {
           <form onSubmit={handleResetPassword} className={styles.form}>
             <div className={styles.fieldGroup}>
               <label className={styles.label} htmlFor="new-password">NEW PASSWORD</label>
-              <input
-                id="new-password"
-                type="password"
-                className={styles.input}
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                minLength={6}
-                required
-                autoFocus
-              />
+              <div className={styles.passwordWrapper}>
+                <input
+                  id="new-password"
+                  type={showPassword ? 'text' : 'password'}
+                  className={`${styles.input} ${styles.passwordInput}`}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  minLength={6}
+                  required
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div className={styles.fieldGroup}>
               <label className={styles.label} htmlFor="confirm-password">CONFIRM NEW PASSWORD</label>
-              <input
-                id="confirm-password"
-                type="password"
-                className={styles.input}
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                minLength={6}
-                required
-              />
+              <div className={styles.passwordWrapper}>
+                <input
+                  id="confirm-password"
+                  type={showPassword ? 'text' : 'password'}
+                  className={`${styles.input} ${styles.passwordInput}`}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  minLength={6}
+                  required
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             {error && <p className={styles.errorMsg}>{error}</p>}

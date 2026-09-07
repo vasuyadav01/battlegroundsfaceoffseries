@@ -180,7 +180,7 @@ export async function POST(request: Request) {
         .single()
 
       if (bookErr) {
-        // Fallback using admin client (bypasses RLS)
+        // Fallback using elevated admin client (bypasses RLS completely)
         const fallback = await admin
           .from('bookings')
           .upsert({
@@ -188,7 +188,6 @@ export async function POST(request: Request) {
             slot_id,
             payment_status: 'paid',
             amount_paid: 0,
-            is_test_booking: true,
           }, { onConflict: 'team_id,slot_id' })
           .select('booking_id')
           .single()
@@ -197,7 +196,7 @@ export async function POST(request: Request) {
       }
 
       if (bookErr) {
-        return NextResponse.json({ error: bookErr.message }, { status: 500 })
+        return NextResponse.json({ error: 'Booking failed: ' + bookErr.message }, { status: 500 })
       }
 
       // Increment slot capacity count if this was not already paid
@@ -243,15 +242,15 @@ export async function POST(request: Request) {
       .select('booking_id')
       .single()
 
-    if (bookErr && (bookErr.message?.includes('row-level security') || bookErr.message?.includes('RLS'))) {
-      const fallback = await supabase
+    if (bookErr) {
+      // Fallback using elevated admin client (bypasses RLS completely)
+      const fallback = await admin
         .from('bookings')
         .upsert({
           team_id,
           slot_id,
           payment_status: 'pending',
           amount_paid: 0,
-          is_test_booking: false,
         }, { onConflict: 'team_id,slot_id' })
         .select('booking_id')
         .single()

@@ -41,7 +41,6 @@ export default async function AdminPage() {
     { data: bookings },
     { data: coupons },
     { data: configRows },
-    { data: userList },
   ] = await Promise.all([
     admin.from('slots').select('*').order('date', { ascending: true }),
     admin.from('teams').select('team_id, team_name, invite_code').order('team_name'),
@@ -49,8 +48,39 @@ export default async function AdminPage() {
     admin.from('bookings').select('*, teams(team_name), slots(date, time_label)').eq('payment_status', 'paid').order('created_at', { ascending: false }),
     admin.from('coupons').select('*, teams(team_name)').order('issued_at', { ascending: false }),
     admin.from('config').select('key, value'),
-    role === 'admin' ? admin.from('users').select('user_id, email, display_name, role').order('created_at', { ascending: false }) : Promise.resolve({ data: [] }),
   ])
+
+  // Fetch complete user list combining Supabase Auth service & public.users table
+  let finalUserList: any[] = []
+  if (role === 'admin') {
+    try {
+      // 1. Get user records from public.users table
+      const { data: publicProfiles } = await admin.from('users').select('user_id, email, display_name, role')
+      const profileMap = new Map((publicProfiles || []).map(p => [p.user_id, p]))
+
+      // 2. Fetch all registered users from Supabase Auth service
+      const { data: authData } = await admin.auth.admin.listUsers()
+      const authUsers = authData?.users || []
+
+      if (authUsers.length > 0) {
+        finalUserList = authUsers.map(au => {
+          const prof = profileMap.get(au.id)
+          return {
+            user_id: au.id,
+            email: au.email || prof?.email || 'No email',
+            display_name: prof?.display_name || au.user_metadata?.display_name || au.user_metadata?.full_name || (au.email ? au.email.split('@')[0] : '—'),
+            role: prof?.role || 'player',
+          }
+        })
+      } else {
+        finalUserList = publicProfiles || []
+      }
+    } catch (err) {
+      console.error('Error listing auth users:', err)
+      const { data: fallbackUsers } = await admin.from('users').select('user_id, email, display_name, role')
+      finalUserList = fallbackUsers || []
+    }
+  }
 
   const config: Record<string, string> = {}
   configRows?.forEach(row => { config[row.key] = row.value })
@@ -64,7 +94,7 @@ export default async function AdminPage() {
       bookings={bookings || []}
       coupons={coupons || []}
       config={config}
-      usersList={userList || []}
+      usersList={finalUserList}
     />
   )
 }

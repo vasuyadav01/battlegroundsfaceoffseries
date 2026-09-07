@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Check, Sparkles, X, Lock, MessageCircle, Flame, Key, FlaskConical, Ticket, BookOpen, FileText, ShieldAlert } from 'lucide-react'
-import { isSlotPastOrEnded } from '@/lib/utils/slotTime'
+import { isSlotPastOrEnded, getFirstMatchStartMinutes } from '@/lib/utils/slotTime'
 import styles from './page.module.css'
 
 interface Slot {
@@ -45,24 +45,7 @@ interface MatchTimeItem {
 }
 
 function parseStartTimeToMinutes(timeLabel: string): number {
-  if (!timeLabel) return 21 * 60 // Default 9:00 PM (1260 mins)
-
-  const match = timeLabel.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i)
-  if (!match) {
-    return 21 * 60 // Fallback 9:00 PM
-  }
-
-  let hours = parseInt(match[1], 10)
-  const minutes = match[2] ? parseInt(match[2], 10) : 0
-  const meridian = match[3].toUpperCase()
-
-  if (meridian === 'PM' && hours < 12) {
-    hours += 12
-  } else if (meridian === 'AM' && hours === 12) {
-    hours = 0
-  }
-
-  return hours * 60 + minutes
+  return getFirstMatchStartMinutes(timeLabel)
 }
 
 function formatMinutesToTimeString(totalMinutes: number): string {
@@ -114,6 +97,11 @@ export default function SlotsClient({
   const [successToast, setSuccessToast] = useState<string | null>(null)
   const [filterTab, setFilterTab] = useState<FilterTab>('upcoming')
 
+  const [mounted, setMounted] = useState<boolean>(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const [testModeEnabled, setTestModeEnabled] = useState<boolean>(true)
 
   async function toggleTestMode() {
@@ -131,12 +119,13 @@ export default function SlotsClient({
   // Filter slots based on date/time expiration
   const filteredSlots = useMemo(() => {
     return slots.filter(slot => {
+      if (!mounted) return true
       const isPast = isSlotPastOrEnded(slot.date, slot.time_label, slot.status)
       if (filterTab === 'upcoming') return !isPast
       if (filterTab === 'past') return isPast
       return true
     })
-  }, [slots, filterTab])
+  }, [slots, filterTab, mounted])
 
   // Group filtered slots by date
   const slotsByDate = useMemo(() => {
@@ -583,7 +572,7 @@ function loadRazorpayScript(): Promise<boolean> {
                         ${isUrgent ? styles.spotsUrgent : ''}
                       `}>
                         {isCompleted ? (
-                          'ENDED'
+                          'CLOSED'
                         ) : isFull ? (
                           'FULL (20/20)'
                         ) : isUrgent ? (
@@ -614,7 +603,7 @@ function loadRazorpayScript(): Promise<boolean> {
                     {/* Price / Reward Available Line */}
                     <div className={styles.cardPriceRow}>
                       {isCompleted ? (
-                        <div className={styles.priceMeta}>MATCH ENDED</div>
+                        <div className={styles.priceMeta}>REGISTRATION CLOSED</div>
                       ) : showFreeOption ? (
                         <div className={styles.rewardAvailableText}>
                           <Check size={13} color="#22c55e" /> Reward available
@@ -647,7 +636,7 @@ function loadRazorpayScript(): Promise<boolean> {
                     <div className={styles.cardBottomAction}>
                       {isCompleted ? (
                         <button disabled className={styles.cardBtnDisabled}>
-                          SLOT ENDED
+                          REGISTRATION CLOSED
                         </button>
                       ) : isFull ? (
                         <button disabled className={styles.cardBtnDisabled}>
@@ -748,172 +737,146 @@ function loadRazorpayScript(): Promise<boolean> {
           <div className={styles.rulesModalContent} onClick={e => e.stopPropagation()}>
             <div className={styles.rulesModalHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BookOpen size={22} color="#fbbf24" />
-                <h2 className={styles.rulesModalTitle}>BGFS TOURNAMENT RULES &amp; GUIDELINES</h2>
+                <BookOpen size={20} color="#fbbf24" />
+                <h2 className={styles.rulesModalTitle}>Tournament Rules &amp; Guidelines</h2>
               </div>
               <button className={styles.modalCloseBtn} onClick={() => setShowRulesModal(false)}>
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
             <p className={styles.rulesModalSubtitle}>
-              Please read all rules carefully before participating. All players and teams must adhere to these guidelines.
+              Please read all rules carefully before participating. All players and team captains must adhere to these guidelines.
             </p>
 
             <div className={styles.rulesListScroll}>
               <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumber}>1</span>
-                  <h3>Player Removal / Extra Players</h3>
+                  <span className={styles.ruleNumber}>01</span>
+                  <h3>Removal of Unknown Players in Assigned Slot</h3>
                 </div>
                 <p>
-                  If a team has an extra player who has already joined the custom room and the team wants that player removed, the team must mention it in the <strong>room chat section</strong>.
+                  If an unknown or unauthorized player enters your assigned slot (e.g. Slot 5), registered team members from that slot must report it in the <strong>in-game custom room chat</strong>.
                 </p>
                 <p className={styles.ruleNote}>
-                  * The player being removed <strong>must belong to the same slot/team</strong> for the request to be considered and checked by the BGFS team.
+                  * A minimum of <strong>2 registered team members</strong> from that slot must message in the room chat for admin verification and removal of the unknown player.
                 </p>
               </div>
 
-              <div className={styles.ruleCardDanger}>
+              <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumberDanger}>2</span>
-                  <h3 style={{ color: '#ef4444' }}>Hacking &amp; Illegal Methods</h3>
+                  <span className={styles.ruleNumber}>02</span>
+                  <h3>Hacking &amp; Fair Play Policy</h3>
                 </div>
                 <p>
-                  Any team or player found using <strong>hacks, cheats, exploits, unauthorized software, or any other illegal method</strong> will be <strong>immediately banned from the tournament</strong>.
-                </p>
-                <p>
-                  Depending on the violation, the player/team may also be banned from participating in <strong>future BGFS matches and tournaments</strong>.
+                  Any player found using <strong>hacks, cheats, exploits, unauthorized software, or illicit tools</strong> will be <strong>permanently banned</strong> from all BGFS tournaments.
                 </p>
                 <p className={styles.ruleNoteDanger}>
-                  ⚠️ BGFS reserves the right to take action against any player or team found violating fair-play rules.
+                  BGFS enforcement team reserves the right to take immediate action against any team violating fair-play rules.
                 </p>
               </div>
 
               <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumber}>3</span>
-                  <h3>Match Timings</h3>
+                  <span className={styles.ruleNumber}>03</span>
+                  <h3>Match Timings &amp; Punctuality</h3>
                 </div>
                 <p>
-                  All matches will start <strong>on time according to the announced schedule</strong>.
+                  All matches start <strong>strictly on time</strong> according to the slot schedule.
                 </p>
                 <p>
-                  Players and teams are responsible for being ready before the scheduled match time. Delays caused by a player or team will not automatically result in a delayed match.
+                  Players are responsible for entering the custom room before the scheduled start time. Delays caused by individual teams will not delay match start.
                 </p>
               </div>
 
               <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumber}>4</span>
-                  <h3>Custom Room ID &amp; Password</h3>
+                  <span className={styles.ruleNumber}>04</span>
+                  <h3>Custom Room Credentials Security</h3>
                 </div>
                 <p>
-                  The Custom Room <strong>ID and password must not be shared or leaked</strong> outside the participating players/team.
-                </p>
-                <p>
-                  If any player is found responsible for leaking the Custom Room ID or password, that player will be <strong>removed from the tournament</strong>.
+                  Custom Room <strong>ID and passwords must never be shared or leaked</strong> outside your registered team.
                 </p>
                 <p className={styles.ruleNoteDanger}>
-                  🚫 <strong>No refund</strong> will be provided in such cases.
+                  If any player leaks room credentials, the team will be disqualified and <strong>no refund</strong> will be issued.
                 </p>
               </div>
 
               <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumber}>5</span>
+                  <span className={styles.ruleNumber}>05</span>
                   <h3>Finals Match Recordings</h3>
                 </div>
                 <p>
-                  All teams qualifying for the <strong>Finals must record their Finals matches</strong>.
+                  All teams qualifying for the <strong>Finals must record their POV match recordings</strong>.
                 </p>
                 <p>
-                  If another team or player raises a hacking/cheating complaint against a finalist, the concerned team may be required to provide their <strong>match recording(s)</strong> for verification.
-                </p>
-                <p>
-                  Teams qualifying for the Finals are therefore responsible for ensuring that their Finals matches are properly recorded and retained.
-                </p>
-              </div>
-
-              <div className={styles.ruleCardGold}>
-                <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumberGold}>6</span>
-                  <h3 style={{ color: '#fbbf24' }}>₹200 Refundable Security Fee</h3>
-                </div>
-                <p>
-                  A <strong>₹200 fee must be paid before the matches</strong>.
-                </p>
-                <p>
-                  This amount is <strong>fully refundable after the matches</strong>, provided the team/player has not been disqualified for hacking or related violations.
-                </p>
-                <p className={styles.ruleNoteDanger}>
-                  In case a team is found to be using hacks or other prohibited methods, the <strong>₹200 fee will not be refunded</strong>.
+                  In the event of a cheating or hacking complaint, finalists may be required to submit match recordings for official review.
                 </p>
               </div>
 
               <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumber}>7</span>
+                  <span className={styles.ruleNumber}>06</span>
+                  <h3>Finals Security Deposit (₹200 - Refundable)</h3>
+                </div>
+                <p>
+                  For teams qualifying for the <strong>Grand Finals only</strong>, a <strong>₹200 security deposit</strong> must be paid prior to the Finals matches.
+                </p>
+                <p className={styles.ruleNoteWarning}>
+                  This amount is 100% fully refundable after Finals matches, provided the team is not disqualified for hacking or fair-play violations.
+                </p>
+              </div>
+
+              <div className={styles.ruleCard}>
+                <div className={styles.ruleCardHeader}>
+                  <span className={styles.ruleNumber}>07</span>
                   <h3>Points &amp; Score Verification</h3>
                 </div>
                 <p>
-                  Players/teams are strongly advised to take a <strong>screenshot of their points/score immediately after every match</strong>.
+                  Captains are advised to capture a <strong>screenshot of scoreboards immediately after each match</strong>.
                 </p>
                 <p>
-                  If there is an incorrect score or points displayed on the BGFS leaderboard/table, the screenshot can be used as supporting evidence when submitting a complaint.
-                </p>
-                <p>
-                  Players should retain these screenshots until the final results have been confirmed.
-                </p>
-              </div>
-
-              <div className={styles.ruleCardGold}>
-                <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumberGold}>8</span>
-                  <h3 style={{ color: '#fbbf24' }}>Finals Prize &amp; Trophy</h3>
-                </div>
-                <p>After the Finals have been completed and the results have been finalized:</p>
-                <ul style={{ margin: '0.25rem 0 0 1.2rem', padding: 0, color: '#cccccc', fontSize: '0.8rem' }}>
-                  <li>The applicable <strong>prize pool amount</strong> will be provided to the winning team.</li>
-                  <li>The <strong>trophy will be delivered to the winning team's registered address</strong>.</li>
-                </ul>
-                <p className={styles.ruleNote} style={{ marginTop: '0.35rem' }}>
-                  Teams should ensure that the address and contact information provided during registration are accurate.
+                  In case of any points dispute on the BGFS leaderboard, screenshots serve as official evidence for review.
                 </p>
               </div>
 
               <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumber}>9</span>
-                  <h3>Communication</h3>
+                  <span className={styles.ruleNumber}>08</span>
+                  <h3>Finals Prize Pool &amp; Trophy Delivery</h3>
+                </div>
+                <p>Upon final verification of Grand Finals standings:</p>
+                <p>• Prize money will be transferred directly to the captain&apos;s verified account.</p>
+                <p>• Official BGFS Champion Trophy will be dispatched to the winning team&apos;s registered address.</p>
+              </div>
+
+              <div className={styles.ruleCard}>
+                <div className={styles.ruleCardHeader}>
+                  <span className={styles.ruleNumber}>09</span>
+                  <h3>Official Communications</h3>
                 </div>
                 <p>
-                  For teams qualifying for the Finals, the BGFS team will contact you through the <strong>WhatsApp number provided during registration</strong>.
-                </p>
-                <p>
-                  Players and teams are responsible for providing a valid and active WhatsApp number and checking it for tournament-related communication.
+                  All official updates and notices for qualifying teams will be issued via the <strong>WhatsApp phone number registered during onboarding</strong>.
                 </p>
               </div>
 
-              <div className={styles.ruleCardReminder}>
+              <div className={styles.ruleCard}>
                 <div className={styles.ruleCardHeader}>
-                  <span className={styles.ruleNumberReminder}>10</span>
-                  <h3 style={{ color: '#ffffff' }}>Important Reminder</h3>
+                  <span className={styles.ruleNumber}>10</span>
+                  <h3>Terms &amp; Tournament Compliance</h3>
                 </div>
                 <p>
-                  By participating in a BGFS tournament, players and teams agree to follow these rules.
-                </p>
-                <p>
-                  BGFS reserves the right to investigate suspected cheating, hacking, room leaks, score discrepancies, and other violations and take appropriate action based on the available evidence.
+                  By registering and joining a slot on BGFS, all players agree to comply with these official rules and decisions made by tournament marshals.
                 </p>
                 <div className={styles.playFairBadge}>
-                  🔥 Play fair. Respect the rules. Respect the competition.
+                  Play Fair • Respect Competitors • Honor the Game
                 </div>
               </div>
             </div>
 
             <div className={styles.rulesModalFooter}>
               <button className={styles.rulesAgreeBtn} onClick={() => setShowRulesModal(false)}>
-                ✓ I UNDERSTAND &amp; AGREE TO RULES
+                I UNDERSTAND &amp; AGREE TO RULES
               </button>
             </div>
           </div>

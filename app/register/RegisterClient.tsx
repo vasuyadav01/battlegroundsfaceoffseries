@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -10,6 +10,14 @@ import styles from './page.module.css'
 export default function RegisterClient() {
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        router.replace('/slots')
+      }
+    })
+  }, [router, supabase])
 
   const [teamName, setTeamName] = useState('')
   const [email, setEmail] = useState('')

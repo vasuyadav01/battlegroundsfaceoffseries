@@ -53,7 +53,7 @@ export default async function LandingPage() {
 
               {/* Action buttons */}
               <div className={styles.heroCta}>
-                <Link href="/register" className={styles.primaryCta}>
+                <Link href="/slots" className={styles.primaryCta}>
                   REGISTER NOW
                 </Link>
                 <Link href="/leaderboard" className={styles.secondaryCta}>

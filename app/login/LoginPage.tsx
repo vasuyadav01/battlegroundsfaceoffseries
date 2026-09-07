@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -14,6 +14,15 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        const redirect = getRedirectUrl()
+        router.replace(redirect)
+      }
+    })
+  }, [router, supabase])
+
   const [loginMode, setLoginMode] = useState<LoginMode>('password')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,6 +32,14 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [resetSent, setResetSent] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
+
+  function getRedirectUrl() {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      return params.get('redirectTo') || '/dashboard'
+    }
+    return '/dashboard'
+  }
 
   // Standard Password Sign In
   async function handlePasswordSignIn(e: React.FormEvent) {
@@ -44,7 +61,7 @@ export default function LoginPage() {
     const userId = data.user?.id
     if (userId) {
       setLoading(false)
-      router.push('/dashboard')
+      window.location.href = getRedirectUrl()
     } else {
       setLoading(false)
     }
@@ -79,7 +96,10 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { shouldCreateUser: true },
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
+      },
     })
 
     setLoading(false)
@@ -107,7 +127,7 @@ export default function LoginPage() {
 
     const { data, error } = await supabase.auth.verifyOtp({
       email: email.trim(),
-      token: otp,
+      token: otp.trim(),
       type: 'email',
     })
 
@@ -120,7 +140,7 @@ export default function LoginPage() {
     const userId = data.user?.id
     if (userId) {
       setLoading(false)
-      router.push('/dashboard')
+      window.location.href = getRedirectUrl()
     } else {
       setLoading(false)
     }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo, Fragment } from 'react'
+import { useState, useMemo, useEffect, Fragment } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Trophy, Medal, Award, Layers, ChevronDown, Check } from 'lucide-react'
 import { formatMonthDay, formatFullDate } from '@/lib/utils/formatDate'
 import styles from './page.module.css'
@@ -52,14 +53,29 @@ interface Props {
 }
 
 export default function LeaderboardClient({ rows, allMatches, slots, bookings = [] }: Props) {
-  const [viewMode, setViewMode] = useState<'overall' | 'slot'>('overall')
+  const searchParams = useSearchParams()
+  const urlSlotId = searchParams ? searchParams.get('slot_id') : null
+  const urlTab = searchParams ? searchParams.get('tab') : null
+
+  const [viewMode, setViewMode] = useState<'overall' | 'slot'>(
+    urlSlotId || urlTab === 'slot' ? 'slot' : 'overall'
+  )
   const [search, setSearch] = useState('')
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null)
 
-  // Default selected slot to the most recent one
+  // Default selected slot to the URL slot_id or most recent one
   const [selectedSlotId, setSelectedSlotId] = useState<string>(
-    slots.length > 0 ? slots[0].slot_id : ''
+    urlSlotId || (slots.length > 0 ? slots[0].slot_id : '')
   )
+
+  useEffect(() => {
+    if (urlSlotId) {
+      setSelectedSlotId(urlSlotId)
+      setViewMode('slot')
+    } else if (urlTab === 'slot') {
+      setViewMode('slot')
+    }
+  }, [urlSlotId, urlTab])
 
   // Filter overall standings
   const filteredOverall = useMemo(() =>

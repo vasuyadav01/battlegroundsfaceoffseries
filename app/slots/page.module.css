@@ -1070,17 +1070,18 @@
 
 /* ── RULES MODAL CONTENT ── */
 .rulesModalContent {
-  background: #141414;
-  border: 1px solid #2a2a2a;
-  border-radius: 16px;
+  background: #121212;
+  border: 1px solid #262626;
+  border-radius: 14px;
   width: 100%;
   max-width: 620px;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   position: relative;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
-  max-height: 88vh;
+  max-height: 85vh;
+  overflow: hidden;
   animation: fadeInModal 0.2s ease-out forwards;
 }
 
@@ -1089,138 +1090,76 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #222222;
-  padding-bottom: 0.85rem;
-  margin-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .rulesModalTitle {
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   margin: 0;
-  text-transform: uppercase;
 }
 
 .rulesModalSubtitle {
   font-size: 0.8rem;
   color: #888888;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.85rem 0;
   line-height: 1.4;
+  flex-shrink: 0;
 }
 
 .rulesListScroll {
   overflow-y: auto;
-  padding-right: 0.5rem;
+  padding-right: 0.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  max-height: 55vh;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ruleCard {
   background: #181818;
   border: 1px solid #262626;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0.85rem 1rem;
-}
-
-.ruleCardDanger {
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 10px;
-  padding: 0.85rem 1rem;
-}
-
-.ruleCardGold {
-  background: rgba(251, 191, 36, 0.06);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 10px;
-  padding: 0.85rem 1rem;
-}
-
-.ruleCardReminder {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
-  border: 1px solid rgba(251, 191, 36, 0.35);
-  border-radius: 10px;
-  padding: 1rem;
 }
 
 .ruleCardHeader {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
 .ruleCardHeader h3 {
-  font-size: 0.88rem;
-  font-weight: 800;
+  font-size: 0.85rem;
+  font-weight: 700;
   color: #ffffff;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .ruleNumber {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #2a2a2a;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: #fbbf24;
-  font-size: 0.72rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.ruleNumberDanger {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  font-size: 0.72rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.ruleNumberGold {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
-  font-size: 0.72rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.ruleNumberReminder {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #22c55e;
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
 .ruleCard p {
   font-size: 0.8rem;
   color: #cccccc;
-  line-height: 1.45;
-  margin: 0 0 0.35rem 0;
+  line-height: 1.5;
+  margin: 0 0 0.25rem 0;
 }
 
 .ruleCard p:last-child {
@@ -1228,43 +1167,52 @@
 }
 
 .ruleNote {
-  font-size: 0.75rem !important;
+  font-size: 0.76rem !important;
   color: #888888 !important;
+  line-height: 1.4;
+}
+
+.ruleNoteWarning {
+  font-size: 0.76rem !important;
+  color: #fbbf24 !important;
+  line-height: 1.4;
 }
 
 .ruleNoteDanger {
   font-size: 0.76rem !important;
   color: #f87171 !important;
+  line-height: 1.4;
 }
 
 .playFairBadge {
-  background: rgba(251, 191, 36, 0.15);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #fbbf24;
-  font-weight: 800;
-  font-size: 0.8rem;
+  background: #1f1f1f;
+  border: 1px solid #2c2c2c;
+  color: #aaaaaa;
+  font-weight: 600;
+  font-size: 0.75rem;
   padding: 0.45rem;
   border-radius: 6px;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 .rulesModalFooter {
   border-top: 1px solid #222222;
-  padding-top: 0.85rem;
-  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+  flex-shrink: 0;
 }
 
 .rulesAgreeBtn {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.7rem;
   background: #fbbf24;
   color: #111111;
   border: none;
   border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 900;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.18s ease;
 }
@@ -1345,7 +1293,7 @@
     padding: 0;
   }
 
-  .modalContent, .rulesModalContent {
+  .modalContent {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     border-top-left-radius: 20px;
@@ -1355,8 +1303,23 @@
     animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .rulesModalContent {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 1.15rem 1rem 1.5rem;
+    max-width: 100%;
+    max-height: calc(100vh - 36px);
+    margin-top: auto;
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   .rulesListScroll {
-    max-height: 60vh;
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

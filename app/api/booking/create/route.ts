@@ -149,7 +149,6 @@ export async function POST(request: Request) {
         .eq('slot_id', slot_id)
         .eq('payment_status', 'paid')
         .neq('team_id', team_id)
-        .neq('is_test_booking', true)
 
       const room_slot_number = 5 + (otherPaidCount || 0)
 
@@ -166,8 +165,9 @@ export async function POST(request: Request) {
         .select('booking_id')
         .single()
 
-      if (bookErr && bookErr.message?.includes('room_slot_number')) {
-        const fallback = await admin
+      if (bookErr && (bookErr.message?.includes('row-level security') || bookErr.message?.includes('RLS') || bookErr.message?.includes('room_slot_number'))) {
+        // Retry using authenticated user client or basic fields
+        const fallback = await supabase
           .from('bookings')
           .upsert({
             team_id,
@@ -209,7 +209,7 @@ export async function POST(request: Request) {
     }
 
     // Create pending booking for standard accounts
-    const { data: booking, error: bookErr } = await admin
+    let { data: booking, error: bookErr } = await admin
       .from('bookings')
       .insert({
         team_id,
@@ -221,8 +221,24 @@ export async function POST(request: Request) {
       .select('booking_id')
       .single()
 
-    if (bookErr) {
-      return NextResponse.json({ error: bookErr.message }, { status: 500 })
+    if (bookErr && (bookErr.message?.includes('row-level security') || bookErr.message?.includes('RLS'))) {
+      const fallback = await supabase
+        .from('bookings')
+        .insert({
+          team_id,
+          slot_id,
+          payment_status: 'pending',
+          amount_paid: 0,
+          is_test_booking: false,
+        })
+        .select('booking_id')
+        .single()
+      booking = fallback.data
+      bookErr = fallback.error
+    }
+
+    if (bookErr || !booking) {
+      return NextResponse.json({ error: bookErr?.message || 'Failed to create booking' }, { status: 500 })
     }
 
     return NextResponse.json({

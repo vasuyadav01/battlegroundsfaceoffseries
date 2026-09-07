@@ -86,11 +86,11 @@ export default async function DashboardPage() {
     name_changed: false,
   }
 
-  // Fetch booked slots for this team
+  // Fetch booked slots for this team with slot details & whatsapp_link
   let { data: bookings, error: bookingErr } = await admin
     .from('bookings')
     .select(
-      'booking_id, payment_status, amount_paid, coupon_used, created_at, room_slot_number, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals)'
+      'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, room_slot_number, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
     )
     .eq('team_id', safeTeam.team_id)
     .order('created_at', { ascending: false })
@@ -99,12 +99,50 @@ export default async function DashboardPage() {
     const fallback = await admin
       .from('bookings')
       .select(
-        'booking_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals)'
+        'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
       )
       .eq('team_id', safeTeam.team_id)
       .order('created_at', { ascending: false })
     bookings = fallback.data as any[]
   }
+
+  // Fetch all confirmed team bookings for these slots to show room slot layout table
+  const slotIds = Array.from(new Set((bookings || []).map(b => b.slot_id).filter(Boolean)))
+  let slotBookingsMap: Record<string, any[]> = {}
+
+  if (slotIds.length > 0) {
+    const { data: allSlotBookings } = await admin
+      .from('bookings')
+      .select('slot_id, room_slot_number, team_id, teams(team_name)')
+      .in('slot_id', slotIds)
+      .eq('payment_status', 'paid')
+      .order('room_slot_number', { ascending: true })
+
+    if (allSlotBookings) {
+      allSlotBookings.forEach(sb => {
+        if (!slotBookingsMap[sb.slot_id]) slotBookingsMap[sb.slot_id] = []
+        slotBookingsMap[sb.slot_id].push({
+          room_slot_number: sb.room_slot_number || 5,
+          team_id: sb.team_id,
+          team_name: (sb.teams as any)?.team_name || 'Team Registered',
+        })
+      })
+    }
+  }
+
+  // Fetch recorded match score results for past/completed slots
+  const { data: teamMatches } = await admin
+    .from('matches')
+    .select('match_id, slot_id, match_number, map_name, position, kills, position_points, elimination_points, total_points, played_at')
+    .eq('team_id', safeTeam.team_id)
+
+  // Fetch global whatsapp link fallback
+  const { data: configWA } = await admin
+    .from('config')
+    .select('value')
+    .eq('key', 'whatsapp_invite_link')
+    .maybeSingle()
+  const globalWhatsappLink = configWA?.value || 'https://chat.whatsapp.com/BGFS'
 
   // Fetch full leaderboard standings to calculate team rank and stats
   const { data: allLeaderboard } = await admin
@@ -139,6 +177,9 @@ export default async function DashboardPage() {
       team={safeTeam}
       userEmail={user.email || ''}
       bookings={bookings || []}
+      slotBookingsMap={slotBookingsMap}
+      teamMatches={teamMatches || []}
+      globalWhatsappLink={globalWhatsappLink}
       leaderboardEntry={leaderboardEntry}
       rank={rank}
       payouts={payouts || []}

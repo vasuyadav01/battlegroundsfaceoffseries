@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import LeaderboardClient from './LeaderboardClient'
 import type { Metadata } from 'next'
@@ -67,11 +68,13 @@ export default async function LeaderboardPage() {
   const ranked = filteredRows.map((row, idx) => ({ ...row, rank: idx + 1 }))
 
   return (
-    <LeaderboardClient
-      rows={ranked}
-      allMatches={filteredMatches}
-      slots={slots || []}
-      bookings={filteredBookings as any[]}
-    />
+    <Suspense fallback={<div style={{ padding: '3rem', textAlign: 'center', color: '#888' }}>Loading Leaderboard...</div>}>
+      <LeaderboardClient
+        rows={ranked}
+        allMatches={filteredMatches}
+        slots={slots || []}
+        bookings={filteredBookings as any[]}
+      />
+    </Suspense>
   )
 }

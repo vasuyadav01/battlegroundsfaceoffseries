@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Calendar, TrendingUp, Edit3, Lock, Check, X, FlaskConical, AlertCircle, KeyRound } from 'lucide-react'
+import { Calendar, TrendingUp, Edit3, Lock, Check, X, FlaskConical, AlertCircle, KeyRound, Trophy, MessageCircle } from 'lucide-react'
 import { formatShortDate } from '@/lib/utils/formatDate'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
@@ -14,10 +14,12 @@ interface SlotInfo {
   status: string
   entry_fee: number
   is_grand_finals: boolean
+  whatsapp_link?: string
 }
 
 interface Booking {
   booking_id: string
+  slot_id?: string
   payment_status: string
   amount_paid: number
   coupon_used: boolean
@@ -55,6 +57,9 @@ interface Props {
   }
   userEmail: string
   bookings: Booking[]
+  slotBookingsMap?: Record<string, any[]>
+  teamMatches?: any[]
+  globalWhatsappLink?: string
   leaderboardEntry: LeaderboardEntry | null
   rank: number
   payouts: Payout[]
@@ -73,6 +78,9 @@ export default function DashboardClient({
   team,
   userEmail,
   bookings,
+  slotBookingsMap = {},
+  teamMatches = [],
+  globalWhatsappLink = 'https://chat.whatsapp.com/BGFS',
   leaderboardEntry,
   rank,
   payouts,
@@ -97,6 +105,10 @@ export default function DashboardClient({
   const [passLoading, setPassLoading] = useState(false)
   const [passErr, setPassErr] = useState('')
   const [passMsg, setPassMsg] = useState('')
+
+  // Slot tab & Pre-Match Room Slot Layout Modal
+  const [slotTab, setSlotTab] = useState<'active' | 'past'>('active')
+  const [activeSlotModal, setActiveSlotModal] = useState<any | null>(null)
 
   async function handleChangePasswordSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -171,9 +183,14 @@ export default function DashboardClient({
     slotData: getSlotInfo(b.slots),
   }))
 
-  // Filter upcoming paid/pending slots
+  // Active / Upcoming slots (not completed)
   const upcomingBookings = normalizedBookings.filter(
     b => b.slotData && b.slotData.status !== 'completed'
+  )
+
+  // Past / Completed slots
+  const pastBookings = normalizedBookings.filter(
+    b => b.slotData && b.slotData.status === 'completed'
   )
 
   // Calculate total entry fees paid
@@ -365,60 +382,248 @@ export default function DashboardClient({
           </div>
         )}
 
-        {/* 3-Card Grid */}
+        {/* 2-Card Grid */}
         <div className={styles.cardGrid}>
-          {/* ── CARD 1: MY SLOTS ── */}
+          {/* ── CARD 1: MY SLOTS (ACTIVE & PAST) ── */}
           <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div className={styles.iconWrapper}>
-                <Calendar size={18} color="#facc15" />
+            <div className={styles.cardHeader} style={{ flexWrap: 'wrap', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                <div className={styles.iconWrapper}>
+                  <Calendar size={18} color="#facc15" />
+                </div>
+                <h2 className={styles.cardTitle}>MY TOURNAMENT SLOTS</h2>
               </div>
-              <h2 className={styles.cardTitle}>MY SLOTS</h2>
+
+              {/* Active vs Past Tab Switcher */}
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setSlotTab('active')}
+                  style={{
+                    background: slotTab === 'active' ? '#fbbf24' : '#1f1f1f',
+                    color: slotTab === 'active' ? '#111111' : '#888888',
+                    border: '1px solid #333333',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ACTIVE ({upcomingBookings.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSlotTab('past')}
+                  style={{
+                    background: slotTab === 'past' ? '#fbbf24' : '#1f1f1f',
+                    color: slotTab === 'past' ? '#111111' : '#888888',
+                    border: '1px solid #333333',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  PAST ({pastBookings.length})
+                </button>
+              </div>
             </div>
 
             <div className={styles.cardBody}>
-              {upcomingBookings.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>No slots registered yet</p>
-                  <Link href="/slots" className={styles.primaryBtn}>
-                    REGISTER FOR A SLOT →
-                  </Link>
-                </div>
-              ) : (
-                <div className={styles.slotsWrapper}>
-                  <div className={styles.slotList}>
-                    {upcomingBookings.map(b => (
-                      <div key={b.booking_id} className={styles.slotItem}>
-                        <div className={styles.slotDetails}>
-                          <span className={styles.slotDate}>
-                            {formatDate(b.slotData?.date || '')}
-                          </span>
-                          <span className={styles.slotTime}>
-                            {b.slotData?.time_label}
-                          </span>
-                          {b.room_slot_number && (
-                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#facc15', marginTop: '3px', letterSpacing: '0.04em' }}>
-                              ROOM SLOT: SLOT {b.room_slot_number}
-                            </span>
-                          )}
-                        </div>
-                        <span
-                          className={
-                            b.payment_status === 'paid'
-                              ? styles.badgePaid
-                              : styles.badgePending
-                          }
-                        >
-                          {b.payment_status === 'paid' ? 'PAID' : 'PENDING'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+              {/* TAB 1: ACTIVE / UPCOMING SLOTS */}
+              {slotTab === 'active' && (
+                <>
+                  {upcomingBookings.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <p className={styles.emptyText}>No active slots registered yet</p>
+                      <Link href="/slots" className={styles.primaryBtn}>
+                        REGISTER FOR A SLOT →
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className={styles.slotsWrapper}>
+                      <div className={styles.slotList}>
+                        {upcomingBookings.map(b => {
+                          const waLink = b.slotData?.whatsapp_link || globalWhatsappLink
+                          const slotTargetId = b.slot_id || b.slotData?.slot_id
+                          return (
+                            <div key={b.booking_id} className={styles.slotItem} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.85rem' }}>
+                              {/* 1. Booked Slot Details Header */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                                <div className={styles.slotDetails}>
+                                  <span className={styles.slotDate}>
+                                    📅 {formatDate(b.slotData?.date || '')} • {b.slotData?.time_label}
+                                  </span>
+                                  <span style={{ fontSize: '0.72rem', color: '#aaaaaa', marginTop: '2px', display: 'block' }}>
+                                    Match Series: 3 Matches (Erangel, Rondo, Miramar)
+                                  </span>
+                                </div>
+                                <span className={b.payment_status === 'paid' ? styles.badgePaid : styles.badgePending}>
+                                  {b.payment_status === 'paid' ? 'CONFIRMED' : 'PENDING'}
+                                </span>
+                              </div>
 
-                  <Link href="/slots" className={styles.secondaryBtn}>
-                    REGISTER ANOTHER SLOT →
-                  </Link>
-                </div>
+                              {/* 2 & 3. Room Slot Number & Points Table Action Grid */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                                {/* 2. Room Slot Number */}
+                                <div style={{
+                                  background: 'rgba(251, 191, 36, 0.08)',
+                                  border: '1px solid rgba(251, 191, 36, 0.3)',
+                                  borderRadius: '8px',
+                                  padding: '0.6rem 0.8rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                }}>
+                                  <span style={{ fontSize: '0.64rem', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 }}>
+                                    YOUR ROOM SLOT
+                                  </span>
+                                  <strong style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, marginTop: '1px' }}>
+                                    SLOT #{b.room_slot_number || 5}
+                                  </strong>
+                                </div>
+
+                                {/* 3. Points Table Direct Link */}
+                                <Link
+                                  href={`/leaderboard?slot_id=${slotTargetId}&tab=slot`}
+                                  style={{
+                                    background: '#1c1c1c',
+                                    border: '1px solid #fbbf24',
+                                    color: '#fbbf24',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 800,
+                                    padding: '0.6rem 0.8rem',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    letterSpacing: '0.02em',
+                                    transition: 'all 0.2s ease',
+                                  }}
+                                >
+                                  <Trophy size={14} color="#fbbf24" />
+                                  <span>POINTS TABLE →</span>
+                                </Link>
+                              </div>
+
+                              {/* 4. Official WhatsApp Group Link Button */}
+                              <a
+                                href={waLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  background: '#25D366',
+                                  color: '#080c10',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 800,
+                                  padding: '0.65rem 1rem',
+                                  borderRadius: '8px',
+                                  textDecoration: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '8px',
+                                  letterSpacing: '0.02em',
+                                  boxShadow: '0 4px 14px rgba(37, 211, 102, 0.15)',
+                                }}
+                              >
+                                <MessageCircle size={16} color="#080c10" />
+                                <span>JOIN WHATSAPP FOR ROOM ID &amp; PASS</span>
+                              </a>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      <Link href="/slots" className={styles.secondaryBtn} style={{ marginTop: '0.5rem' }}>
+                        REGISTER ANOTHER SLOT →
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* TAB 2: PAST / COMPLETED SLOTS */}
+              {slotTab === 'past' && (
+                <>
+                  {pastBookings.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <p className={styles.emptyText}>No past completed slots yet</p>
+                    </div>
+                  ) : (
+                    <div className={styles.slotList}>
+                      {pastBookings.map(b => {
+                        const targetSlotId = b.slot_id || b.slotData?.slot_id
+                        const matchesForSlot = teamMatches.filter(m => m.slot_id === targetSlotId)
+                        const totalSlotPts = matchesForSlot.reduce((sum, m) => sum + (m.total_points || 0), 0)
+                        return (
+                          <div key={b.booking_id} className={styles.slotItem} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <span className={styles.slotDate}>{formatDate(b.slotData?.date || '')} • {b.slotData?.time_label}</span>
+                                <span style={{ fontSize: '0.72rem', color: '#fbbf24', display: 'block', fontWeight: 800 }}>
+                                  ROOM SLOT: SLOT #{b.room_slot_number || 5}
+                                </span>
+                              </div>
+                              <span style={{ background: 'rgba(255,255,255,0.08)', color: '#aaaaaa', fontSize: '0.7rem', fontWeight: 800, padding: '3px 8px', borderRadius: '4px' }}>
+                                COMPLETED
+                              </span>
+                            </div>
+
+                             {/* Score Summary for Past Slot */}
+                            <div style={{ background: '#141414', border: '1px solid #262626', borderRadius: '6px', padding: '0.65rem', fontSize: '0.78rem' }}>
+                              {matchesForSlot.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  {matchesForSlot.map((m, idx) => (
+                                    <div key={m.match_id || idx} style={{ display: 'flex', justifyContent: 'space-between', color: '#cccccc' }}>
+                                      <span>Match {m.match_number || idx + 1} ({m.map_name || 'Erangel'}):</span>
+                                      <strong style={{ color: '#ffffff' }}>
+                                        Pos #{m.position || '-'} • {m.kills || 0} Kills ({m.total_points || 0} Pts)
+                                      </strong>
+                                    </div>
+                                  ))}
+                                  <div style={{ borderTop: '1px dashed #333', paddingTop: '4px', marginTop: '2px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <strong style={{ color: '#fbbf24' }}>TOTAL SLOT SCORE:</strong>
+                                    <strong style={{ color: '#fbbf24', fontSize: '0.88rem' }}>{totalSlotPts} PTS</strong>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span style={{ color: '#777777', fontStyle: 'italic' }}>Scores recorded on global leaderboard</span>
+                              )}
+                            </div>
+
+                            <Link
+                              href={`/leaderboard?slot_id=${targetSlotId}&tab=slot`}
+                              style={{
+                                background: '#1c1c1c',
+                                border: '1px solid #fbbf24',
+                                color: '#fbbf24',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                padding: '0.55rem 0.8rem',
+                                borderRadius: '6px',
+                                textDecoration: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                letterSpacing: '0.02em',
+                                marginTop: '0.2rem',
+                              }}
+                            >
+                              <Trophy size={13} color="#fbbf24" />
+                              <span>VIEW SLOT POINTS TABLE →</span>
+                            </Link>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -477,6 +682,140 @@ export default function DashboardClient({
           </div>
         </div>
       </div>
+
+      {/* ── PRE-MATCH ROOM SLOT LAYOUT MODAL ── */}
+      {activeSlotModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '1rem',
+        }}>
+          <div style={{
+            background: '#141414',
+            border: '1px solid #2e2e2e',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '560px',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.9)',
+          }}>
+            {/* Modal Header */}
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #222222', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase' }}>
+                  🎯 ROOM SLOT LAYOUT TABLE
+                </h3>
+                <span style={{ fontSize: '0.78rem', color: '#aaaaaa' }}>
+                  {formatDate(activeSlotModal.slotData?.date || '')} • {activeSlotModal.slotData?.time_label}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveSlotModal(null)}
+                style={{ background: 'transparent', border: 'none', color: '#aaaaaa', fontSize: '1.25rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Room Slot List (Slots 1 to 24) */}
+            <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {Array.from({ length: 24 }).map((_, idx) => {
+                const slotNum = idx + 1
+                const bookedTeamsInSlot = slotBookingsMap[activeSlotModal.slot_id] || []
+                const foundBooking = bookedTeamsInSlot.find(b => b.room_slot_number === slotNum)
+
+                const isReservedAdmin = slotNum <= 4
+                const isUserSquad = foundBooking && foundBooking.team_id === team.team_id
+
+                return (
+                  <div
+                    key={slotNum}
+                    style={{
+                      background: isUserSquad
+                        ? 'rgba(251, 191, 36, 0.15)'
+                        : isReservedAdmin
+                        ? 'rgba(239, 68, 68, 0.08)'
+                        : foundBooking
+                        ? '#1c1c1c'
+                        : '#111111',
+                      border: isUserSquad
+                        ? '1.5px solid #fbbf24'
+                        : isReservedAdmin
+                        ? '1px solid rgba(239, 68, 68, 0.3)'
+                        : '1px solid #222222',
+                      borderRadius: '8px',
+                      padding: '0.55rem 0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '0.82rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{
+                        width: '26px',
+                        height: '26px',
+                        borderRadius: '50%',
+                        background: isUserSquad ? '#fbbf24' : '#262626',
+                        color: isUserSquad ? '#000000' : '#ffffff',
+                        fontWeight: 900,
+                        fontSize: '0.72rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        {slotNum}
+                      </span>
+
+                      <strong style={{ color: isUserSquad ? '#fbbf24' : '#ffffff' }}>
+                        {isReservedAdmin
+                          ? 'BGFS Host / Caster / Referees'
+                          : foundBooking
+                          ? foundBooking.team_name
+                          : 'Slot Open / Unbooked'}
+                      </strong>
+                    </div>
+
+                    {isUserSquad && (
+                      <span style={{ background: '#fbbf24', color: '#000000', fontSize: '0.65rem', fontWeight: 900, padding: '2px 8px', borderRadius: '4px' }}>
+                        ★ YOUR SQUAD
+                      </span>
+                    )}
+
+                    {isReservedAdmin && (
+                      <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', fontSize: '0.65rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px' }}>
+                        ADMIN
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #222222', textAlign: 'right' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setActiveSlotModal(null)}
+                style={{ padding: '0.45rem 1.25rem', fontSize: '0.82rem', fontWeight: 800 }}
+              >
+                Close Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

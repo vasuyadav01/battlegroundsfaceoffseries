@@ -40,10 +40,48 @@ export async function updateSession(request: NextRequest) {
     )
 
     const { data: { user } } = await supabase.auth.getUser()
+    const pathname = request.nextUrl.pathname
+
+    // Maintenance Mode Check
+    const isAllowedPath =
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/reset-password') ||
+      pathname.startsWith('/maintenance') ||
+      pathname.startsWith('/api') ||
+      pathname.startsWith('/_next')
+
+    if (!isAllowedPath) {
+      const { data: configData } = await supabase
+        .from('config')
+        .select('value')
+        .eq('key', 'maintenance_mode')
+        .maybeSingle()
+
+      if (configData?.value === 'true') {
+        let isAdmin = false
+        if (user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('role')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          if (userData?.role === 'admin' || userData?.role === 'admin_scores') {
+            isAdmin = true
+          }
+        }
+
+        if (!isAdmin) {
+          const url = request.nextUrl.clone()
+          url.pathname = '/maintenance'
+          return NextResponse.redirect(url)
+        }
+      }
+    }
 
     // Protected routes
     const adminPaths = ['/admin']
-    const pathname = request.nextUrl.pathname
 
     if (pathname.startsWith('/onboard')) {
       const url = request.nextUrl.clone()

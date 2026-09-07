@@ -26,11 +26,21 @@ export async function POST(request: Request) {
       }
 
       // Insert team
-      const { data: team, error: teamErr } = await admin
+      let { data: team, error: teamErr } = await admin
         .from('teams')
         .insert({ team_name: teamName.trim(), captain_user_id: user.id })
         .select()
         .single()
+
+      if (teamErr && (teamErr.message?.includes('row-level security') || teamErr.message?.includes('RLS'))) {
+        const retryUser = await supabase
+          .from('teams')
+          .insert({ team_name: teamName.trim(), captain_user_id: user.id })
+          .select()
+          .single()
+        team = retryUser.data
+        teamErr = retryUser.error
+      }
 
       if (teamErr) {
         const isUnique = teamErr.code === '23505' || teamErr.message.toLowerCase().includes('unique')

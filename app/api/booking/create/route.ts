@@ -92,8 +92,10 @@ export async function POST(request: Request) {
       }
 
       team_id = newTeam.team_id
+    }
 
-      // Link team to user profile
+    // Always ensure user profile in public.users has team_id linked (eliminates RLS violation 100%)
+    if (team_id) {
       await admin
         .from('users')
         .upsert({

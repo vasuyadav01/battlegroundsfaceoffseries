@@ -84,6 +84,11 @@ export default function SlotsClient({
 }: Props) {
   const router = useRouter()
 
+  const [slotsList, setSlotsList] = useState<Slot[]>(slots)
+  useEffect(() => {
+    setSlotsList(slots)
+  }, [slots])
+
   const [bookedSlotIds, setBookedSlotIds] = useState<string[]>(userBookedSlotIds)
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
   const [confirmFreeSlot, setConfirmFreeSlot] = useState<Slot | null>(null)
@@ -118,14 +123,14 @@ export default function SlotsClient({
 
   // Filter slots based on date/time expiration
   const filteredSlots = useMemo(() => {
-    return slots.filter(slot => {
+    return slotsList.filter(slot => {
       if (!mounted) return true
       const isPast = isSlotPastOrEnded(slot.date, slot.time_label, slot.status)
       if (filterTab === 'upcoming') return !isPast
       if (filterTab === 'past') return isPast
       return true
     })
-  }, [slots, filterTab, mounted])
+  }, [slotsList, filterTab, mounted])
 
   // Group filtered slots by date
   const slotsByDate = useMemo(() => {
@@ -212,7 +217,15 @@ function loadRazorpayScript(): Promise<boolean> {
 
         // Direct Instant Booking Confirmation (Bypasses Razorpay for testing)
         if (createData.auto_confirmed || createData.is_test_booking) {
-          setBookedSlotIds(prev => [...prev, slot.slot_id])
+          setBookedSlotIds(prev => Array.from(new Set([...prev, slot.slot_id])))
+          setSlotsList(prev => prev.map(s => {
+            if (s.slot_id === slot.slot_id) {
+              const newCount = (s.teams_booked_count || 0) + 1
+              const isFull = newCount >= s.capacity
+              return { ...s, teams_booked_count: newCount, status: isFull ? 'full' : s.status }
+            }
+            return s
+          }))
           setSuccessToast(`✅ Slot for ${slot.time_label} registered successfully!`)
           setBookingSlotId(null)
           return
@@ -582,11 +595,11 @@ function loadRazorpayScript(): Promise<boolean> {
                         {isCompleted ? (
                           'CLOSED'
                         ) : isFull ? (
-                          'FULL (20/20)'
+                          'SLOTS FULL (0 LEFT)'
                         ) : isUrgent ? (
                           <><Flame size={11} className={styles.flameIcon} /> {spotsLeft} SPOTS LEFT</>
                         ) : (
-                          `${spotsLeft}/${slot.capacity} SPOTS`
+                          `${spotsLeft}/${slot.capacity} SPOTS LEFT`
                         )}
                       </span>
 

@@ -88,13 +88,29 @@ export default async function DashboardPage() {
     name_changed: false,
   }
 
-  // Fetch booked slots for this team with slot details & whatsapp_link
+  // Collect all team IDs owned by or linked to this user (for legacy & new accounts compatibility)
+  const { data: userCaptainedTeams } = await admin
+    .from('teams')
+    .select('team_id')
+    .eq('captain_user_id', user.id)
+
+  const allUserTeamIds = Array.from(
+    new Set(
+      [
+        safeTeam.team_id,
+        userProfile?.team_id,
+        ...(userCaptainedTeams || []).map(t => t.team_id)
+      ].filter(Boolean)
+    )
+  )
+
+  // Fetch booked slots for this user/team with slot details & whatsapp_link
   let { data: bookings, error: bookingErr } = await admin
     .from('bookings')
     .select(
       'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, room_slot_number, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
     )
-    .eq('team_id', safeTeam.team_id)
+    .in('team_id', allUserTeamIds)
     .order('created_at', { ascending: false })
 
   if (bookingErr && bookingErr.message?.includes('room_slot_number')) {
@@ -103,7 +119,7 @@ export default async function DashboardPage() {
       .select(
         'booking_id, slot_id, payment_status, amount_paid, coupon_used, created_at, slots(slot_id, date, time_label, status, entry_fee, is_grand_finals, whatsapp_link)'
       )
-      .eq('team_id', safeTeam.team_id)
+      .in('team_id', allUserTeamIds)
       .order('created_at', { ascending: false })
     bookings = fallback.data as any[]
   }

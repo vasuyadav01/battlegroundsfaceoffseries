@@ -132,25 +132,41 @@ export default async function SlotsPage() {
       if (teamData?.is_test_account) isTestAccount = true
     }
 
-    if (teamId) {
+    // Collect all team IDs owned by or linked to this user (for legacy & new accounts compatibility)
+    const { data: userCaptainedTeams } = await admin
+      .from('teams')
+      .select('team_id')
+      .eq('captain_user_id', user.id)
+
+    const allUserTeamIds = Array.from(
+      new Set(
+        [
+          teamId,
+          userProfile?.team_id,
+          ...(userCaptainedTeams || []).map(t => t.team_id)
+        ].filter(Boolean)
+      )
+    )
+
+    if (allUserTeamIds.length > 0) {
       // 3. Fetch unused free slot coupons for this team
       const { data: couponsData } = await admin
         .from('coupons')
         .select('coupon_id, code')
-        .eq('team_id', teamId)
+        .in('team_id', allUserTeamIds)
         .eq('status', 'unused')
 
       unusedCoupons = couponsData || []
       freeCoupon = unusedCoupons.length > 0 ? unusedCoupons[0] : null
 
-      // 4. Fetch all slot IDs already booked by this team (paid)
+      // 4. Fetch all slot IDs already booked by this user/team (paid)
       const { data: userBookings } = await admin
         .from('bookings')
         .select('slot_id')
-        .eq('team_id', teamId)
+        .in('team_id', allUserTeamIds)
         .eq('payment_status', 'paid')
 
-      userBookedSlotIds = userBookings?.map(b => b.slot_id) || []
+      userBookedSlotIds = Array.from(new Set((userBookings || []).map(b => b.slot_id).filter(Boolean)))
     }
   }
 

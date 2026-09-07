@@ -23,13 +23,12 @@ export async function POST(request: Request) {
     // Get user's team profile & check test account status
     const { data: userProfile } = await admin
       .from('users')
-      .select('team_id, is_test_account, test_mode_active')
+      .select('team_id, is_test_account')
       .eq('user_id', user.id)
       .maybeSingle()
 
     let team_id = userProfile?.team_id
     let isTestAccount = Boolean(userProfile?.is_test_account)
-    let isTestModeActive = (userProfile as any)?.test_mode_active !== false
 
     // Fallback: Check if user is already captain of an existing team in teams table
     if (!team_id) {
@@ -154,8 +153,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // TEST MODE BRANCH: Auto-confirm booking directly without Razorpay if test account or payment keys not configured
-    const isTestMode = isTestAccount || isTestModeActive || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('placeholder')
+    // TEST MODE BRANCH: Auto-confirm booking directly ONLY if explicitly flagged as a Test Account by Admin
+    const isTestMode = Boolean(isTestAccount)
     if (isTestMode) {
       // Calculate FCFS room slot number starting from Slot 5 for this specific slot
       const { count: otherPaidCount } = await admin

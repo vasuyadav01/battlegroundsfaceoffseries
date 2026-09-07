@@ -22,8 +22,8 @@ export default async function AdminPage() {
   let role = userProfile?.role
 
   if (role !== 'admin' && role !== 'admin_scores') {
-    // Auto-promote logged in user to admin in local dev/test mode so owner never gets blocked
-    if (process.env.NODE_ENV !== 'production' || userProfile?.is_test_account || true) {
+    // Auto-promote logged in user to admin in local dev mode so owner never gets blocked
+    if (process.env.NODE_ENV !== 'production' || userProfile?.is_test_account) {
       await admin
         .from('users')
         .upsert({ user_id: user.id, email: user.email, role: 'admin' }, { onConflict: 'user_id' })
@@ -55,7 +55,7 @@ export default async function AdminPage() {
   if (role === 'admin') {
     try {
       // 1. Get user records from public.users table
-      const { data: publicProfiles } = await admin.from('users').select('user_id, email, display_name, role')
+      const { data: publicProfiles } = await admin.from('users').select('user_id, email, display_name, role, is_test_account')
       const profileMap = new Map((publicProfiles || []).map(p => [p.user_id, p]))
 
       // 2. Fetch all registered users from Supabase Auth service
@@ -70,6 +70,7 @@ export default async function AdminPage() {
             email: au.email || prof?.email || 'No email',
             display_name: prof?.display_name || au.user_metadata?.display_name || au.user_metadata?.full_name || (au.email ? au.email.split('@')[0] : '—'),
             role: prof?.role || 'player',
+            is_test_account: Boolean(prof?.is_test_account),
           }
         })
       } else {
@@ -77,7 +78,7 @@ export default async function AdminPage() {
       }
     } catch (err) {
       console.error('Error listing auth users:', err)
-      const { data: fallbackUsers } = await admin.from('users').select('user_id, email, display_name, role')
+      const { data: fallbackUsers } = await admin.from('users').select('user_id, email, display_name, role, is_test_account')
       finalUserList = fallbackUsers || []
     }
   }

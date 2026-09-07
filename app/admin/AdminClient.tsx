@@ -79,6 +79,25 @@ export default function AdminClient({ userRole = 'admin', slots, teams, payouts:
     }
   }
 
+  async function toggleUserTestMode(userId: string, currentStatus: boolean) {
+    const newStatus = !currentStatus
+    try {
+      const res = await fetch('/api/user/toggle-test-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId, enabled: newStatus }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_test_account: newStatus } : u))
+      } else {
+        alert(data.error || 'Failed to toggle test mode')
+      }
+    } catch {
+      alert('Error toggling test mode')
+    }
+  }
+
   return (
     <div className={styles.adminPage}>
       {/* Sidebar */}
@@ -111,7 +130,14 @@ export default function AdminClient({ userRole = 'admin', slots, teams, payouts:
           {isSuperAdmin && tab === 'bookings' && <BookingsTab bookings={bookings} />}
           {isSuperAdmin && tab === 'coupons' && <CouponsTab coupons={coupons} teams={teams} supabase={supabase} />}
           {isSuperAdmin && tab === 'config' && <ConfigTab config={config} supabase={supabase} />}
-          {isSuperAdmin && tab === 'users' && <UsersTab users={users} onUpdateRole={updateUserRole} onDeleteUser={deleteUser} />}
+          {isSuperAdmin && tab === 'users' && (
+            <UsersTab
+              users={users}
+              onUpdateRole={updateUserRole}
+              onDeleteUser={deleteUser}
+              onToggleTestMode={toggleUserTestMode}
+            />
+          )}
         </div>
       </main>
     </div>
@@ -1930,11 +1956,21 @@ function ConfigTab({ config, supabase }: { config: Record<string, string>; supab
 }
 
 // ── USERS & ROLES TAB ─────────────────────────────────────────────
-function UsersTab({ users, onUpdateRole, onDeleteUser }: { users: any[]; onUpdateRole: (id: string, role: string) => void; onDeleteUser?: (id: string) => void }) {
+function UsersTab({
+  users,
+  onUpdateRole,
+  onDeleteUser,
+  onToggleTestMode,
+}: {
+  users: any[]
+  onUpdateRole: (id: string, role: string) => void
+  onDeleteUser?: (id: string) => void
+  onToggleTestMode?: (id: string, currentStatus: boolean) => void
+}) {
   return (
     <div>
       <h2 className={styles.tabTitle}>User &amp; Role Management</h2>
-      <p className={styles.tabDesc}>Assign special admin roles or delete unwanted accounts from database.</p>
+      <p className={styles.tabDesc}>Assign admin roles, toggle test account mode, or delete unwanted accounts from database.</p>
       <div className="table-wrapper" style={{ marginTop: '1rem' }}>
         <table>
           <thead>
@@ -1942,6 +1978,7 @@ function UsersTab({ users, onUpdateRole, onDeleteUser }: { users: any[]; onUpdat
               <th>Email</th>
               <th>Display Name</th>
               <th>Current Role</th>
+              <th>Test Account</th>
               <th>Change Role</th>
               <th>Actions</th>
             </tr>
@@ -1957,6 +1994,17 @@ function UsersTab({ users, onUpdateRole, onDeleteUser }: { users: any[]; onUpdat
                   </span>
                 </td>
                 <td>
+                  {u.is_test_account ? (
+                    <span className="badge badge-warning" style={{ background: '#f59e0b', color: '#000', fontWeight: 800 }}>
+                      🧪 Test Mode ON
+                    </span>
+                  ) : (
+                    <span className="badge badge-neutral" style={{ color: '#888' }}>
+                      Real Account
+                    </span>
+                  )}
+                </td>
+                <td>
                   <select
                     className="form-input"
                     style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', width: 'auto' }}
@@ -1970,20 +2018,39 @@ function UsersTab({ users, onUpdateRole, onDeleteUser }: { users: any[]; onUpdat
                   </select>
                 </td>
                 <td>
-                  {onDeleteUser && (
-                    <button
-                      className="btn"
-                      style={{ background: '#ef4444', color: '#fff', padding: '0.3rem 0.6rem', fontSize: '0.75rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                      onClick={() => onDeleteUser(u.user_id)}
-                    >
-                      Delete Account
-                    </button>
-                  )}
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    {onToggleTestMode && (
+                      <button
+                        className="btn"
+                        style={{
+                          background: u.is_test_account ? '#374151' : '#d97706',
+                          color: '#fff',
+                          padding: '0.3rem 0.6rem',
+                          fontSize: '0.75rem',
+                          borderRadius: '4px',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => onToggleTestMode(u.user_id, u.is_test_account)}
+                      >
+                        {u.is_test_account ? 'Turn Test Mode OFF' : 'Turn Test Mode ON'}
+                      </button>
+                    )}
+                    {onDeleteUser && (
+                      <button
+                        className="btn"
+                        style={{ background: '#ef4444', color: '#fff', padding: '0.3rem 0.6rem', fontSize: '0.75rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                        onClick={() => onDeleteUser(u.user_id)}
+                      >
+                        Delete Account
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No users found</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No users found</td></tr>
             )}
           </tbody>
         </table>

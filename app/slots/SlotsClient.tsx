@@ -218,84 +218,92 @@ function loadRazorpayScript(): Promise<boolean> {
           return
         }
 
-        // Check if live Razorpay keys are configured on the server
-        const orderRes = await fetch('/api/payment/create-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            bookingId: createData.booking_id,
-            amount: slot.entry_fee || 50,
-          }),
-        })
+        // Try Razorpay order creation
+        let rzpOpened = false
+        try {
+          const orderRes = await fetch('/api/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId: createData.booking_id,
+              amount: slot.entry_fee || 50,
+            }),
+          })
 
-        if (orderRes.ok) {
-          const orderData = await orderRes.json()
-          const loaded = await loadRazorpayScript()
+          if (orderRes.ok) {
+            const orderData = await orderRes.json()
+            const loaded = await loadRazorpayScript()
 
-          if (loaded && (window as any).Razorpay) {
-            const rzp = new (window as any).Razorpay({
-              key: orderData.keyId,
-              amount: orderData.amount,
-              currency: orderData.currency,
-              name: 'Battlegrounds Faceoff Series',
-              description: `Slot Registration: ${slot.time_label}`,
-              order_id: orderData.orderId,
-              handler: async function (response: any) {
-                const verifyRes = await fetch('/api/payment/verify', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    bookingId: createData.booking_id,
-                    razorpayPaymentId: response.razorpay_payment_id,
-                    razorpayOrderId: response.razorpay_order_id,
-                    razorpaySignature: response.razorpay_signature,
-                  }),
-                })
-                const verifyData = await verifyRes.json()
-                if (verifyRes.ok && verifyData.success) {
-                  setBookedSlotIds(prev => [...prev, slot.slot_id])
-                  setSuccessToast(`Slot for ${slot.time_label} booked! Join WhatsApp group below.`)
-                } else {
-                  alert(verifyData.error || 'Payment verification failed. Please contact support.')
-                }
-                setBookingSlotId(null)
-              },
-              modal: {
-                ondismiss: function () {
+            if (loaded && (window as any).Razorpay && orderData.keyId) {
+              const rzp = new (window as any).Razorpay({
+                key: orderData.keyId,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'Battlegrounds Faceoff Series',
+                description: `Slot Registration: ${slot.time_label}`,
+                order_id: orderData.orderId,
+                handler: async function (response: any) {
+                  const verifyRes = await fetch('/api/payment/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      bookingId: createData.booking_id,
+                      razorpayPaymentId: response.razorpay_payment_id,
+                      razorpayOrderId: response.razorpay_order_id,
+                      razorpaySignature: response.razorpay_signature,
+                    }),
+                  })
+                  const verifyData = await verifyRes.json()
+                  if (verifyRes.ok && verifyData.success) {
+                    setBookedSlotIds(prev => [...prev, slot.slot_id])
+                    setSuccessToast(`Slot for ${slot.time_label} booked! Join WhatsApp group below.`)
+                  } else {
+                    alert(verifyData.error || 'Payment verification failed. Please contact support.')
+                  }
                   setBookingSlotId(null)
                 },
-              },
-              prefill: {},
-              theme: { color: '#fbbf24' },
-            })
-            rzp.open()
-            return
+                modal: {
+                  ondismiss: function () {
+                    setBookingSlotId(null)
+                  },
+                },
+                prefill: {},
+                theme: { color: '#fbbf24' },
+              })
+              rzp.open()
+              rzpOpened = true
+              return
+            }
           }
+        } catch {
+          rzpOpened = false
         }
 
-        // Fallback confirmation if Razorpay keys are not configured yet
-        const confirmRes = await fetch('/api/booking/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            booking_id: createData.booking_id,
-            razorpay_payment_id: `pay_sim_${Date.now()}`,
-            razorpay_order_id: `order_sim_${Date.now()}`,
-            razorpay_signature: 'simulated_signature',
-          }),
-        })
-        const confirmData = await confirmRes.json()
+        // Fallback confirmation if Razorpay is not configured or fails to open
+        if (!rzpOpened) {
+          const confirmRes = await fetch('/api/booking/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              booking_id: createData.booking_id,
+              razorpay_payment_id: `pay_sim_${Date.now()}`,
+              razorpay_order_id: `order_sim_${Date.now()}`,
+              razorpay_signature: 'simulated_signature',
+            }),
+          })
+          const confirmData = await confirmRes.json()
 
-        if (!confirmRes.ok) {
-          alert(confirmData.error || 'Payment confirmation failed.')
-          setBookingSlotId(null)
-          return
+          if (!confirmRes.ok) {
+            alert(confirmData.error || 'Registration confirmation failed.')
+            setBookingSlotId(null)
+            return
+          }
         }
       }
 
       // Success: Lock slot as booked immediately
       setBookedSlotIds(prev => [...prev, slot.slot_id])
-      setSuccessToast(`Slot for ${slot.time_label} booked! Join WhatsApp group below.`)
+      setSuccessToast(`Slot for ${slot.time_label} registered successfully! Join WhatsApp group below.`)
       setBookingSlotId(null)
 
       setTimeout(() => setSuccessToast(null), 5000)

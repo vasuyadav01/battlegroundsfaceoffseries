@@ -7,28 +7,36 @@ import { NextResponse } from 'next/server'
 // Uses service role to bypass RLS and reliably write team + user profile.
 export async function POST(request: Request) {
   try {
-    const { teamName, displayName } = await request.json()
+    const { teamName, displayName, userId: bodyUserId } = await request.json()
 
     if (!teamName?.trim()) {
       return NextResponse.json({ error: 'Team name is required' }, { status: 400 })
     }
 
-    // Get the authenticated user from the session cookie
     const supabase = await createClient()
-    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    const { data: { user: sessionUser } } = await supabase.auth.getUser()
 
-    if (authErr || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    const admin = await createAdminClient()
+
+    let targetUser = sessionUser
+    let targetUserId = sessionUser?.id || bodyUserId
+
+    if (!targetUser && bodyUserId) {
+      const { data: authUserData } = await admin.auth.admin.getUserById(bodyUserId)
+      if (authUserData?.user) {
+        targetUser = authUserData.user
+      }
     }
 
-    // Use admin client (service role) — bypasses RLS entirely
-    const admin = await createAdminClient()
+    if (!targetUserId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
 
     // First check if a team already exists for this captain
     let { data: team } = await admin
       .from('teams')
       .select('*')
-      .eq('captain_user_id', user.id)
+      .eq('captain_user_id', targetUserId)
       .maybeSingle()
 
     let teamErr: any = null
@@ -39,7 +47,7 @@ export async function POST(request: Request) {
         .from('teams')
         .insert({
           team_name: teamName.trim(),
-          captain_user_id: user.id,
+          captain_user_id: targetUserId,
         })
         .select()
         .maybeSingle()
@@ -53,7 +61,7 @@ export async function POST(request: Request) {
           .from('teams')
           .insert({
             team_name: teamName.trim(),
-            captain_user_id: user.id,
+            captain_user_id: targetUserId,
           })
           .select()
           .maybeSingle()
@@ -79,8 +87,8 @@ export async function POST(request: Request) {
     const { error: userErr } = await admin
       .from('users')
       .upsert({
-        user_id: user.id,
-        email: user.email,
+        user_id: targetUserId,
+        email: targetUser?.email || '',
         team_id: teamId,
         role: 'captain',
         display_name: displayName?.trim() || teamName.trim(),
@@ -91,8 +99,8 @@ export async function POST(request: Request) {
       await supabase
         .from('users')
         .upsert({
-          user_id: user.id,
-          email: user.email,
+          user_id: targetUserId,
+          email: targetUser?.email || '',
           team_id: teamId,
           role: 'captain',
           display_name: displayName?.trim() || teamName.trim(),

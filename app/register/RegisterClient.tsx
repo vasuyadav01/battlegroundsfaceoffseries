@@ -34,12 +34,12 @@ export default function RegisterClient() {
 
     const cleanEmail = email.trim().toLowerCase()
 
-    // Step 1: Register the auth user
+    // Step 1: Register the auth user & save metadata
     const { data: authData, error: authErr } = await supabase.auth.signUp({
       email: cleanEmail,
       password,
       options: {
-        data: { display_name: teamName.trim() },
+        data: { display_name: teamName.trim(), team_name: teamName.trim() },
       },
     })
 
@@ -60,23 +60,20 @@ export default function RegisterClient() {
       return
     }
 
+    // Always create team and profile in database immediately using userId
+    try {
+      await fetch('/api/register-team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamName: teamName.trim(), displayName: teamName.trim(), userId: user.id }),
+      })
+    } catch (e) {
+      console.error('Pre-provision team error:', e)
+    }
+
     if (!authData.session) {
       setLoading(false)
       setConfirmEmail(true)
-      return
-    }
-
-    const res = await fetch('/api/register-team', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ teamName: teamName.trim(), displayName: teamName.trim() }),
-    })
-
-    const result = await res.json()
-
-    if (!res.ok) {
-      setLoading(false)
-      setError(result.error || 'Registration failed. Please try again.')
       return
     }
 

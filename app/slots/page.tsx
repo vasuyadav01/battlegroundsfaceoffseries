@@ -74,13 +74,32 @@ export default async function SlotsPage() {
 
     let teamId = userProfile?.team_id
 
-    // 2. Fallback: Check if user is a captain of a team in teams table
+    // 2. Fallback: Check if user is a captain of a team in teams table or auto-provision
     if (!teamId) {
-      const { data: teamByCaptain } = await admin
+      let { data: teamByCaptain } = await admin
         .from('teams')
         .select('team_id, team_name, is_test_account')
         .eq('captain_user_id', user.id)
         .maybeSingle()
+
+      if (!teamByCaptain) {
+        const defaultTeamName =
+          user.user_metadata?.display_name?.trim() ||
+          user.user_metadata?.team_name?.trim() ||
+          user.user_metadata?.full_name?.trim() ||
+          (user.email ? `${user.email.split('@')[0]} Squad` : `Team ${user.id.slice(0, 5)}`)
+
+        const { data: createdTeam } = await admin
+          .from('teams')
+          .insert({
+            team_name: defaultTeamName,
+            captain_user_id: user.id,
+          })
+          .select('team_id, team_name, is_test_account')
+          .maybeSingle()
+
+        teamByCaptain = createdTeam
+      }
 
       if (teamByCaptain) {
         teamId = teamByCaptain.team_id
@@ -90,7 +109,16 @@ export default async function SlotsPage() {
         // Link team_id to user profile
         await admin
           .from('users')
-          .upsert({ user_id: user.id, email: user.email, team_id: teamId, role: 'captain' }, { onConflict: 'user_id' })
+          .upsert(
+            {
+              user_id: user.id,
+              email: user.email,
+              team_id: teamId,
+              role: 'captain',
+              display_name: teamByCaptain.team_name,
+            },
+            { onConflict: 'user_id' }
+          )
       }
     } else {
       // Fetch team details

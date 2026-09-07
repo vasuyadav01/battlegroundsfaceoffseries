@@ -39,9 +39,11 @@ export default async function DashboardPage() {
       .maybeSingle()
 
     if (!existingTeam) {
-      const defaultTeamName = user.email
-        ? `${user.email.split('@')[0]} Squad`
-        : `Team ${user.id.slice(0, 5)}`
+      const defaultTeamName =
+        user.user_metadata?.display_name?.trim() ||
+        user.user_metadata?.team_name?.trim() ||
+        user.user_metadata?.full_name?.trim() ||
+        (user.email ? `${user.email.split('@')[0]} Squad` : `Team ${user.id.slice(0, 5)}`)
 
       const { data: newTeam } = await admin
         .from('teams')
@@ -50,7 +52,7 @@ export default async function DashboardPage() {
           captain_user_id: user.id,
         })
         .select()
-        .single()
+        .maybeSingle()
 
       existingTeam = newTeam
     }

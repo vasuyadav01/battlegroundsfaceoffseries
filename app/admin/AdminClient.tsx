@@ -59,6 +59,26 @@ export default function AdminClient({ userRole = 'admin', slots, teams, payouts:
     setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, role: newRole } : u))
   }
 
+  async function deleteUser(userId: string) {
+    if (!confirm('Are you sure you want to completely delete this user account? This will also remove their team bookings and registration.')) return
+    try {
+      const res = await fetch('/api/user/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_user_id: userId }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setUsers(prev => prev.filter(u => u.user_id !== userId))
+        alert('User account successfully deleted.')
+      } else {
+        alert(data.error || 'Failed to delete user account')
+      }
+    } catch {
+      alert('Error deleting user account')
+    }
+  }
+
   return (
     <div className={styles.adminPage}>
       {/* Sidebar */}
@@ -91,7 +111,7 @@ export default function AdminClient({ userRole = 'admin', slots, teams, payouts:
           {isSuperAdmin && tab === 'bookings' && <BookingsTab bookings={bookings} />}
           {isSuperAdmin && tab === 'coupons' && <CouponsTab coupons={coupons} teams={teams} supabase={supabase} />}
           {isSuperAdmin && tab === 'config' && <ConfigTab config={config} supabase={supabase} />}
-          {isSuperAdmin && tab === 'users' && <UsersTab users={users} onUpdateRole={updateUserRole} />}
+          {isSuperAdmin && tab === 'users' && <UsersTab users={users} onUpdateRole={updateUserRole} onDeleteUser={deleteUser} />}
         </div>
       </main>
     </div>
@@ -1910,11 +1930,11 @@ function ConfigTab({ config, supabase }: { config: Record<string, string>; supab
 }
 
 // ── USERS & ROLES TAB ─────────────────────────────────────────────
-function UsersTab({ users, onUpdateRole }: { users: any[]; onUpdateRole: (id: string, role: string) => void }) {
+function UsersTab({ users, onUpdateRole, onDeleteUser }: { users: any[]; onUpdateRole: (id: string, role: string) => void; onDeleteUser?: (id: string) => void }) {
   return (
     <div>
-      <h2 className={styles.tabTitle}>User & Role Management</h2>
-      <p className={styles.tabDesc}>Assign special admin roles to staff members.</p>
+      <h2 className={styles.tabTitle}>User &amp; Role Management</h2>
+      <p className={styles.tabDesc}>Assign special admin roles or delete unwanted accounts from database.</p>
       <div className="table-wrapper" style={{ marginTop: '1rem' }}>
         <table>
           <thead>
@@ -1923,6 +1943,7 @@ function UsersTab({ users, onUpdateRole }: { users: any[]; onUpdateRole: (id: st
               <th>Display Name</th>
               <th>Current Role</th>
               <th>Change Role</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -1948,10 +1969,21 @@ function UsersTab({ users, onUpdateRole }: { users: any[]; onUpdateRole: (id: st
                     <option value="admin">Super Admin (Full Access)</option>
                   </select>
                 </td>
+                <td>
+                  {onDeleteUser && (
+                    <button
+                      className="btn"
+                      style={{ background: '#ef4444', color: '#fff', padding: '0.3rem 0.6rem', fontSize: '0.75rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                      onClick={() => onDeleteUser(u.user_id)}
+                    >
+                      Delete Account
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No users found</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No users found</td></tr>
             )}
           </tbody>
         </table>

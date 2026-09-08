@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import LeaderboardClient from './LeaderboardClient'
 import type { Metadata } from 'next'
 
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default async function LeaderboardPage() {
-  const supabase = await createClient()
+  // Use admin client so RLS does not filter out other teams' bookings/matches
+  const supabase = await createAdminClient()
 
   // Fetch overall leaderboard
   const { data: rows } = await supabase

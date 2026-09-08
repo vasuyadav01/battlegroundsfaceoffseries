@@ -82,7 +82,7 @@ export default function LoginPage() {
 
     const cleanEmail = email.trim().toLowerCase()
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo: `${window.location.origin}/api/auth/callback?next=/reset-password`,
+      redirectTo: `${window.location.origin}/reset-password`,
     })
 
     setLoading(false)

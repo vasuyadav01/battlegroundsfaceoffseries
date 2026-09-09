@@ -193,14 +193,93 @@ BGFS/
 | :--- | :---: | :--- |
 | Next.js App Structure | ✅ COMPLETE | Next.js 16 (App Router), Turbopack clean build |
 | Slot Booking Logic | ✅ COMPLETE | 20/20 capacity deduction, duplicate booking guard |
-| Service Role RLS Fix | ✅ COMPLETE | All `/api` writes use `createAdminClient()` to bypass RLS violations |
+| Service Role RLS Fix | ✅ COMPLETE | All `/api` writes + leaderboard page use `createAdminClient()` to bypass RLS |
 | Room Slot Assignment | ✅ COMPLETE | FCFS starting at Slot 5; rendered on ticket, leaderboard & admin panel |
 | Account Synchronization | ✅ COMPLETE | Legacy & new accounts synced with linked teams and `allUserTeamIds` queries |
 | Session & Error Handling | ✅ COMPLETE | 401 session expiration redirects & graceful network error messages |
 | Data Wipe Utility | ✅ COMPLETE | `scripts/clear-booking-data.js` ready for fresh tournament resets |
 | Leaderboard Scoring | ✅ COMPLETE | Best 5 Slots (15 matches aggregate total points) calculator |
-| Razorpay Gateway | ✅ VERIFIED | Verified signature check (Direct testing mode active in line 157 of `route.ts`) |
+| Leaderboard Slot Results | ✅ FIXED | All registered teams now visible in Slot Results tab (admin client fix) |
+| Password Reset Flow | ✅ FIXED | Correct `redirectTo` → `/reset-password`; Supabase redirect URLs configured |
+| Maintenance Page | ✅ REDESIGNED | Premium glassmorphism UI with animated orbs, progress bar & system status list |
+| Footer | ✅ REDESIGNED | 3-column professional layout (Platform / Company / Legal & Trust); logo removed |
+| Razorpay Gateway | ✅ VERIFIED | Verified signature check (Direct testing mode active in line 144 of `route.ts`) |
 | Production Build | ✅ PASSED | `npm run build` compiles with 0 errors |
+
+---
+
+## 🐛 Bug Fix Log — Session 3 (2026-09-09)
+
+### Fix 1 — Slot Booking RLS Error (`new row violates row-level security policy`)
+**Root Cause:** `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` was set to an invalid `sb_secret_...` placeholder instead of the real `eyJ...` JWT. `createAdminClient()` silently fell back to the anon key (which IS subject to RLS), causing all booking writes to fail.
+
+**Fix:**
+- Replaced the placeholder key with the real service role JWT from Supabase Dashboard → Settings → API.
+- Added `SUPABASE_SERVICE_ROLE_KEY` to Vercel Environment Variables (Production + Preview + Development).
+- Restarted the dev server to pick up the new key.
+
+> [!IMPORTANT]
+> The `SUPABASE_SERVICE_ROLE_KEY` must be the long `eyJ...` JWT. The `sb_secret_...` format is NOT a valid service role key. Verify in Supabase → Settings → API → `service_role`.
+
+---
+
+### Fix 2 — Leaderboard Slot Results Showing Only Current User's Team
+**Root Cause:** `app/leaderboard/page.tsx` used `createClient()` (anon/user-scoped) for all data fetches. RLS on `bookings` silently filtered rows to only those belonging to the authenticated user — so the Slot Results tab only showed the logged-in team.
+
+**Fix:** Switched `app/leaderboard/page.tsx` to `createAdminClient()`. All leaderboard data (rows, matches, slots, bookings) now fetched with the service role client, bypassing RLS so all registered teams appear in every slot.
+
+```typescript
+// Before (WRONG — subject to RLS)
+const supabase = await createClient()
+
+// After (CORRECT — bypasses RLS for public read-only leaderboard data)
+const supabase = await createAdminClient()
+```
+
+---
+
+### Fix 3 — Password Reset Link Returns `{"error":"requested path is invalid"}`
+**Root Cause:** The `redirectTo` in `resetPasswordForEmail` was pointing to `/api/auth/callback?next=/reset-password` — a route that **does not exist** in this project. Supabase tried to redirect the user there after verifying the reset token and returned an invalid path error.
+
+**Fix in `app/login/LoginPage.tsx`:**
+```typescript
+// Before (WRONG — /api/auth/callback does not exist)
+redirectTo: `${window.location.origin}/api/auth/callback?next=/reset-password`
+
+// After (CORRECT — ResetPasswordClient.tsx already handles ?code= via exchangeCodeForSession)
+redirectTo: `${window.location.origin}/reset-password`
+```
+
+**Required Supabase Dashboard config** (Authentication → URL Configuration → Redirect URLs):
+- `http://localhost:3000/reset-password` — for local dev
+- `https://battlegroundsfaceoffseries.in/reset-password` — for production
+
+**Also required:** Set **Site URL** to `https://battlegroundsfaceoffseries.in` (not localhost) in Supabase → Authentication → URL Configuration.
+
+---
+
+### Fix 4 — Maintenance Page Premium Redesign
+**Changes in `app/maintenance/page.tsx` & `app/maintenance/page.module.css`:**
+- Full-screen animated background orbs (gold + red radial gradients)
+- Glassmorphism card with `backdrop-filter: blur(20px)` and shimmer accent bar
+- Animated rotating wrench icon with pulsing glow ring
+- Live **upgrade progress bar** (fills slowly with shine animation)
+- **System status list** — each service shows `IN PROGRESS` / `COMPLETE` / `QUEUED` with colour-coded badges and a spinning indicator
+- Animated loading dots on estimated time label
+- Data safety notice with green shield icon
+
+---
+
+### Fix 5 — Footer Redesign (Logo Removed, 3-Column Layout)
+**Changes in `components/Footer.tsx` & `components/Footer.module.css`:**
+- Removed the brand/logo column (`faceofflogo.png` + `Image` import) entirely
+- Footer now has exactly **3 equal columns**:
+  - **PLATFORM**: Home, Leaderboard, Register for Slot, My Dashboard
+  - **COMPANY**: About Us, Contact Support, Fair Play Policy
+  - **LEGAL & TRUST**: Terms, Privacy Policy, Cancellation & Refund, Skill-Based Gaming + trust badges
+- Krafton-inspired minimal design: white small-caps column titles with bottom border, muted `#666` links
+- Bottom bar: dark copyright text + inline quick legal links
+- Fully responsive (3 col → 2 col → 1 col on mobile)
 
 ---
 
@@ -209,8 +288,13 @@ BGFS/
 2. In Vercel Project Settings > **Environment Variables**, add:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` ← **Must be the `eyJ...` JWT from Supabase → Settings → API**
    - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
    - `RAZORPAY_KEY_ID`
    - `RAZORPAY_KEY_SECRET`
-3. In Supabase > Authentication > **URL Configuration**, add your domain (`https://battlegroundsfaceoffseries.com`) to **Redirect URLs**.
+3. In Supabase > Authentication > **URL Configuration**:
+   - Set **Site URL** → `https://battlegroundsfaceoffseries.in`
+   - Add to **Redirect URLs**:
+     - `http://localhost:3000/reset-password`
+     - `https://battlegroundsfaceoffseries.in/reset-password`
+4. Trigger a Vercel redeploy after adding new env variables for them to take effect.
